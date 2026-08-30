@@ -1,0 +1,17 @@
+{
+    "name": "caps-loc-monorepo",
+    "version": "0.1.0",
+    "private": true,
+    "packageManager": "pnpm@11.24.0",
+    "scripts": {
+        "build": "pnpm --filter \"./packages/*\" --filter \"./apps/*\" run build",
+        "dev:server": "pnpm --filter @capsloc/server run start:dev",
+        "dev:client": "pnpm --filter @capsloc/client run dev",
+        "lint": "pnpm -r run lint",
+        "format": "prettier --write \"**/*.{ts,tsx,json,md}\""
+    },
+    "devDependencies": {
+        "prettier": "^3.5.0",
+        "typescript": "^5.7.3"
+    }
+}
