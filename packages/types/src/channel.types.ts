@@ -23,3 +23,15 @@ export interface ChannelMemberDTO {
     lastReadAt: string;
     user?: UserProfileDTO;
 }
+
+export interface CreateChannelDTO {
+    name?: string;
+    description?: string;
+    type?: ChannelType;
+    projectTag?: string; // e.g. "MH-WILDS", "RE-ENGINE"
+    localeTag?: string; // e.g. "JA->EN", "EFIGS"
+}
+
+export interface CreateDMDTO {
+    recipientId: string; // UUID of target contact
+}

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import bcrypt from 'bcrypt';
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -10,14 +11,14 @@ async function main(): Promise<void> {
 
     // hardcode the default password hash for "Password123!" salted with bcrypt and 10 rounds of hashing
     // for seed purposes
-    const defaultPasswordHash = '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6x8ecgy5pWCu0bdqIe1S';
+    const defaultPasswordHash = await bcrypt.hash('Password123!', 10);
 
     // ===================================
     // SEEDING OUR DUMMY USERS FOR TESTING 
     // ===================================
     const dante = await prisma.user.upsert({
         where: { email: 'dante@capcom.local' },
-        update: {},
+        update: { passwordHash: defaultPasswordHash },
         create: {
             username: 'dante_translator',
             email: 'dante@capcom.local',
@@ -32,7 +33,7 @@ async function main(): Promise<void> {
 
     const jill = await prisma.user.upsert({
         where: { email: 'jill@capcom.local' },
-        update: {},
+        update: { passwordHash: defaultPasswordHash },
         create: {
             username: 'jill_lqa',
             email: 'jill@capcom.local',
@@ -47,7 +48,7 @@ async function main(): Promise<void> {
 
     const leon = await prisma.user.upsert({
         where: { email: 'leon@capcom.local' },
-        update: {},
+        update: { passwordHash: defaultPasswordHash },
         create: {
             username: 'leon_dev',
             email: 'leon@capcom.local',
