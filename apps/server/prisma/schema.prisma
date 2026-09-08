@@ -127,7 +127,7 @@ model Message {
 
 model Attachment {
   id        String         @id @default(uuid())
-  messageId String
+  messageId String?
   fileUrl   String
   fileName  String
   fileType  AttachmentType @default(IMAGE)
@@ -135,7 +135,7 @@ model Attachment {
   localeTag String?
   createdAt DateTime       @default(now())
 
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@map("attachments")
 }
