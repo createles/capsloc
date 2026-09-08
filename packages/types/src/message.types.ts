@@ -25,3 +25,23 @@ export interface MessageDTO {
     attachments: AttachmentDTO[];
     stringRefs: LocStringDTO[];
 }
+
+// Payload sent by client when creating a message
+export interface CreateMessageDTO {
+    content: string;
+    attachmentIds?: string[];
+    stringKeys?: string[];
+}
+
+// Query parameters when asking for paginated chat history
+export interface GetMessagesQueryDTO {
+    cursor?: string;
+    limit?: number;
+}
+
+// The packet returned to frontend containing the messages and the next bookmark
+export interface PaginatedMessagesDTO {
+    messages: MessageDTO[];
+    nextCursor: string | null;
+    hasMore: boolean;
+}
