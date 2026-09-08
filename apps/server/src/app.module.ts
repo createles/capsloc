@@ -7,9 +7,20 @@ import { UsersModule } from './modules/users/users.module.js';
 import { ChannelsModule } from './modules/channels/channels.module.js';
 import { MessagesModule } from './modules/messages/messages.module.js';
 import { ChatModule } from './modules/chat/chat.module.js';
+import { LocStringsModule } from './modules/loc-strings/loc-strings.module.js';
+import { GlossaryModule } from './modules/glossary/glossary.module.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ChannelsModule, MessagesModule, ChatModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    ChannelsModule,
+    MessagesModule,
+    ChatModule,
+    LocStringsModule,
+    GlossaryModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
