@@ -23,3 +23,33 @@ export interface GlossaryTermDTO { // For Localization Inspector
     notes?: string | null;
     projectTag: string;
 }
+
+// Query filters when searching or listing localization strings
+export interface LocStringFilterQueryDTO {
+    projectTag?: string;
+    status?: StringStatus;
+    targetLocale?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+}
+
+// Envelope returned when querying paginated localization strings
+export interface PaginatedLocStringsDTO {
+    items: LocStringDTO[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+// Payload for mutating string review status (e.g. DRAFT -> LQA_FLAGGED)
+export interface UpdateLocStringStatusDTO {
+    status: StringStatus;
+}
+
+// Query parameters for canonical glossary searches
+export interface GlossarySearchQueryDTO {
+    q: string;
+    category?: 'Character' | 'Weapon' | 'Item' | 'Location' | 'Monster';
+}
