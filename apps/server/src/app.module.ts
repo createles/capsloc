@@ -9,6 +9,7 @@ import { MessagesModule } from './modules/messages/messages.module.js';
 import { ChatModule } from './modules/chat/chat.module.js';
 import { LocStringsModule } from './modules/loc-strings/loc-strings.module.js';
 import { GlossaryModule } from './modules/glossary/glossary.module.js';
+import { UploadsModule } from './modules/uploads/uploads.module.js';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { GlossaryModule } from './modules/glossary/glossary.module.js';
     MessagesModule,
     ChatModule,
     LocStringsModule,
-    GlossaryModule
+    GlossaryModule,
+    UploadsModule
   ],
   controllers: [AppController],
   providers: [AppService],
