@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// 1. ENUMS
+// ==========================================
+
+enum LocRole {
+  TRANSLATOR
+  LQA_TESTER
+  SOLUTIONS_DEV
+  LOC_PM
+  AUDIO_SPECIALIST
+  GENERAL_USER
+}
+
+enum ChannelType {
+  PUBLIC_PROJECT
+  PRIVATE_LOCALE
+  DIRECT_MESSAGE
+  GROUP_DM
+}
+
+enum StringStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  LQA_FLAGGED
+}
+
+enum AttachmentType {
+  IMAGE
+  SCREENSHOT_BUG
+  DOCUMENT
+  LOG_FILE
+}
+
+// ==========================================
+// 2. CORE IDENTITY & CHAT MODELS
+// ==========================================
+
+model User {
+  id                 String   @id @default(uuid())
+  username           String   @unique
+  email              String   @unique
+  passwordHash       String
+  displayName        String
+  avatarUrl          String?
+  bio                String?
+  locRole            LocRole  @default(GENERAL_USER)
+  primaryLocale      String   @default("en-US")
+  targetLocales      String[] @default(["ja-JP"])
+  status             String   @default("offline")
+  hashedRefreshToken String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Named relations to define multiple relations to same model
+  sentMessages       Message[]       @relation("UserSentMessages")
+  channelMemberships ChannelMember[]
+  createdChannels    Channel[]       @relation("ChannelCreator")
+
+  @@map("users")
+}
+
+model Channel {
+  id          String      @id @default(uuid())
+  name        String?
+  description String?
+  type        ChannelType @default(PUBLIC_PROJECT)
+  projectTag  String? // e.g., "MH-WILDS", "RE-ENGINE", "DD2"
+  localeTag   String? // e.g., "JA->EN", "EFIGS", "GLOBAL"
+  createdById String
+  createdBy   User        @relation("ChannelCreator", fields: [createdById], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  members  ChannelMember[]
+  messages Message[]
+
+  @@map("channels")
+}
+
+model ChannelMember {
+  id         String   @id @default(uuid())
+  channelId  String
+  userId     String
+  role       String   @default("member")
+  joinedAt   DateTime @default(now())
+  lastReadAt DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, userId])
+  @@map("channel_members")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  channelId String
+  senderId  String
+  content   String
+  isEdited  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  channel     Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  sender      User           @relation("UserSentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+  stringRefs  LocStringRef[]
+
+  @@map("messages")
+}
+
+model Attachment {
+  id        String         @id @default(uuid())
+  messageId String?
+  fileUrl   String
+  fileName  String
+  fileType  AttachmentType @default(IMAGE)
+  fileSize  Int
+  localeTag String?
+  createdAt DateTime       @default(now())
+
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+// ==========================================
+// 3. LOCALIZATION DOMAIN MODELS
+// ==========================================
+
+model LocString {
+  id           String       @id @default(uuid())
+  stringKey    String       @unique // e.g., "LOC-04829", "STR_MENU_EQUIP_DEMONDRUG"
+  projectTag   String // e.g., "MH-WILDS"
+  sourceText   String // Japanese source string
+  targetLocale String // e.g., "en-US", "de-DE"
+  targetText   String? // Translated target string
+  charLimit    Int? // UI boundary constraint
+  contextNotes String? // Screen context / audio context
+  status       StringStatus @default(APPROVED)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  references LocStringRef[]
+
+  @@map("loc_strings")
+}
+
+model LocStringRef {
+  id          String @id @default(uuid())
+  messageId   String
+  locStringId String
+
+  message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  locString LocString @relation(fields: [locStringId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, locStringId])
+  @@map("loc_string_refs")
+}
+
+model GlossaryTerm {
+  id         String   @id @default(uuid())
+  termKey    String   @unique
+  category   String // Character, Weapon, Item, Location, Monster
+  sourceJa   String // e.g., "鬼神薬"
+  targetEn   String // e.g., "Demondrug"
+  notes      String?
+  projectTag String   @default("GLOBAL")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("glossary_terms")
+}
