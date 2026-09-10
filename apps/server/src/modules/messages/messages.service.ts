@@ -116,6 +116,12 @@ export class MessagesService {
                         })),
                     }
                     : undefined,
+                // if attachments exist, connect via Prisma relation syntax:  
+                attachments: dto.attachmentIds && dto.attachmentIds.length > 0
+                    ? {
+                        connect: dto.attachmentIds.map((id) => ({ id })), // attaches the already exisiting records onto this message
+                    }
+                    : undefined,
             },
             include: {
                 sender: { select: safeUserSelect },
