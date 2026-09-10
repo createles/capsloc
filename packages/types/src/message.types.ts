@@ -4,7 +4,7 @@ import { LocStringDTO } from './loc-string.types.js';
 
 export interface AttachmentDTO {
     id: string;
-    messageId: string;
+    messageId?: string | null; // messageId is optional/nullable to allow staged file upload prior to message creation
     fileUrl: string;
     fileName: string;
     fileType: AttachmentType;
