@@ -18,6 +18,11 @@ export class UpdateProfileDto {
 
     @IsOptional()
     @IsString()
+    @MaxLength(100)
+    customStatus?: string;
+
+    @IsOptional()
+    @IsString()
     primaryLocale?: string;
 
     @IsOptional()

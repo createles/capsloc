@@ -7,6 +7,7 @@ export interface UserProfileDTO { // Safely send User details without sensitive 
     displayName: string;
     avatarUrl?: string | null;
     bio?: string | null;
+    customStatus?: string | null; // e.g. "Meeting till 10:30, Reviewing MH Wilds DLC strings"
     locRole: LocRole;
     primaryLocale: string;
     targetLocales: string[];

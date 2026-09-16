@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /* Surfaces & Canvas — Softened Capcom Modern */
+  --color-surface-canvas: #18181b;
+  --color-surface-panel: #202024;
+  --color-surface-card: #27272a;
+  --color-surface-hover: #3f3f46;
+  --color-border-subtle: #333338;
+  --color-border-muted: #27272a;
+
+  /* Capcom Brand Accents */
+  --color-brand-navy: #1b365d;
+  --color-brand-navy-light: #23497d;
+  --color-brand-navy-subtle: rgba(27, 54, 93, 0.35);
+  --color-accent-gold: #d4af37;
+  --color-accent-gold-hover: #e5a823;
+  --color-accent-gold-subtle: rgba(212, 175, 55, 0.15);
+
+  /* String Status Taxonomy */
+  --color-status-approved: #10b981;
+  --color-status-review: #f59e0b;
+  --color-status-flagged: #ef4444;
+  --color-status-draft: #71717a;
+
+  /* Typography */
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+/* Base Body Styles */
+body {
+  margin: 0;
+  background-color: var(--color-surface-canvas);
+  color: #f4f4f5;
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Comfy Studio Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
