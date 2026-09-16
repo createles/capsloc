@@ -10,6 +10,7 @@ export const safeUserSelect = {
     displayName: true,
     avatarUrl: true,
     bio: true,
+    customStatus: true,
     locRole: true,
     primaryLocale: true,
     targetLocales: true,

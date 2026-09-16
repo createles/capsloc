@@ -1,0 +1,134 @@
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+import type {
+  UserProfileDTO,
+  AuthResponseDTO,
+  AuthTokensDTO,
+  LocRole,
+} from "@capsloc/types";
+import { api, setAccessToken } from "../services/api";
+
+export interface LoginCredentials {
+  // Credentials object
+  email: string;
+  password: string;
+}
+
+export interface RegisterCredentials {
+  // Registration object
+  username: string;
+  email: string;
+  password: string;
+  displayName: string;
+  locRole?: LocRole;
+  primaryLocale?: string;
+}
+
+export interface AuthContextType {
+  user: UserProfileDTO | null;
+  isAuthenticated: boolean;
+  isLoading: boolean; // React UI boolean
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  updateProfile: (data: Partial<UserProfileDTO>) => Promise<UserProfileDTO>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<UserProfileDTO | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Silent Session Restoration on Mount
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        // 1. Silent Refresh using HttpOnly cookie
+        const { data: tokens } = await api.post<AuthTokensDTO>("/auth/refresh");
+        setAccessToken(tokens.accessToken);
+
+        // 2. Hydrate user profile from backend
+        const { data: profile } = await api.get<UserProfileDTO>("/auth/me");
+        setUser(profile);
+      } catch {
+        // No active session or cookie expired; stay in logged-out state
+        setAccessToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreSession();
+  }, []);
+
+  const login = async (credentials: LoginCredentials): Promise<void> => {
+    const { data } = await api.post<AuthResponseDTO>( // gives us our sanitized user data and the accessToken
+      "/auth/login",
+      credentials,
+    );
+    setAccessToken(data.accessToken);
+    setUser(data.user);
+  };
+
+  const register = async (credentials: RegisterCredentials): Promise<void> => {
+    await api.post("/auth/register", credentials);
+    // Auto-login upon successful registration
+    await login({
+      email: credentials.email,
+      password: credentials.password,
+    });
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+    }
+  };
+
+  const updateProfile = async (
+    data: Partial<UserProfileDTO>,
+  ): Promise<UserProfileDTO> => {
+    const { data: updated } = await api.patch<UserProfileDTO>(
+      "/users/profile",
+      data,
+    );
+    setUser(updated);
+    return updated;
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user, // turn into a true boolean with !! to return true or false
+        isLoading,
+        login,
+        register,
+        logout,
+        updateProfile,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

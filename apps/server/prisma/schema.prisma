@@ -59,6 +59,7 @@ model User {
   displayName        String
   avatarUrl          String?
   bio                String?
+  customStatus       String?
   locRole            LocRole  @default(GENERAL_USER)
   primaryLocale      String   @default("en-US")
   targetLocales      String[] @default(["ja-JP"])
