@@ -35,3 +35,8 @@ export interface CreateChannelDTO {
 export interface CreateDMDTO {
     recipientId: string; // UUID of target contact
 }
+
+export interface AddChannelMemberDTO {
+    userId: string;
+    role?: 'admin' | 'member';
+}
