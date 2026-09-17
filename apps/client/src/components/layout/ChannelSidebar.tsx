@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Hash, Users, Loader2, Smile, Check, X, Plus } from "lucide-react";
+import { Hash, Loader2, Smile, Check, X, Plus } from "lucide-react";
 import { ChannelType, UserStatus, type ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -70,15 +70,9 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
     (c) => c.type === ChannelType.DIRECT_MESSAGE,
   );
 
-  // Helper: for DMs, pick the other user's name
+  // Helper: for DMs, returns other participant's user object
   const getDmRecipient = (channel: ChannelDTO) => {
-    const otherMember = channel.members?.find((m) => m.userId !== user?.id);
-    return otherMember?.user?.displayName || channel.name || "Direct Message";
-  };
-
-  const getDmRecipientId = (channel: ChannelDTO) => {
-    const otherMember = channel.members?.find((m) => m.userId !== user?.id);
-    return otherMember?.userId;
+    return channel.members?.find((m) => m.userId !== user?.id)?.user;
   };
 
   /**
@@ -256,36 +250,68 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           <div className="space-y-0.5">
             {directMessages.map((channel) => {
               const isActive = activeChannelId === channel.id;
-              const recipientName = getDmRecipient(channel);
-              const recipientId = getDmRecipientId(channel);
-              const isOnline = recipientId
-                ? onlineUsers[recipientId] === UserStatus.ONLINE
+              const recipient = getDmRecipient(channel);
+              const recipientName =
+                recipient?.displayName || channel.name || "Direct Message";
+              const isOnline = recipient?.id
+                ? onlineUsers[recipient.id] === UserStatus.ONLINE
                 : false;
+              const initials = (recipientName || "DM")
+                .substring(0, 2)
+                .toUpperCase();
 
               return (
                 <button
                   key={channel.id}
                   type="button"
                   onClick={() => handleChannelClick(channel)}
-                  className={`w-full flex items-center space-x-2 rounded px-2.5 py-1.5 text-xs font-medium transition-colors text-left ${
+                  className={`w-full flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 text-xs transition-all text-left ${
                     isActive
-                      ? "bg-brand-navy text-white shadow-sm border border-accent-gold/20"
+                      ? "bg-brand-navy text-white shadow-sm border border-accent-gold/30"
                       : "text-gray-400 hover:bg-surface-hover hover:text-gray-200"
                   }`}
                 >
+                  {/* Left: Avatar Initials + Status Dot */}
                   <div className="relative shrink-0">
-                    <Users
-                      className={`h-3.5 w-3.5 ${
-                        isActive ? "text-accent-gold" : "text-gray-500"
+                    <div
+                      className={`h-7 w-7 rounded-md border flex items-center justify-center font-mono text-[10px] font-bold ${
+                        isActive
+                          ? "bg-brand-navy-light text-accent-gold border-accent-gold/40"
+                          : "bg-surface-card text-gray-300 border-border-subtle"
                       }`}
-                    />
+                    >
+                      {initials}
+                    </div>
                     <span
-                      className={`absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full border border-surface-panel ${
+                      className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-surface-panel ${
                         isOnline ? "bg-emerald-400" : "bg-gray-600"
                       }`}
                     />
                   </div>
-                  <span className="truncate flex-1">{recipientName}</span>
+
+                  {/* Right: Name + Status Subtitle */}
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="flex items-center justify-between">
+                      <span className="truncate font-medium text-xs text-gray-200">
+                        {recipientName}
+                      </span>
+                    </div>
+                    <div className="h-3.5 text-[10px] truncate leading-tight mt-0.5">
+                      {recipient?.customStatus ? (
+                        <span className="italic text-gray-400 truncate block">
+                          {recipient.customStatus}
+                        </span>
+                      ) : (
+                        <span
+                          className={`font-mono text-[9px] ${
+                            isOnline ? "text-emerald-400/90" : "text-gray-500"
+                          }`}
+                        >
+                          {isOnline ? "Online" : "Offline"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </button>
               );
             })}
