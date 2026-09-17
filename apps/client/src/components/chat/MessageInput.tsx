@@ -14,11 +14,13 @@ import { useSocket } from "../../context/SocketContext";
 export interface MessageInputProps {
   channelId: string;
   channelName?: string | null;
+  isDm?: boolean; // appropriately replaces #channel in placeholder to @recipient
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
   channelId,
   channelName,
+  isDm,
 }) => {
   const { sendMessage, startTyping, stopTyping } = useSocket();
   const [content, setContent] = useState("");
@@ -265,7 +267,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           rows={2}
-          placeholder={`Message #${channelName || "channel"}... (Shift+Enter for newline, type #LOC-XXXX to tag)`}
+          placeholder={
+            isDm
+            ? `Message @${channelName || "teammate"}... (Shift+Enter for newline, type #LOC-XXXX or #STR_XXXX to tag)`
+            : `Message #${channelName || "channel"}... (Shift+Enter for newline, type #LOC-XXXX or #STR_XXXX to tag)`}
           className="w-full bg-transparent text-xs text-gray-100 placeholder-gray-500 focus:outline-none resize-none font-sans"
         />
 

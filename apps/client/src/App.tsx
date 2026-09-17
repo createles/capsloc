@@ -6,8 +6,9 @@ import {
   Wifi,
   WifiOff,
   BookOpen,
+  UserPlus,
 } from "lucide-react";
-import { type ChannelDTO } from "@capsloc/types";
+import { type ChannelDTO, ChannelType, UserStatus } from "@capsloc/types";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { SocketProvider, useSocket } from "./context/SocketContext";
 import { AuthModal } from "./components/auth/AuthModal";
@@ -16,17 +17,45 @@ import { MessageList } from "./components/chat/MessageList";
 import { TypingIndicator } from "./components/chat/TypingIndicator";
 import { MessageInput } from "./components/chat/MessageInput";
 import { LocInspectorDrawer } from "./components/inspector/LocInspectorDrawer";
+import { LocRoleBadge } from "./components/ui/LocRoleBadge";
+import { InviteMemberModal } from "./components/channels/InviteMemberModal";
 
 const LocTerminal: React.FC = () => {
   const { user, logout, isLoading, isAuthenticated } = useAuth();
-  const { isConnected } = useSocket();
+  const { isConnected, onlineUsers } = useSocket();
   const [activeChannel, setActiveChannel] = useState<ChannelDTO | null>(null);
 
   // Decoupled drawer state:
   const [selectedStringKey, setSelectedStringKey] = useState<string | null>(
-    "LOC-MH-001",
+    null,
   );
   const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(true);
+
+  // Invite Modal View state
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+
+  // Direct Message & Admin resolution
+  const isDm = activeChannel?.type === ChannelType.DIRECT_MESSAGE;
+  const dmRecipient = isDm
+    ? activeChannel?.members?.find((m) => m.userId !== user?.id)?.user
+    : null;
+  const dmRecipientName =
+    dmRecipient?.displayName || activeChannel?.name || "Direct Message";
+  const dmRecipientId = dmRecipient?.id;
+  const isDmRecipientOnline = dmRecipientId
+    ? onlineUsers[dmRecipientId] === UserStatus.ONLINE
+    : false;
+
+  const isChannelAdmin =
+    activeChannel?.type === ChannelType.PRIVATE_LOCALE &&
+    (activeChannel?.createdById === user?.id ||
+      activeChannel?.members?.some(
+        (m) => m.userId === user?.id && m.role === "admin",
+      ));
+
+  const handleMemberAdded = (updatedChannel: ChannelDTO) => {
+    setActiveChannel(updatedChannel);
+  };
 
   if (isLoading) {
     return (
@@ -127,22 +156,66 @@ const LocTerminal: React.FC = () => {
             className="border-b border-border-subtle bg-surface-panel/70 px-4 py-2.5 text-xs font-sans text-gray-400 flex items-center
   justify-between shrink-0"
           >
-            <div className="flex items-center space-x-2 truncate">
-              <span className="text-white font-semibold text-sm">
-                #{activeChannel?.name || "select-channel"}
-              </span>
-              {activeChannel?.localeTag && (
-                <span
-                  className="rounded-md bg-brand-navy/60 px-2 py-0.5 text-[10px] font-mono text-accent-gold border border-accent-
-  gold/20"
-                >
-                  {activeChannel.localeTag}
-                </span>
-              )}
-              {activeChannel?.description && (
-                <span className="text-gray-400 text-xs truncate max-w-md hidden md:inline ml-2">
-                  {activeChannel.description}
-                </span>
+            {/* Left: Channel Info or DM Recipient Info */}
+            <div className="flex items-center space-x-2.5 truncate">
+              {isDm ? (
+                <>
+                  {/* Recipient Avatar Initials + Status Dot */}
+                  <div className="relative shrink-0">
+                    <div className="h-7 w-7 rounded-md bg-brand-navy border border-accent-gold/30 flex items-center justify-center font-mono font-bold text-accent-gold text-[10px]">
+                      {(dmRecipientName || "DM").substring(0, 2).toUpperCase()}
+                    </div>
+                    <span
+                      className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-surface-panel ${
+                        isDmRecipientOnline ? "bg-emerald-400" : "bg-gray-600"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2 min-w-0">
+                    <span className="text-white font-semibold text-sm truncate">
+                      {dmRecipientName}
+                    </span>
+                    {dmRecipient && <LocRoleBadge role={dmRecipient.locRole} />}
+                    {dmRecipient?.customStatus && (
+                      <span className="text-xs italic text-gray-400 truncate hidden sm:inline">
+                        "{dmRecipient.customStatus}"
+                      </span>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="text-white font-semibold text-sm">
+                    #{activeChannel?.name || "select-channel"}
+                  </span>
+                  {activeChannel?.localeTag && (
+                    <span
+                      className="rounded-md bg-brand-navy/60 px-2 py-0.5 text-[10px] font-mono text-accent-gold border
+  border-accent-gold/20"
+                    >
+                      {activeChannel.localeTag}
+                    </span>
+                  )}
+                  {activeChannel?.description && (
+                    <span className="text-gray-400 text-xs truncate max-w-md hidden md:inline ml-2">
+                      {activeChannel.description}
+                    </span>
+                  )}
+                  {/* Admin Invite Button */}
+                  {isChannelAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setIsInviteModalOpen(true)}
+                      className="flex items-center space-x-1 ml-2 rounded bg-brand-navy/80 hover:bg-brand-navy text-accent-gold
+  border border-accent-gold/30 px-2 py-0.5 text-[10px] font-medium transition-colors cursor-pointer"
+                      title="Invite Teammates to Private Channel"
+                    >
+                      <UserPlus className="h-3 w-3" />
+                      <span>Invite</span>
+                    </button>
+                  )}
+                </>
               )}
             </div>
 
@@ -184,7 +257,8 @@ const LocTerminal: React.FC = () => {
               <TypingIndicator channelId={activeChannel.id} />
               <MessageInput
                 channelId={activeChannel.id}
-                channelName={activeChannel.name}
+                channelName={isDm ? dmRecipientName : activeChannel.name}
+                isDm={isDm}
               />
             </>
           ) : (
@@ -200,6 +274,15 @@ const LocTerminal: React.FC = () => {
           <LocInspectorDrawer
             stringKey={selectedStringKey}
             onClose={handleCloseInspector}
+          />
+        )}
+
+        {/* Private Channel Admin Invite Modal */}
+        {isInviteModalOpen && activeChannel && (
+          <InviteMemberModal
+            channel={activeChannel}
+            onClose={() => setIsInviteModalOpen(false)}
+            onMemberAdded={handleMemberAdded}
           />
         )}
       </div>
