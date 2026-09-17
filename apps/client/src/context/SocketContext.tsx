@@ -41,10 +41,11 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({
   const [onlineUsers, setOnlineUsers] = useState<Record<string, UserStatus>>(
     {}, // Initialize empty Record dictionary of online user list
   );
+  const userId = user?.id; // Extract userId
 
   useEffect(() => {
     // Only connect when user has a valid authenticated session
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated || !userId) {
       if (socket) {
         socket.disconnect();
         setSocket(null);
@@ -88,7 +89,7 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({
       socketInstance.disconnect();
       setIsConnected(false);
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, userId]); // Use userId as dependency so that status updates don't trigger context rerun
 
   const joinChannel = useCallback(
     (channelId: string) => {
