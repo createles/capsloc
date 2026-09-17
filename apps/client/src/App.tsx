@@ -177,6 +177,7 @@ const LocTerminal: React.FC = () => {
           {activeChannel ? (
             <>
               <MessageList
+                key={activeChannel.id} // Use native React key prop to cleanup stale component to be replaced with a new one
                 channelId={activeChannel.id}
                 onSelectStringKey={handleSelectStringKey}
               />

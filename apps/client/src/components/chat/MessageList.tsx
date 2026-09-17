@@ -53,6 +53,38 @@ export const SmartMessageContent: React.FC<{
   );
 };
 
+/**
+ * Message skeleton placeholder for chat transitions
+ */
+const MessageSkeleton: React.FC = () => (
+  <div className="flex-1 overflow-hidden px-4 py-3 space-y-4 animate-pulse select-none">
+    {[1, 2, 3, 4, 5, 6].map((i) => (
+      <div key={i} className="flex items-start space-x-3">
+        {/* Avatar skeleton */}
+        <div className="h-8 w-8 rounded-lg bg-surface-card/60 border border-border-subtle/50 shrink-0 mt-0.5" />
+        {/* Body skeleton */}
+        <div className="flex-1 space-y-2 py-1">
+          <div className="flex items-center space-x-2">
+            <div className="h-3 w-24 rounded bg-surface-card/80" />
+            <div className="h-2.5 w-16 rounded bg-surface-card/50" />
+            <div className="h-2.5 w-10 rounded bg-surface-card/30" />
+          </div>
+          <div
+            className="h-3 rounded bg-surface-card/40"
+            style={{ width: `${55 + ((i * 19) % 40)}%` }}
+          />
+          {i % 2 === 0 && (
+            <div
+              className="h-3 rounded bg-surface-card/30"
+              style={{ width: `${35 + ((i * 23) % 45)}%` }}
+            />
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 export const MessageList: React.FC<MessageListProps> = ({
   channelId,
   onSelectStringKey,
@@ -73,6 +105,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef<boolean>(true);
+  const isInitialLoadRef = useRef<boolean>(true); // Tracks initial asset load settling
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   // Declarative Room Subscription
@@ -84,24 +117,36 @@ export const MessageList: React.FC<MessageListProps> = ({
     };
   }, [channelId, isConnected, joinChannel, leaveChannel]);
 
-  // Initial message history fetch
+  // Initial message history fetch with 250ms minimum loading display floor
   useEffect(() => {
     let isMounted = true;
+    const startTime = Date.now();
+    const MIN_SKELETON_MS = 250;
+
+    setMessages([]);
+    setIsLoading(true);
+    isInitialLoadRef.current = true;
+
     const fetchHistory = async () => {
-      setIsLoading(true);
       try {
         const { data } = await api.get<PaginatedMessagesDTO>(
           `/channels/${channelId}/messages?limit=30`,
         );
-        if (isMounted) {
-          setMessages([...data.messages].reverse());
-          setNextCursor(data.nextCursor);
-          setHasMore(data.hasMore);
-          setUnreadCount(0);
-        }
+
+        const elapsed = Date.now() - startTime;
+        const delayRemaining = Math.max(0, MIN_SKELETON_MS - elapsed);
+
+        setTimeout(() => {
+          if (isMounted) {
+            setMessages([...data.messages].reverse());
+            setNextCursor(data.nextCursor);
+            setHasMore(data.hasMore);
+            setUnreadCount(0);
+            setIsLoading(false);
+          }
+        }, delayRemaining);
       } catch (err) {
         console.error("Failed to load message history:", err);
-      } finally {
         if (isMounted) setIsLoading(false);
       }
     };
@@ -112,11 +157,42 @@ export const MessageList: React.FC<MessageListProps> = ({
     };
   }, [channelId]);
 
-  // Scroll to bottom on initial load
-  useEffect(() => {
-    if (!isLoading) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior,
+      });
     }
+    bottomRef.current?.scrollIntoView({ behavior });
+  };
+
+  // Scroll to bottom on initial load with ResizeObserver for async image/font expansion
+  useEffect(() => {
+    if (!containerRef.current || isLoading ) return;
+
+    // Observe container resizing as images & fonts expand asynchronously
+    const resizeObserver = new ResizeObserver(() => {
+      if (isInitialLoadRef.current || isAtBottomRef.current) {
+        scrollToBottom("instant");
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    // Initial paint-delayed scroll
+    const timer = setTimeout(() => {
+      scrollToBottom("instant");
+      // Settle initial load window after 1.5s
+      setTimeout(() => {
+        isInitialLoadRef.current = false;
+      }, 1500);
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      resizeObserver.disconnect();
+    };
   }, [isLoading, channelId]);
 
   // Scroll event handler with 80px bottom threshold
@@ -147,9 +223,10 @@ export const MessageList: React.FC<MessageListProps> = ({
       const isOwnMessage = newMessage.senderId === user?.id;
 
       if (isOwnMessage || isAtBottomRef.current) {
-        setTimeout(() => {
-          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 50);
+        // Align auto-scroll with browser rendering frame
+        requestAnimationFrame(() => {
+          scrollToBottom("smooth");
+        });
       } else {
         // SCROLL-LOCK: User is scrolled up reading history
         setUnreadCount((prev) => prev + 1);
@@ -203,12 +280,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   };
 
   if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center font-sans text-xs text-gray-500 space-x-2">
-        <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
-        <span>Loading messages...</span>
-      </div>
-    );
+    return <MessageSkeleton />;
   }
 
   return (
@@ -378,6 +450,15 @@ export const MessageList: React.FC<MessageListProps> = ({
                                   <img
                                     src={att.fileUrl}
                                     alt={att.fileName}
+                                    // Re-scroll to bottom as each image finishes downloading
+                                    onLoad={() => {
+                                      if (
+                                        isInitialLoadRef.current ||
+                                        isAtBottomRef.current
+                                      ) {
+                                        scrollToBottom("instant");
+                                      }
+                                    }}
                                     className="max-h-60 w-auto object-contain cursor-pointer hover:opacity-95 transition-opacity rounded"
                                     onClick={() =>
                                       setActiveLightbox({
@@ -401,7 +482,7 @@ export const MessageList: React.FC<MessageListProps> = ({
           })
         )}
 
-        <div ref={bottomRef} />
+        <div ref={bottomRef} className="h-6 shrink-0" />
       </div>
 
       {/* Floating Unread Counter Action Banner */}
@@ -410,7 +491,7 @@ export const MessageList: React.FC<MessageListProps> = ({
           <button
             type="button"
             onClick={() => {
-              bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+              scrollToBottom("smooth");
               setUnreadCount(0);
             }}
             className="flex items-center space-x-2 rounded-full bg-brand-navy border border-accent-gold/40 shadow-xl px-4 py-1.5 text-xs
