@@ -1,45 +1,12 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
-import type {
-  UserProfileDTO,
-  AuthResponseDTO,
-  AuthTokensDTO,
-  LocRole,
-} from "@capsloc/types";
+import React, { useState, useEffect, type ReactNode } from "react";
+import type { UserProfileDTO, AuthTokensDTO } from "@capsloc/types";
 import { api, setAccessToken } from "../services/api";
-
-export interface LoginCredentials {
-  // Credentials object
-  email: string;
-  password: string;
-}
-
-export interface RegisterCredentials {
-  // Registration object
-  username: string;
-  email: string;
-  password: string;
-  displayName: string;
-  locRole?: LocRole;
-  primaryLocale?: string;
-}
-
-export interface AuthContextType {
-  user: UserProfileDTO | null;
-  isAuthenticated: boolean;
-  isLoading: boolean; // React UI boolean
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (credentials: RegisterCredentials) => Promise<void>;
-  logout: () => Promise<void>;
-  updateProfile: (data: Partial<UserProfileDTO>) => Promise<UserProfileDTO>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import {
+  AuthContext,
+  type LoginCredentials,
+  type RegisterCredentials,
+} from "./AuthContext";
+import { type AuthResponseDTO } from "@capsloc/types";
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -123,12 +90,4 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

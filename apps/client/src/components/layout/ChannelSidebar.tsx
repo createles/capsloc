@@ -2,12 +2,13 @@ import React, { useEffect, useState, useRef } from "react";
 import { Hash, Loader2, Smile, Check, X, Plus } from "lucide-react";
 import { ChannelType, UserStatus, type ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
-import { useSocket } from "../../context/SocketContext";
+import { useAuth } from "../../hooks/useAuth";
+import { useSocket } from "../../hooks/useSocket";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 import { UserProfileModal } from "../profile/UserProfileModal";
 import { CreateChannelModal } from "../channels/CreateChannelModal";
 import { DirectMessageModal } from "../channels/DirectMessageModal";
+import { UserProfileHoverCard } from "../common/UserProfileHoverCard";
 
 export interface ChannelSidebarProps {
   activeChannelId: string | null;
@@ -19,7 +20,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   onSelectChannel,
 }) => {
   const { user, updateProfile } = useAuth(); // use AuthContext for access to user and accessToken, updateProfile to update user status
-  const { onlineUsers } = useSocket(); // grab from SocketContext
+  const { onlineUsers, unreadCounts, mentionCounts, clearUnread } = useSocket(); // grab from SocketContext
   const [channels, setChannels] = useState<ChannelDTO[]>([]);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] =
     useState(false); // Modal Visibility
@@ -32,16 +33,29 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   const [isWritingCustom, setIsWritingCustom] = useState(false);
   const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Ref bridges for mount-only defaults:
+  const onSelectChannelRef = useRef(onSelectChannel);
+  const activeChannelIdRef = useRef(activeChannelId);
+  const clearUnreadRef = useRef(clearUnread);
+
+  // Synchronize refs during render:
+  useEffect(() => {
+    onSelectChannelRef.current = onSelectChannel;
+    activeChannelIdRef.current = activeChannelId;
+    clearUnreadRef.current = clearUnread;
+  });
+
   useEffect(() => {
     const fetchChannels = async () => {
       try {
         const { data } = await api.get<ChannelDTO[]>("/channels");
         setChannels(data);
 
-        // Default to first channel if none selected
-        if (!activeChannelId && data.length > 0) {
+        // Default to first channel on initial mount if none selected:
+        if (!activeChannelIdRef.current && data.length > 0) {
           const first = data[0]!;
-          onSelectChannel(first);
+          onSelectChannelRef.current(first);
+          clearUnreadRef.current(first.id);
         }
       } catch (err) {
         console.error("Failed to load channels:", err);
@@ -51,9 +65,24 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
     };
 
     fetchChannels();
-  }, []);
+  }, []); // Safe empty dependency array: all dynamic values read through stable refs
+
+  // Ensure active channel (e.g. newly created DM from chat hover) is loaded in sidebar
+  useEffect(() => {
+    if (
+      activeChannelId &&
+      channels.length > 0 &&
+      !channels.some((c) => c.id === activeChannelId)
+    ) {
+      api
+        .get<ChannelDTO[]>("/channels")
+        .then(({ data }) => setChannels(data))
+        .catch(console.error);
+    }
+  }, [activeChannelId, channels]);
 
   const handleChannelClick = (channel: ChannelDTO) => {
+    clearUnread(channel.id);
     if (activeChannelId === channel.id) return;
     onSelectChannel(channel);
   };
@@ -185,12 +214,20 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           {isLoading ? (
             <div className="flex items-center space-x-2 px-2 py-2 text-xs text-gray-500 font-mono">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>Loading streams...</span>
+              <span>Loading channels...</span>
             </div>
           ) : (
             <div className="space-y-0.5">
               {projectChannels.map((channel) => {
                 const isActive = activeChannelId === channel.id;
+                const unreadCount = !isActive
+                  ? unreadCounts[channel.id] || 0
+                  : 0;
+                const mentionCount = !isActive
+                  ? mentionCounts[channel.id] || 0
+                  : 0;
+                const hasUnread = unreadCount > 0 || mentionCount > 0;
+
                 return (
                   <button
                     key={channel.id}
@@ -199,20 +236,41 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                     className={`w-full flex items-center space-x-2 rounded px-2.5 py-1.5 text-xs font-medium transition-colors text-left ${
                       isActive
                         ? "bg-brand-navy text-white shadow-sm border border-accent-gold/20"
-                        : "text-gray-400 hover:bg-surface-hover hover:text-gray-200"
+                        : hasUnread
+                          ? "text-white bg-surface-card/40 hover:bg-surface-hover hover:text-white"
+                          : "text-gray-400 hover:bg-surface-hover hover:text-gray-200"
                     }`}
                   >
                     <Hash
                       className={`h-3.5 w-3.5 shrink-0 ${
-                        isActive ? "text-accent-gold" : "text-gray-500"
+                        isActive
+                          ? "text-accent-gold"
+                          : mentionCount > 0
+                            ? "text-accent-gold"
+                            : hasUnread
+                              ? "text-white"
+                              : "text-gray-500"
                       }`}
                     />
-                    <span className="truncate">{channel.name}</span>
-                    {channel.projectTag && (
-                      <span className="ml-auto text-[9px] font-mono text-gray-500 uppercase">
+                    <span
+                      className={`truncate ${hasUnread ? "font-bold text-white" : ""}`}
+                    >
+                      {channel.name}
+                    </span>
+
+                    {mentionCount > 0 ? (
+                      <span className="ml-auto rounded-full bg-accent-gold text-brand-navy font-mono font-bold text-[10px] px-1.5 py-0.2 shadow-sm shrink-0">
+                        @{mentionCount}
+                      </span>
+                    ) : unreadCount > 0 ? (
+                      <span className="ml-auto rounded-full bg-surface-card border border-border-subtle text-gray-200 font-mono text-[10px] px-1.5 py-0.2 shrink-0">
+                        {unreadCount}
+                      </span>
+                    ) : channel.projectTag ? (
+                      <span className="ml-auto text-[9px] font-mono text-gray-500 uppercase shrink-0">
                         {channel.projectTag}
                       </span>
-                    )}
+                    ) : null}
                   </button>
                 );
               })}
@@ -250,6 +308,12 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           <div className="space-y-0.5">
             {directMessages.map((channel) => {
               const isActive = activeChannelId === channel.id;
+              const unreadCount = !isActive ? unreadCounts[channel.id] || 0 : 0;
+              const mentionCount = !isActive
+                ? mentionCounts[channel.id] || 0
+                : 0;
+              const hasUnread = unreadCount > 0 || mentionCount > 0;
+
               const recipient = getDmRecipient(channel);
               const recipientName =
                 recipient?.displayName || channel.name || "Direct Message";
@@ -260,59 +324,93 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                 .substring(0, 2)
                 .toUpperCase();
 
-              return (
-                <button
-                  key={channel.id}
-                  type="button"
-                  onClick={() => handleChannelClick(channel)}
-                  className={`w-full flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 text-xs transition-all text-left ${
-                    isActive
-                      ? "bg-brand-navy text-white shadow-sm border border-accent-gold/30"
-                      : "text-gray-400 hover:bg-surface-hover hover:text-gray-200"
-                  }`}
-                >
-                  {/* Left: Avatar Initials + Status Dot */}
-                  <div className="relative shrink-0">
-                    <div
-                      className={`h-7 w-7 rounded-md border flex items-center justify-center font-mono text-[10px] font-bold ${
-                        isActive
-                          ? "bg-brand-navy-light text-accent-gold border-accent-gold/40"
-                          : "bg-surface-card text-gray-300 border-border-subtle"
-                      }`}
-                    >
-                      {initials}
-                    </div>
-                    <span
-                      className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-surface-panel ${
-                        isOnline ? "bg-emerald-400" : "bg-gray-600"
-                      }`}
-                    />
-                  </div>
+              const cardUser = recipient || {
+                id: channel.id,
+                displayName: recipientName,
+                username: recipientName.toLowerCase().replace(/\s+/g, ""),
+                locRole: null,
+                customStatus: null,
+                primaryLocale: null,
+                targetLocales: null,
+                status: isOnline ? "online" : "offline",
+              };
 
-                  {/* Right: Name + Status Subtitle */}
-                  <div className="flex-1 min-w-0 overflow-hidden">
-                    <div className="flex items-center justify-between">
-                      <span className="truncate font-medium text-xs text-gray-200">
-                        {recipientName}
-                      </span>
+              return (
+                <UserProfileHoverCard
+                  key={channel.id}
+                  user={cardUser}
+                  isOnline={isOnline}
+                  isSelf={false}
+                  className="w-full block"
+                  side="right"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleChannelClick(channel)}
+                    className={`w-full flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 text-xs transition-all text-left ${
+                      isActive
+                        ? "bg-brand-navy text-white shadow-sm border border-accent-gold/30"
+                        : hasUnread
+                          ? "text-white bg-surface-card/40 hover:bg-surface-hover hover:text-white"
+                          : "text-gray-400 hover:bg-surface-hover hover:text-gray-200"
+                    }`}
+                  >
+                    {/* Left: Avatar Initials + Status Dot */}
+                    <div className="relative shrink-0">
+                      <div
+                        className={`h-7 w-7 rounded-md border flex items-center justify-center font-mono text-[10px] font-bold ${
+                          isActive
+                            ? "bg-brand-navy-light text-accent-gold border-accent-gold/40"
+                            : mentionCount > 0
+                              ? "bg-brand-navy text-accent-gold border-accent-gold/30"
+                              : "bg-surface-card text-gray-300 border-border-subtle"
+                        }`}
+                      >
+                        {initials}
+                      </div>
+                      <span
+                        className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-surface-panel ${
+                          isOnline ? "bg-emerald-400" : "bg-gray-600"
+                        }`}
+                      />
                     </div>
-                    <div className="h-3.5 text-[10px] truncate leading-tight mt-0.5">
-                      {recipient?.customStatus ? (
-                        <span className="italic text-gray-400 truncate block">
-                          {recipient.customStatus}
-                        </span>
-                      ) : (
+
+                    {/* Right: Name + Status Subtitle */}
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex items-center justify-between">
                         <span
-                          className={`font-mono text-[9px] ${
-                            isOnline ? "text-emerald-400/90" : "text-gray-500"
-                          }`}
+                          className={`truncate font-medium text-xs ${hasUnread ? "font-bold text-white" : "text-gray-200"}`}
                         >
-                          {isOnline ? "Online" : "Offline"}
+                          {recipientName}
                         </span>
-                      )}
+                        {mentionCount > 0 ? (
+                          <span className="ml-1.5 rounded-full bg-accent-gold text-brand-navy font-mono font-bold text-[9px] px-1.5 py-0.2 shrink-0">
+                            @{mentionCount}
+                          </span>
+                        ) : unreadCount > 0 ? (
+                          <span className="ml-1.5 rounded-full bg-surface-card border border-border-subtle text-gray-200 font-mono text-[9px] px-1.5 py-0.2 shrink-0">
+                            {unreadCount}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="h-3.5 text-[10px] truncate leading-tight mt-0.5">
+                        {recipient?.customStatus ? (
+                          <span className="italic text-gray-400 truncate block">
+                            {recipient.customStatus}
+                          </span>
+                        ) : (
+                          <span
+                            className={`font-mono text-[9px] ${
+                              isOnline ? "text-emerald-400/90" : "text-gray-500"
+                            }`}
+                          >
+                            {isOnline ? "Online" : "Offline"}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                </UserProfileHoverCard>
               );
             })}
           </div>

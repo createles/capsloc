@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useSocket } from "../../context/SocketContext";
-import { useAuth } from "../../context/AuthContext";
+import { useSocket } from "../../hooks/useSocket";
+import { useAuth } from "../../hooks/useAuth";
 import type { TypingIndicatorPayload } from "@capsloc/types";
 
 export interface TypingIndicatorProps {
@@ -51,11 +51,6 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
     };
   }, [socket, channelId, user?.id]);
 
-  // Clear typing list when switching channels
-  useEffect(() => {
-    setTypingUsers(new Map());
-  }, [channelId]);
-
   if (typingUsers.size === 0) {
     return <div className="h-5 px-4 shrink-0" />; // Fixed height avoids layout shift
   }
@@ -66,7 +61,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
     <div className="h-5 px-4 flex items-center space-x-2 font-mono text-[11px] text-accent-gold animate-pulse shrink-0">
       <span className="h-1.5 w-1.5 rounded-full bg-accent-gold" />
       <span>
-        {names} {typingUsers.size === 1 ? "is" : "are"} transmitting...
+        {names} {typingUsers.size === 1 ? "is" : "are"} typing...
       </span>
     </div>
   );
