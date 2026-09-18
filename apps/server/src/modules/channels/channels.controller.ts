@@ -26,10 +26,7 @@ export class ChannelsController {
     Creates a project or locale channel
     */
   @Post()
-  async create(
-    @CurrentUser('id') userId: string,
-    @Body() dto: CreateChannelDto,
-  ) {
+  async create(@CurrentUser('id') userId: string, @Body() dto: CreateChannelDto) {
     return this.channelsService.create(userId, dto);
   }
 
@@ -39,10 +36,7 @@ export class ChannelsController {
     Must be declared BEFORE ':id' to prevent routing conflicts
     */
   @Post('dm')
-  async findOrCreateDM(
-    @CurrentUser('id') userId: string,
-    @Body() dto: CreateDmDto,
-  ) {
+  async findOrCreateDM(@CurrentUser('id') userId: string, @Body() dto: CreateDmDto) {
     return this.channelsService.findOrCreateDM(userId, dto.recipientId);
   }
 
@@ -70,10 +64,7 @@ export class ChannelsController {
     Updates lastReadAt for caller on this channel
   */
   @Post(':id/read')
-  async markAsRead(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-  ) {
+  async markAsRead(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.channelsService.markAsRead(id, userId);
   }
 
@@ -86,16 +77,12 @@ export class ChannelsController {
     return this.channelsService.join(id, userId);
   }
 
-
   /* 
     GET /api/channels/:id/members
     Fetches complete list of channel members for members list
   */
   @Get(':id/members')
-  async getMembers(
-    @Param('id') channelId: string,
-    @CurrentUser('id') callerId: string,
-  ) {
+  async getMembers(@Param('id') channelId: string, @CurrentUser('id') callerId: string) {
     return this.channelsService.getMembers(channelId, callerId);
   }
 
@@ -104,11 +91,7 @@ export class ChannelsController {
     Enrolls a user into a channel (admin-only for private channels)
     */
   @Post(':id/members')
-  async addMember(
-    @Param('id') channelId: string,
-    @CurrentUser('id') callerId: string,
-    @Body() dto: AddChannelMemberDto,
-  ) {
+  async addMember(@Param('id') channelId: string, @CurrentUser('id') callerId: string, @Body() dto: AddChannelMemberDto) {
     return this.channelsService.addMember(channelId, callerId, dto);
   }
 
@@ -117,11 +100,7 @@ export class ChannelsController {
     Updates channel status or metadata (admin only)
   */
   @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-    @Body() dto: UpdateChannelDto,
-  ) {
+  async update(@Param('id') id: string, @CurrentUser('id') userId: string, @Body() dto: UpdateChannelDto) {
     return this.channelsService.update(id, userId, dto);
   }
 }

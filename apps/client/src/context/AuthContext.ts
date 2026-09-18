@@ -1,8 +1,5 @@
-import { createContext} from "react";
-import type {
-  UserProfileDTO,
-  LocRole,
-} from "@capsloc/types";
+import { createContext } from "react";
+import type { UserProfileDTO, LocRole } from "@capsloc/types";
 
 export interface LoginCredentials {
   // Credentials object

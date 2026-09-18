@@ -10,11 +10,7 @@ import {
   Check,
   ChevronDown,
 } from "lucide-react";
-import {
-  StringStatus,
-  type LocStringDTO,
-  type GlossaryTermDTO,
-} from "@capsloc/types";
+import { StringStatus, type LocStringDTO, type GlossaryTermDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { StringStatusBadge } from "../ui/StringStatusBadge";
 
@@ -25,16 +21,13 @@ const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
   return (
     <div className="rounded border border-border-subtle bg-surface-card p-2.5 text-xs space-y-1.5 transition-colors hover:border-border-subtle/80">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-accent-gold font-bold text-xs">
-          {term.targetEn}
-        </span>
+        <span className="font-mono text-accent-gold font-bold text-xs">{term.targetEn}</span>
         <span className="rounded bg-brand-navy px-1.5 py-0.5 text-[9px] font-mono text-accent-gold border border-accent-gold/20 uppercase font-semibold">
           {term.category}
         </span>
       </div>
       <div className="text-[11px] text-gray-400 font-sans">
-        Source:{" "}
-        <span className="text-gray-200 font-medium">{term.sourceJa}</span>
+        Source: <span className="text-gray-200 font-medium">{term.sourceJa}</span>
       </div>
       {term.notes && (
         <div className="pt-1">
@@ -54,9 +47,7 @@ const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
               onClick={() => setIsExpanded(!isExpanded)}
               className="mt-1 flex items-center space-x-1 text-[10px] font-mono text-accent-gold/80 hover:text-accent-gold transition-colors cursor-pointer"
             >
-              <span>
-                {isExpanded ? "Show less" : "Show guidelines & notes"}
-              </span>
+              <span>{isExpanded ? "Show less" : "Show guidelines & notes"}</span>
               <ChevronDown
                 className={`h-3 w-3 transition-transform duration-200 ${
                   isExpanded ? "rotate-180" : ""
@@ -95,8 +86,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   // Glossary search state
   const [glossaryQuery, setGlossaryQuery] = useState<string>("");
   const [glossaryResults, setGlossaryResults] = useState<GlossaryTermDTO[]>([]);
-  const [isSearchingGlossary, setIsSearchingGlossary] =
-    useState<boolean>(false);
+  const [isSearchingGlossary, setIsSearchingGlossary] = useState<boolean>(false);
 
   // Derived state: if query is empty, results are empty without needing an effect
   const displayedGlossaryResults = glossaryQuery.trim() ? glossaryResults : [];
@@ -119,9 +109,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
       setStringData(null);
       setIsLoading(true);
       try {
-        const { data } = await api.get<LocStringDTO>(
-          `/loc-strings/${stringKey}`,
-        );
+        const { data } = await api.get<LocStringDTO>(`/loc-strings/${stringKey}`);
         if (isMounted) {
           setStringData(data);
         }
@@ -167,8 +155,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
 
   // 3. Status Mutation Handler
   const handleStatusChange = async (newStatus: StringStatus) => {
-    if (!stringData || stringData.status === newStatus || isMutatingStatus)
-      return;
+    if (!stringData || stringData.status === newStatus || isMutatingStatus) return;
 
     setIsMutatingStatus(true);
     try {
@@ -199,9 +186,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
         <div className="flex items-center justify-between border-b border-border-subtle p-3.5 bg-surface-card/40">
           <div className="flex items-center space-x-2">
             <BookOpen className="h-4 w-4 text-accent-gold" />
-            <span className="font-sans text-xs font-bold text-gray-200">
-              String Inspector
-            </span>
+            <span className="font-sans text-xs font-bold text-gray-200">String Inspector</span>
           </div>
           <button
             type="button"
@@ -216,12 +201,10 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
         {/* Empty State */}
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gray-500">
           <BookOpen className="h-8 w-8 text-gray-600 mb-2" />
-          <span className="text-xs font-medium text-gray-400">
-            No String Selected
-          </span>
+          <span className="text-xs font-medium text-gray-400">No String Selected</span>
           <span className="text-[11px] text-gray-500 mt-1 max-w-xs">
-            Click any #LOC-XXXX or $STR_XXXX tag in chat to inspect its source,
-            character limits, and translation status.
+            Click any #LOC-XXXX or $STR_XXXX tag in chat to inspect its source, character limits,
+            and translation status.
           </span>
         </div>
       </aside>
@@ -232,9 +215,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   const charLimit = stringData?.charLimit ?? null;
   const currentLength = stringData?.targetText?.length ?? 0;
   const isOverflow = charLimit ? currentLength > charLimit : false;
-  const percentUsed = charLimit
-    ? Math.min(Math.round((currentLength / charLimit) * 100), 100)
-    : 0;
+  const percentUsed = charLimit ? Math.min(Math.round((currentLength / charLimit) * 100), 100) : 0;
 
   const gaugeColor = !charLimit
     ? "bg-accent-gold"
@@ -304,9 +285,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
               <div className="relative">
                 <select
                   value={stringData.status}
-                  onChange={(e) =>
-                    handleStatusChange(e.target.value as StringStatus)
-                  }
+                  onChange={(e) => handleStatusChange(e.target.value as StringStatus)}
                   disabled={isMutatingStatus}
                   className="w-full appearance-none rounded border border-border-subtle bg-surface-panel pl-2.5 pr-8 py-1.5 font-mono text-xs text-gray-200 focus:border-accent-gold/60 focus:outline-none transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -324,8 +303,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono uppercase text-gray-400 font-semibold flex items-center gap-1.5">
-                <Languages className="h-3.5 w-3.5 text-accent-gold" /> Japanese
-                Source
+                <Languages className="h-3.5 w-3.5 text-accent-gold" /> Japanese Source
               </span>
               <button
                 type="button"
@@ -367,9 +345,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
 
             <div className="rounded border border-border-subtle bg-surface-card p-3 font-sans text-xs text-gray-200 leading-relaxed select-text whitespace-pre-wrap break-words">
               {stringData.targetText || (
-                <span className="italic text-gray-500">
-                  Translation pending...
-                </span>
+                <span className="italic text-gray-500">Translation pending...</span>
               )}
             </div>
 
@@ -387,8 +363,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                 {isOverflow && (
                   <p className="text-[10px] font-mono text-rose-400 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3 shrink-0" />
-                    Overflow: +{currentLength - charLimit} chars beyond UI box
-                    limit!
+                    Overflow: +{currentLength - charLimit} chars beyond UI box limit!
                   </p>
                 )}
               </div>
@@ -411,12 +386,9 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
           <div className="pt-2 border-t border-border-subtle space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono uppercase text-gray-400 font-semibold flex items-center gap-1.5">
-                <Search className="h-3.5 w-3.5 text-accent-gold" /> Capcom
-                Glossary Codex
+                <Search className="h-3.5 w-3.5 text-accent-gold" /> Capcom Glossary Codex
               </span>
-              {isSearchingGlossary && (
-                <Loader2 className="h-3 w-3 animate-spin text-accent-gold" />
-              )}
+              {isSearchingGlossary && <Loader2 className="h-3 w-3 animate-spin text-accent-gold" />}
             </div>
 
             <div className="relative">
@@ -443,8 +415,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
           <div className="pt-2 border-t border-border-subtle space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono uppercase text-gray-400 font-semibold flex items-center gap-1.5">
-                <Search className="h-3.5 w-3.5 text-accent-gold" /> Channel
-                Mentions
+                <Search className="h-3.5 w-3.5 text-accent-gold" /> Channel Mentions
               </span>
               <span className="text-[10px] font-mono text-gray-500">
                 {mentionsCountInCurrentChat ?? 0}{" "}

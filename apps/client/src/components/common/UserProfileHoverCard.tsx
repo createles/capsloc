@@ -35,9 +35,7 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
   className = "relative inline-block",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(
-    null,
-  );
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,26 +52,17 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
 
     if (side === "right") {
       left = rect.right + 8;
-      top = Math.max(
-        PADDING,
-        Math.min(rect.top, window.innerHeight - ESTIMATED_HEIGHT - PADDING),
-      );
+      top = Math.max(PADDING, Math.min(rect.top, window.innerHeight - ESTIMATED_HEIGHT - PADDING));
       if (left + CARD_WIDTH > window.innerWidth - PADDING) {
         left = Math.max(PADDING, rect.left - CARD_WIDTH - 8);
       }
     } else if (side === "left") {
       left = rect.left - CARD_WIDTH - 8;
-      top = Math.max(
-        PADDING,
-        Math.min(rect.top, window.innerHeight - ESTIMATED_HEIGHT - PADDING),
-      );
+      top = Math.max(PADDING, Math.min(rect.top, window.innerHeight - ESTIMATED_HEIGHT - PADDING));
     } else if (side === "bottom") {
       top = rect.bottom + 8;
       left = align === "right" ? rect.right - CARD_WIDTH : rect.left;
-      left = Math.max(
-        PADDING,
-        Math.min(left, window.innerWidth - CARD_WIDTH - PADDING),
-      );
+      left = Math.max(PADDING, Math.min(left, window.innerWidth - CARD_WIDTH - PADDING));
       if (top + ESTIMATED_HEIGHT > window.innerHeight - PADDING) {
         top = Math.max(PADDING, rect.top - ESTIMATED_HEIGHT - 8);
       }
@@ -81,10 +70,7 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
       // side === "top"
       top = rect.top - ESTIMATED_HEIGHT - 8;
       left = align === "right" ? rect.right - CARD_WIDTH : rect.left;
-      left = Math.max(
-        PADDING,
-        Math.min(left, window.innerWidth - CARD_WIDTH - PADDING),
-      );
+      left = Math.max(PADDING, Math.min(left, window.innerWidth - CARD_WIDTH - PADDING));
       if (top < PADDING) {
         top = rect.bottom + 8;
       }
@@ -119,9 +105,7 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
     };
   }, [isOpen]);
 
-  const initials = (user.displayName || user.username || "U")
-    .substring(0, 2)
-    .toUpperCase();
+  const initials = (user.displayName || user.username || "U").substring(0, 2).toUpperCase();
 
   return (
     <div
@@ -145,100 +129,94 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
             className="z-[99999] w-72 rounded-xl border border-border-subtle bg-surface-panel/98 backdrop-blur-md p-3.5 shadow-2xl space-y-3 font-sans animate-in fade-in zoom-in-95 duration-150 select-none text-left"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header: Avatar, Names, Presence */}
-          <div className="flex items-start space-x-3">
-            <div className="relative shrink-0">
-              <div className="h-10 w-10 rounded-lg bg-brand-navy border border-accent-gold/30 flex items-center justify-center font-mono font-bold text-accent-gold text-sm">
-                {initials}
-              </div>
-              <span
-                className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface-panel ${
-                  isOnline ? "bg-emerald-400" : "bg-gray-600"
-                }`}
-                title={isOnline ? "Online" : "Offline"}
-              />
-            </div>
-
-            <div className="flex-1 min-w-0 space-y-0.5">
-              <div className="flex items-center space-x-1.5">
-                <span className="font-bold text-sm text-white truncate">
-                  {user.displayName}
-                </span>
-                {isSelf && (
-                  <span className="rounded bg-accent-gold/15 text-accent-gold font-mono font-bold text-[9px] px-1.5 py-0.2">
-                    YOU
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center space-x-1.5 text-xs text-gray-400">
-                <span className="font-mono text-gray-400">@{user.username}</span>
-                <span>•</span>
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header: Avatar, Names, Presence */}
+            <div className="flex items-start space-x-3">
+              <div className="relative shrink-0">
+                <div className="h-10 w-10 rounded-lg bg-brand-navy border border-accent-gold/30 flex items-center justify-center font-mono font-bold text-accent-gold text-sm">
+                  {initials}
+                </div>
                 <span
-                  className={`font-mono text-[10px] ${
-                    isOnline ? "text-emerald-400" : "text-gray-500"
+                  className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface-panel ${
+                    isOnline ? "bg-emerald-400" : "bg-gray-600"
                   }`}
-                >
-                  {isOnline ? "Online" : "Offline"}
-                </span>
+                  title={isOnline ? "Online" : "Offline"}
+                />
+              </div>
+
+              <div className="flex-1 min-w-0 space-y-0.5">
+                <div className="flex items-center space-x-1.5">
+                  <span className="font-bold text-sm text-white truncate">{user.displayName}</span>
+                  {isSelf && (
+                    <span className="rounded bg-accent-gold/15 text-accent-gold font-mono font-bold text-[9px] px-1.5 py-0.2">
+                      YOU
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-1.5 text-xs text-gray-400">
+                  <span className="font-mono text-gray-400">@{user.username}</span>
+                  <span>•</span>
+                  <span
+                    className={`font-mono text-[10px] ${
+                      isOnline ? "text-emerald-400" : "text-gray-500"
+                    }`}
+                  >
+                    {isOnline ? "Online" : "Offline"}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Role & Locale Badges */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border-subtle/50">
-            {user.locRole && <LocRoleBadge role={user.locRole as LocRole} />}
-            {user.primaryLocale && (
-              <span className="rounded bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[10px] font-mono text-accent-gold">
-                {user.primaryLocale}
-              </span>
+            {/* Role & Locale Badges */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border-subtle/50">
+              {user.locRole && <LocRoleBadge role={user.locRole as LocRole} />}
+              {user.primaryLocale && (
+                <span className="rounded bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[10px] font-mono text-accent-gold">
+                  {user.primaryLocale}
+                </span>
+              )}
+              {user.targetLocales && user.targetLocales.length > 0 && (
+                <span className="rounded bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[10px] font-mono text-gray-400">
+                  &rarr; {user.targetLocales.join(", ")}
+                </span>
+              )}
+            </div>
+
+            {/* Custom Status Note */}
+            {user.customStatus ? (
+              <div className="rounded-lg bg-surface-card/60 border border-border-subtle/60 p-2 text-xs">
+                <span className="text-[10px] font-mono uppercase text-gray-500 block mb-0.5">
+                  Status
+                </span>
+                <p className="italic text-gray-200 break-words font-sans">"{user.customStatus}"</p>
+              </div>
+            ) : (
+              <div className="text-[11px] text-gray-500 italic">No custom status set</div>
             )}
-            {user.targetLocales && user.targetLocales.length > 0 && (
-              <span className="rounded bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[10px] font-mono text-gray-400">
-                &rarr; {user.targetLocales.join(", ")}
-              </span>
-            )}
-          </div>
 
-          {/* Custom Status Note */}
-          {user.customStatus ? (
-            <div className="rounded-lg bg-surface-card/60 border border-border-subtle/60 p-2 text-xs">
-              <span className="text-[10px] font-mono uppercase text-gray-500 block mb-0.5">
-                Status
-              </span>
-              <p className="italic text-gray-200 break-words font-sans">
-                "{user.customStatus}"
-              </p>
-            </div>
-          ) : (
-            <div className="text-[11px] text-gray-500 italic">
-              No custom status set
-            </div>
-          )}
-
-          {/* Send Message Button / Self Notice */}
-          {onSendDm && !isSelf ? (
-            <button
-              type="button"
-              onClick={() => {
-                setIsOpen(false);
-                onSendDm();
-              }}
-              className="w-full flex items-center justify-center space-x-1.5 rounded-lg bg-brand-navy hover:bg-brand-navy-light text-accent-gold border border-accent-gold/40 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm hover:border-accent-gold"
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              <span>Send Direct Message</span>
-            </button>
-          ) : isSelf ? (
-            <div className="flex items-center justify-center space-x-1 text-[11px] text-gray-400 py-0.5">
-              <UserCheck className="h-3 w-3 text-accent-gold" />
-              <span>Your profile</span>
-            </div>
-          ) : null}
-        </div>,
-        document.body,
-      )}
+            {/* Send Message Button / Self Notice */}
+            {onSendDm && !isSelf ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onSendDm();
+                }}
+                className="w-full flex items-center justify-center space-x-1.5 rounded-lg bg-brand-navy hover:bg-brand-navy-light text-accent-gold border border-accent-gold/40 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm hover:border-accent-gold"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>Send Direct Message</span>
+              </button>
+            ) : isSelf ? (
+              <div className="flex items-center justify-center space-x-1 text-[11px] text-gray-400 py-0.5">
+                <UserCheck className="h-3 w-3 text-accent-gold" />
+                <span>Your profile</span>
+              </div>
+            ) : null}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

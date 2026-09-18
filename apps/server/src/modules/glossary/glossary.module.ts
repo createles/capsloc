@@ -4,9 +4,9 @@ import { GlossaryController } from './glossary.controller.js';
 import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
-    imports: [AuthModule],
-    controllers: [GlossaryController],
-    providers: [GlossaryService],
-    exports: [GlossaryService],
+  imports: [AuthModule],
+  controllers: [GlossaryController],
+  providers: [GlossaryService],
+  exports: [GlossaryService],
 })
-export class GlossaryModule { }
+export class GlossaryModule {}

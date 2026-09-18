@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
-
 /* 
 Extends Passport's AuthGuard with jwt strategy
 Intercept incoming requests and execute JwtStrategy.validate()

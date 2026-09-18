@@ -1,50 +1,52 @@
-import { MessageDTO } from './message.types.js';
-import { ChannelDTO } from './channel.types.js';
-import { UserStatus } from './enums.js';
+import { MessageDTO } from "./message.types.js";
+import { ChannelDTO } from "./channel.types.js";
+import { UserStatus } from "./enums.js";
 
 export interface JoinChannelPayload {
-    channelId: string;
+  channelId: string;
 }
 
 export interface SendMessagePayload {
-    channelId: string;
-    content: string;
-    attachmentIds?: string[];
-    stringKeys?: string[];
+  channelId: string;
+  content: string;
+  attachmentIds?: string[];
+  stringKeys?: string[];
 }
 
-export interface TypingIndicatorPayload { // "OOO is typing..." notifier
-    channelId: string;
-    userId: string;
-    displayName: string;
+export interface TypingIndicatorPayload {
+  // "OOO is typing..." notifier
+  channelId: string;
+  userId: string;
+  displayName: string;
 }
 
-export interface UserPresencePayload { // Status indicator
-    userId: string;
-    status: UserStatus;
+export interface UserPresencePayload {
+  // Status indicator
+  userId: string;
+  status: UserStatus;
 }
 
 export interface UserMentionedPayload {
-    message: MessageDTO;
-    channelId: string;
-    channelName?: string | null;
-    senderName: string;
+  message: MessageDTO;
+  channelId: string;
+  channelName?: string | null;
+  senderName: string;
 }
 
 export interface ServerToClientEvents {
-    new_message: (message: MessageDTO) => void;
-    user_mentioned: (payload: UserMentionedPayload) => void;
-    user_typing: (payload: TypingIndicatorPayload) => void;
-    user_stop_typing: (payload: { channelId: string; userId: string }) => void;
-    user_presence: (payload: UserPresencePayload) => void;
-    channel_updated: (channel: ChannelDTO) => void;
-    error: (error: { message: string; code?: string }) => void;
+  new_message: (message: MessageDTO) => void;
+  user_mentioned: (payload: UserMentionedPayload) => void;
+  user_typing: (payload: TypingIndicatorPayload) => void;
+  user_stop_typing: (payload: { channelId: string; userId: string }) => void;
+  user_presence: (payload: UserPresencePayload) => void;
+  channel_updated: (channel: ChannelDTO) => void;
+  error: (error: { message: string; code?: string }) => void;
 }
 
 export interface ClientToServerEvents {
-    join_channel: (payload: JoinChannelPayload) => void;
-    leave_channel: (payload: JoinChannelPayload) => void;
-    send_message: (payload: SendMessagePayload) => void;
-    typing_start: (payload: { channelId: string }) => void;
-    typing_stop: (payload: { channelId: string }) => void;
+  join_channel: (payload: JoinChannelPayload) => void;
+  leave_channel: (payload: JoinChannelPayload) => void;
+  send_message: (payload: SendMessagePayload) => void;
+  typing_start: (payload: { channelId: string }) => void;
+  typing_stop: (payload: { channelId: string }) => void;
 }

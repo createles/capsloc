@@ -15,9 +15,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
   onUpdated,
 }) => {
   const [status, setStatus] = useState<string>(channel.status || "");
-  const [description, setDescription] = useState<string>(
-    channel.description || "",
-  );
+  const [description, setDescription] = useState<string>(channel.description || "");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,20 +25,16 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
     setError(null);
 
     try {
-      const response = await api.patch<ChannelDTO>(
-        `/api/channels/${channel.id}`,
-        {
-          status: status.trim() || null,
-          description: description.trim() || null,
-        },
-      );
+      const response = await api.patch<ChannelDTO>(`/api/channels/${channel.id}`, {
+        status: status.trim() || null,
+        description: description.trim() || null,
+      });
       onUpdated(response.data);
       onClose();
     } catch (err: any) {
       console.error("Failed to update channel sprint status:", err);
       setError(
-        err.response?.data?.message ||
-          "Failed to update sprint status. Verify admin permissions.",
+        err.response?.data?.message || "Failed to update sprint status. Verify admin permissions.",
       );
     } finally {
       setIsSubmitting(false);
@@ -52,19 +46,15 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
     setError(null);
 
     try {
-      const response = await api.patch<ChannelDTO>(
-        `/api/channels/${channel.id}`,
-        {
-          status: null,
-        },
-      );
+      const response = await api.patch<ChannelDTO>(`/api/channels/${channel.id}`, {
+        status: null,
+      });
       onUpdated(response.data);
       onClose();
     } catch (err: any) {
       console.error("Failed to clear channel sprint status:", err);
       setError(
-        err.response?.data?.message ||
-          "Failed to clear sprint status. Verify admin permissions.",
+        err.response?.data?.message || "Failed to clear sprint status. Verify admin permissions.",
       );
     } finally {
       setIsSubmitting(false);
@@ -81,12 +71,8 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
               <Pin className="h-4 w-4 text-accent-gold" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">
-                Edit Channel Sprint Status
-              </h3>
-              <p className="text-[11px] font-mono text-gray-400">
-                #{channel.name || "channel"}
-              </p>
+              <h3 className="text-sm font-semibold text-white">Edit Channel Sprint Status</h3>
+              <p className="text-[11px] font-mono text-gray-400">#{channel.name || "channel"}</p>
             </div>
           </div>
           <button
@@ -110,9 +96,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
           <div className="space-y-1.5">
             <label className="block text-[11px] font-medium text-gray-300 flex items-center justify-between">
               <span>Sprint Status / Pinned Milestone</span>
-              <span className="text-[10px] font-mono text-gray-500">
-                {status.length}/100
-              </span>
+              <span className="text-[10px] font-mono text-gray-500">{status.length}/100</span>
             </label>
             <div className="relative">
               <Pin className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-accent-gold" />
@@ -136,8 +120,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
               )}
             </div>
             <p className="text-[10px] text-gray-400 font-mono">
-              Displayed as a pinned rectangular banner across the top of the
-              chat stream.
+              Displayed as a pinned rectangular banner across the top of the chat stream.
             </p>
           </div>
 
@@ -145,9 +128,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
           <div className="space-y-1.5 pt-1">
             <label className="block text-[11px] font-medium text-gray-300 flex items-center justify-between">
               <span>Channel Description</span>
-              <span className="text-[10px] font-mono text-gray-500">
-                {description.length}/250
-              </span>
+              <span className="text-[10px] font-mono text-gray-500">{description.length}/250</span>
             </label>
             <textarea
               value={description}
@@ -188,9 +169,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
                 disabled={isSubmitting}
                 className="flex items-center space-x-1.5 rounded-md bg-brand-navy hover:bg-brand-navy-light px-4 py-1.5 text-xs font-semibold text-accent-gold border border-accent-gold/40 transition-colors disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting && (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                )}
+                {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 <span>Save Status</span>
               </button>
             </div>

@@ -13,19 +13,8 @@ import { UploadsModule } from './modules/uploads/uploads.module.js';
 import { EventsModule } from './modules/events/events.module.js';
 
 @Module({
-  imports: [
-    EventsModule,
-    PrismaModule,
-    AuthModule,
-    UsersModule,
-    ChannelsModule,
-    MessagesModule,
-    ChatModule,
-    LocStringsModule,
-    GlossaryModule,
-    UploadsModule
-  ],
+  imports: [EventsModule, PrismaModule, AuthModule, UsersModule, ChannelsModule, MessagesModule, ChatModule, LocStringsModule, GlossaryModule, UploadsModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

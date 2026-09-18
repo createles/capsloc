@@ -5,8 +5,8 @@ import { MessagesModule } from '../messages/messages.module.js';
 import { ChannelsModule } from '../channels/channels.module.js';
 
 @Module({
-    imports: [AuthModule, MessagesModule, ChannelsModule],
-    providers: [ChatGateway],
-    exports: [ChatGateway],
+  imports: [AuthModule, MessagesModule, ChannelsModule],
+  providers: [ChatGateway],
+  exports: [ChatGateway],
 })
-export class ChatModule { }
+export class ChatModule {}

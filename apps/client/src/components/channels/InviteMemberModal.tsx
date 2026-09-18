@@ -27,15 +27,11 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
       try {
         const { data } = await api.get<UserProfileDTO[]>("/users");
         // Exclude users who are already enrolled in this channel
-        const enrolledUserIds = new Set(
-          channel.members?.map((m) => m.userId) || [],
-        );
+        const enrolledUserIds = new Set(channel.members?.map((m) => m.userId) || []);
         const availableUsers = data.filter((u) => !enrolledUserIds.has(u.id)); // Returns users who are not members
         setUsers(availableUsers);
       } catch (err: any) {
-        setError(
-          err.response?.data?.message || "Failed to load user directory",
-        );
+        setError(err.response?.data?.message || "Failed to load user directory");
       } finally {
         setIsLoading(false);
       }
@@ -49,12 +45,9 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
     setError(null);
     try {
       // Call POST /api/channels/:id/members
-      const { data: newMember } = await api.post(
-        `/channels/${channel.id}/members`,
-        {
-          userId: targetUser.id,
-        },
-      );
+      const { data: newMember } = await api.post(`/channels/${channel.id}/members`, {
+        userId: targetUser.id,
+      });
 
       setInvitedIds((prev) => new Set(prev).add(targetUser.id));
 
@@ -90,9 +83,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
         <div className="flex items-center justify-between border-b border-border-subtle pb-3">
           <div className="flex items-center space-x-2">
             <UserPlus className="h-4 w-4 text-accent-gold" />
-            <h2 className="text-sm font-semibold text-white">
-              Invite to #{channel.name}
-            </h2>
+            <h2 className="text-sm font-semibold text-white">Invite to #{channel.name}</h2>
           </div>
           <button
             type="button"

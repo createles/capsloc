@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  type ReactNode,
-} from "react";
+import React, { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { type TypedSocket } from "./SocketContext";
 import {
@@ -19,21 +13,14 @@ import { api, getAccessToken } from "../services/api";
 import { io } from "socket.io-client";
 import { SocketContext } from "./SocketContext";
 
-export const SocketProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, user } = useAuth(); // Grab authentication status and sanitized user data
   const [socket, setSocket] = useState<TypedSocket | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [onlineUsers, setOnlineUsers] = useState<Record<string, UserStatus>>(
-    {},
-  );
+  const [onlineUsers, setOnlineUsers] = useState<Record<string, UserStatus>>({});
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
-  const [mentionCounts, setMentionCounts] = useState<Record<string, number>>(
-    {},
-  );
-  const [activeMentionToast, setActiveMentionToast] =
-    useState<UserMentionedPayload | null>(null);
+  const [mentionCounts, setMentionCounts] = useState<Record<string, number>>({});
+  const [activeMentionToast, setActiveMentionToast] = useState<UserMentionedPayload | null>(null);
 
   const activeChannelIdRef = useRef<string | null>(null);
   const userId = user?.id; // Extract userId

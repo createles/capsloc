@@ -30,17 +30,13 @@ export const ChannelMembersModal: React.FC<ChannelMembersModalProps> = ({
       setIsLoading(true);
       setError(null);
       try {
-        const { data } = await api.get<ChannelMemberDTO[]>(
-          `/channels/${channel.id}/members`,
-        );
+        const { data } = await api.get<ChannelMemberDTO[]>(`/channels/${channel.id}/members`);
         if (isMounted) {
           setMembers(data);
         }
       } catch (err: any) {
         if (isMounted) {
-          setError(
-            err.response?.data?.message || "Failed to load channel members",
-          );
+          setError(err.response?.data?.message || "Failed to load channel members");
         }
       } finally {
         if (isMounted) {
@@ -84,9 +80,7 @@ export const ChannelMembersModal: React.FC<ChannelMembersModalProps> = ({
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-sm font-bold text-white">
-                  Channel Members
-                </h2>
+                <h2 className="text-sm font-bold text-white">Channel Members</h2>
                 <span className="rounded-full bg-surface-card border border-border-subtle px-2 py-0.5 text-[10px] font-mono text-accent-gold">
                   {members.length}
                 </span>
@@ -160,9 +154,7 @@ export const ChannelMembersModal: React.FC<ChannelMembersModalProps> = ({
 
               const isSelf = member.userId === user?.id;
               const isOnline = onlineUsers[member.userId] === UserStatus.ONLINE;
-              const initials = (u.displayName || u.username)
-                .substring(0, 2)
-                .toUpperCase();
+              const initials = (u.displayName || u.username).substring(0, 2).toUpperCase();
               const isAdmin = member.role === "admin";
 
               return (

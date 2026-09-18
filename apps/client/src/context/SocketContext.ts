@@ -27,6 +27,4 @@ export interface SocketContextType {
   stopTyping: (channelId: string) => void;
 }
 
-export const SocketContext = createContext<SocketContextType | undefined>(
-  undefined,
-); // Default SocketContext initialized with undefined
+export const SocketContext = createContext<SocketContextType | undefined>(undefined); // Default SocketContext initialized with undefined

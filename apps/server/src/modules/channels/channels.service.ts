@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { safeUserSelect } from '../users/users.service.js';
@@ -25,10 +20,7 @@ export class ChannelsService {
   async findUserAccessibleChannelIds(userId: string): Promise<string[]> {
     const channels = await this.prisma.channel.findMany({
       where: {
-        OR: [
-          { type: ChannelType.PUBLIC_PROJECT },
-          { members: { some: { userId } } },
-        ],
+        OR: [{ type: ChannelType.PUBLIC_PROJECT }, { members: { some: { userId } } }],
       },
       select: { id: true },
     });
@@ -98,9 +90,7 @@ export class ChannelsService {
     */
   async create(userId: string, dto: CreateChannelDto) {
     if (dto.type === ChannelType.DIRECT_MESSAGE) {
-      throw new BadRequestException(
-        'Use the /channels/dm endpoint to initiate direct messages',
-      );
+      throw new BadRequestException('Use the /channels/dm endpoint to initiate direct messages');
     }
 
     return this.prisma.channel.create({
@@ -133,9 +123,7 @@ export class ChannelsService {
     */
   async findOrCreateDM(userId: string, recipientId: string) {
     if (userId === recipientId) {
-      throw new BadRequestException(
-        'Cannot initiate a direct message channel with yourself',
-      );
+      throw new BadRequestException('Cannot initiate a direct message channel with yourself');
     }
 
     // Verify recipient exists
@@ -151,10 +139,7 @@ export class ChannelsService {
     const existingDM = await this.prisma.channel.findFirst({
       where: {
         type: ChannelType.DIRECT_MESSAGE,
-        AND: [
-          { members: { some: { userId } } },
-          { members: { some: { userId: recipientId } } },
-        ],
+        AND: [{ members: { some: { userId } } }, { members: { some: { userId: recipientId } } }],
       },
       include: {
         members: {
@@ -204,9 +189,7 @@ export class ChannelsService {
     }
 
     if (channel.type !== ChannelType.PUBLIC_PROJECT) {
-      throw new ForbiddenException(
-        'Only public project channels can be joined directly',
-      );
+      throw new ForbiddenException('Only public project channels can be joined directly');
     }
 
     // Check if user is already enrolled via composite key
@@ -246,9 +229,7 @@ export class ChannelsService {
     if (channel.type !== ChannelType.PUBLIC_PROJECT) {
       const isMember = channel.members.some((m) => m.userId === callerId);
       if (!isMember) {
-        throw new ForbiddenException(
-          'Access denied to members list for this private channel',
-        );
+        throw new ForbiddenException('Access denied to members list for this private channel');
       }
     }
 
@@ -265,11 +246,7 @@ export class ChannelsService {
     Add / invite a teammate into a channel.
     Guarded so that only channel admins can add members to private channels.
     */
-  async addMember(
-    channelId: string,
-    callerId: string,
-    dto: AddChannelMemberDto,
-  ) {
+  async addMember(channelId: string, callerId: string, dto: AddChannelMemberDto) {
     const channel = await this.prisma.channel.findUnique({
       where: { id: channelId },
       include: { members: true },
@@ -280,20 +257,15 @@ export class ChannelsService {
     }
 
     if (channel.type === ChannelType.DIRECT_MESSAGE) {
-      throw new BadRequestException(
-        'Cannot add members to a direct message channel',
-      );
+      throw new BadRequestException('Cannot add members to a direct message channel');
     }
 
     // Bouncer check: Caller must be admin or creator
     const callerMembership = channel.members.find((m) => m.userId === callerId);
-    const isCallerAdmin =
-      callerMembership?.role === 'admin' || channel.createdById === callerId;
+    const isCallerAdmin = callerMembership?.role === 'admin' || channel.createdById === callerId;
 
     if (!isCallerAdmin) {
-      throw new ForbiddenException(
-        'Only channel admins can invite or add members',
-      );
+      throw new ForbiddenException('Only channel admins can invite or add members');
     }
 
     // Check if target user exists
@@ -306,9 +278,7 @@ export class ChannelsService {
     }
 
     // Deduplication check: Is user already enrolled?
-    const isAlreadyMember = channel.members.some(
-      (m) => m.userId === dto.userId,
-    );
+    const isAlreadyMember = channel.members.some((m) => m.userId === dto.userId);
     if (isAlreadyMember) {
       throw new BadRequestException('User is already a member of this channel');
     }
@@ -442,31 +412,21 @@ export class ChannelsService {
     }
 
     if (channel.type === ChannelType.DIRECT_MESSAGE) {
-      throw new BadRequestException(
-        'Direct message channels do not support sprint status or metadata edits',
-      );
+      throw new BadRequestException('Direct message channels do not support sprint status or metadata edits');
     }
 
     const isCreator = channel.createdById === callerId;
-    const isAdmin = channel.members.some(
-      (m) => m.userId === callerId && m.role === 'admin',
-    );
+    const isAdmin = channel.members.some((m) => m.userId === callerId && m.role === 'admin');
 
     if (!isCreator && !isAdmin) {
-      throw new ForbiddenException(
-        'Only channel admins can edit channel sprint status or metadata',
-      );
+      throw new ForbiddenException('Only channel admins can edit channel sprint status or metadata');
     }
 
     const updated = await this.prisma.channel.update({
       where: { id: channelId },
       data: {
-        status:
-          dto.status !== undefined ? dto.status.trim() || null : undefined,
-        description:
-          dto.description !== undefined
-            ? dto.description.trim() || null
-            : undefined,
+        status: dto.status !== undefined ? dto.status.trim() || null : undefined,
+        description: dto.description !== undefined ? dto.description.trim() || null : undefined,
         name: dto.name !== undefined ? dto.name.trim() || undefined : undefined,
       },
       include: {

@@ -34,10 +34,7 @@ const ROLE_STYLES: Record<LocRole, { label: string; style: string }> = {
   },
 };
 
-export const LocRoleBadge: React.FC<LocRoleBadgeProps> = ({
-  role,
-  className,
-}) => {
+export const LocRoleBadge: React.FC<LocRoleBadgeProps> = ({ role, className }) => {
   const meta = ROLE_STYLES[role] ?? ROLE_STYLES[LocRole.GENERAL_USER];
 
   return (

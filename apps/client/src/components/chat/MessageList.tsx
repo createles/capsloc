@@ -9,11 +9,7 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import {
-  UserStatus,
-  type MessageDTO,
-  type PaginatedMessagesDTO,
-} from "@capsloc/types";
+import { UserStatus, type MessageDTO, type PaginatedMessagesDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
@@ -41,8 +37,7 @@ export const SmartMessageContent: React.FC<{
   currentUsername?: string;
   onSelectStringKey: (stringKey: string) => void;
 }> = ({ content, currentUsername: _currentUsername, onSelectStringKey }) => {
-  const regex =
-    /(#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+|@[a-zA-Z0-9_.-]+)/gi;
+  const regex = /(#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+|@[a-zA-Z0-9_.-]+)/gi;
   const parts = content.split(regex);
 
   return (
@@ -51,13 +46,9 @@ export const SmartMessageContent: React.FC<{
         if (!part) return null;
 
         // LOC String Tag Match - High-visibility String Literal Syntax Tag
-        if (
-          part.match(/^#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+$/i) ||
-          part.match(/^\$STR_[A-Z0-9_]+$/i)
-        ) {
+        if (part.match(/^#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+$/i) || part.match(/^\$STR_[A-Z0-9_]+$/i)) {
           const cleanKey = part.replace(/^#/, "");
-          const displayLabel =
-            part.startsWith("#") || part.startsWith("$") ? part : `#${part}`;
+          const displayLabel = part.startsWith("#") || part.startsWith("$") ? part : `#${part}`;
           return (
             <button
               key={index}
@@ -131,8 +122,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onReportMatchesCount,
 }) => {
   const { user } = useAuth();
-  const { socket, isConnected, onlineUsers, joinChannel, leaveChannel } =
-    useSocket();
+  const { socket, isConnected, onlineUsers, joinChannel, leaveChannel } = useSocket();
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState<boolean>(false);
@@ -155,17 +145,14 @@ export const MessageList: React.FC<MessageListProps> = ({
   const matchingMessageIds = useMemo(() => {
     if (!highlightedTagKey) return [];
     const tag = highlightedTagKey.toLowerCase().replace(/^#/, "");
-    return messages
-      .filter((m) => m.content.toLowerCase().includes(tag))
-      .map((m) => m.id);
+    return messages.filter((m) => m.content.toLowerCase().includes(tag)).map((m) => m.id);
   }, [messages, highlightedTagKey]);
 
   // Count occurrences of currently inspected string in this channel (independent of active highlighting)
   const inspectedMatchesCount = useMemo(() => {
     if (!inspectedStringKey) return 0;
     const cleanKey = inspectedStringKey.toLowerCase().replace(/^#/, "");
-    return messages.filter((m) => m.content.toLowerCase().includes(cleanKey))
-      .length;
+    return messages.filter((m) => m.content.toLowerCase().includes(cleanKey)).length;
   }, [messages, inspectedStringKey]);
 
   const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0); // Initial tag match index
@@ -212,9 +199,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   const handlePrevMatch = () => {
     if (matchingMessageIds.length === 0) return;
-    const prevIdx =
-      (currentMatchIndex - 1 + matchingMessageIds.length) %
-      matchingMessageIds.length;
+    const prevIdx = (currentMatchIndex - 1 + matchingMessageIds.length) % matchingMessageIds.length;
     setCurrentMatchIndex(prevIdx);
     scrollToMatch(prevIdx);
   };
@@ -462,32 +447,24 @@ export const MessageList: React.FC<MessageListProps> = ({
         {/* Empty State */}
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center text-gray-500 font-sans text-xs py-16">
-            <span className="font-medium text-gray-400 text-sm">
-              No messages yet
-            </span>
+            <span className="font-medium text-gray-400 text-sm">No messages yet</span>
             <span className="text-[11px] text-gray-500 mt-1">
-              Messages with #LOC-XXXX or $STR_XXXX tags are automatically linked
-              for inspection.
+              Messages with #LOC-XXXX or $STR_XXXX tags are automatically linked for inspection.
             </span>
           </div>
         ) : (
           messages.map((message, index) => {
             const prevMessage = index > 0 ? messages[index - 1] : null;
             const currentDate = new Date(message.createdAt);
-            const prevDate = prevMessage
-              ? new Date(prevMessage.createdAt)
-              : null;
+            const prevDate = prevMessage ? new Date(prevMessage.createdAt) : null;
 
             // Date divider check (day boundary)
             const showDateDivider =
-              !prevDate ||
-              currentDate.toDateString() !== prevDate.toDateString();
+              !prevDate || currentDate.toDateString() !== prevDate.toDateString();
 
             const isMentioned =
               !!user?.username &&
-              message.content
-                .toLowerCase()
-                .includes(`@${user.username.toLowerCase()}`);
+              message.content.toLowerCase().includes(`@${user.username.toLowerCase()}`);
 
             // Clustering check: same sender within 5 minutes on the same day (mentions break cluster for visibility)
             const isClustered =
@@ -498,12 +475,9 @@ export const MessageList: React.FC<MessageListProps> = ({
               currentDate.getTime() - (prevDate?.getTime() || 0) < 300000;
 
             const isMatch = matchingMessageIds.includes(message.id);
-            const isCurrentMatch =
-              isMatch && matchingMessageIds[currentMatchIndex] === message.id;
+            const isCurrentMatch = isMatch && matchingMessageIds[currentMatchIndex] === message.id;
 
-            const initials = message.sender.displayName
-              .substring(0, 2)
-              .toUpperCase();
+            const initials = message.sender.displayName.substring(0, 2).toUpperCase();
 
             return (
               <React.Fragment key={message.id}>
@@ -546,13 +520,9 @@ export const MessageList: React.FC<MessageListProps> = ({
                     // First in cluster: avatar with hover card
                     <UserProfileHoverCard
                       user={message.sender}
-                      isOnline={
-                        onlineUsers[message.sender.id] === UserStatus.ONLINE
-                      }
+                      isOnline={onlineUsers[message.sender.id] === UserStatus.ONLINE}
                       isSelf={message.sender.id === user?.id}
-                      onSendDm={
-                        onOpenDm ? () => onOpenDm(message.sender.id) : undefined
-                      }
+                      onSendDm={onOpenDm ? () => onOpenDm(message.sender.id) : undefined}
                       side="bottom"
                     >
                       <div className="h-8 w-8 rounded-lg bg-brand-navy border border-accent-gold/20 flex items-center justify-center font-mono font-bold text-accent-gold text-xs shrink-0 mt-0.5 cursor-pointer hover:border-accent-gold transition-colors">
@@ -589,8 +559,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                       <div className="mt-2 space-y-2">
                         {message.attachments.map((att) => {
                           const isImage =
-                            att.fileType === "IMAGE" ||
-                            att.fileType === "SCREENSHOT_BUG";
+                            att.fileType === "IMAGE" || att.fileType === "SCREENSHOT_BUG";
 
                           return (
                             <div
@@ -626,10 +595,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                                     alt={att.fileName}
                                     // Re-scroll to bottom as each image finishes downloading
                                     onLoad={() => {
-                                      if (
-                                        isInitialLoadRef.current ||
-                                        isAtBottomRef.current
-                                      ) {
+                                      if (isInitialLoadRef.current || isAtBottomRef.current) {
                                         scrollToBottom("instant");
                                       }
                                     }}
@@ -637,8 +603,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                                     onClick={() =>
                                       setActiveLightbox({
                                         attachment: att,
-                                        uploaderName:
-                                          message.sender.displayName,
+                                        uploaderName: message.sender.displayName,
                                       })
                                     }
                                   />

@@ -63,11 +63,8 @@ api.interceptors.response.use(
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         }
-        return api(
-          originalRequest,
-        ); /* use our configured instance and run the originalRequest with
+        return api(originalRequest); /* use our configured instance and run the originalRequest with
         a newly refreshed access token */
-        
       } catch (refreshError) {
         // Refresh token expired or invalidated; clear token
         setAccessToken(null);

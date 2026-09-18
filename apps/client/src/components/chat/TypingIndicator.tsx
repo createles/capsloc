@@ -7,14 +7,10 @@ export interface TypingIndicatorProps {
   channelId: string;
 }
 
-export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
-  channelId,
-}) => {
+export const TypingIndicator: React.FC<TypingIndicatorProps> = ({ channelId }) => {
   const { socket } = useSocket();
   const { user } = useAuth();
-  const [typingUsers, setTypingUsers] = useState<Map<string, string>>(
-    new Map(),
-  );
+  const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (!socket) return;
@@ -29,10 +25,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({
       }
     };
 
-    const handleUserStopTyping = (payload: {
-      channelId: string;
-      userId: string;
-    }) => {
+    const handleUserStopTyping = (payload: { channelId: string; userId: string }) => {
       if (payload.channelId === channelId) {
         setTypingUsers((prev) => {
           const updated = new Map(prev);

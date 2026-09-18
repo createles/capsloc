@@ -1,75 +1,76 @@
-import { StringStatus } from './enums.js';
-import { UserProfileDTO } from './user.types.js';
+import { StringStatus } from "./enums.js";
+import { UserProfileDTO } from "./user.types.js";
 
 export interface LocStringMessageRefDTO {
+  id: string;
+  messageId: string;
+  locStringId: string;
+  message: {
     id: string;
-    messageId: string;
-    locStringId: string;
-    message: {
-        id: string;
-        channelId: string;
-        channel?: {
-            id: string;
-            name?: string | null;
-            type: string;
-        } | null;
-        content: string;
-        createdAt: string;
-        sender: UserProfileDTO;
-    };
+    channelId: string;
+    channel?: {
+      id: string;
+      name?: string | null;
+      type: string;
+    } | null;
+    content: string;
+    createdAt: string;
+    sender: UserProfileDTO;
+  };
 }
 
 export interface LocStringDTO {
-    id: string;
-    stringKey: string; // e.g. "LOC-04829"
-    projectTag: string; // e.g. "MH-WILDS, RE-9"
-    sourceText: string; // Japanese source dialogue
-    targetLocale: string; // e.g. "en-US"
-    targetText?: string | null;
-    charLimit?: number | null;
-    contextNotes?: string | null;
-    status: StringStatus;
-    createdAt: string;
-    updatedAt: string;
-    references?: LocStringMessageRefDTO[];
+  id: string;
+  stringKey: string; // e.g. "LOC-04829"
+  projectTag: string; // e.g. "MH-WILDS, RE-9"
+  sourceText: string; // Japanese source dialogue
+  targetLocale: string; // e.g. "en-US"
+  targetText?: string | null;
+  charLimit?: number | null;
+  contextNotes?: string | null;
+  status: StringStatus;
+  createdAt: string;
+  updatedAt: string;
+  references?: LocStringMessageRefDTO[];
 }
 
-export interface GlossaryTermDTO { // For Localization Inspector
-    id: string;
-    termKey: string;
-    category: 'Character' | 'Weapon' | 'Item' | 'Location' | 'Monster';
-    sourceJa: string;
-    targetEn: string;
-    notes?: string | null;
-    projectTag: string;
+export interface GlossaryTermDTO {
+  // For Localization Inspector
+  id: string;
+  termKey: string;
+  category: "Character" | "Weapon" | "Item" | "Location" | "Monster";
+  sourceJa: string;
+  targetEn: string;
+  notes?: string | null;
+  projectTag: string;
 }
 
 // Query filters when searching or listing localization strings
 export interface LocStringFilterQueryDTO {
-    projectTag?: string;
-    status?: StringStatus;
-    targetLocale?: string;
-    search?: string;
-    page?: number;
-    limit?: number;
+  projectTag?: string;
+  status?: StringStatus;
+  targetLocale?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 // Envelope returned when querying paginated localization strings
 export interface PaginatedLocStringsDTO {
-    items: LocStringDTO[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
+  items: LocStringDTO[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 // Payload for mutating string review status (e.g. DRAFT -> LQA_FLAGGED)
 export interface UpdateLocStringStatusDTO {
-    status: StringStatus;
+  status: StringStatus;
 }
 
 // Query parameters for canonical glossary searches
 export interface GlossarySearchQueryDTO {
-    q: string;
-    category?: 'Character' | 'Weapon' | 'Item' | 'Location' | 'Monster';
+  q: string;
+  category?: "Character" | "Weapon" | "Item" | "Location" | "Monster";
 }

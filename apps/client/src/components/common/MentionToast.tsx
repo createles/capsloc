@@ -43,12 +43,8 @@ export const MentionToast: React.FC<MentionToastProps> = ({
       {/* Message Info */}
       <div className="py-2.5 space-y-1">
         <div className="flex items-center space-x-1.5">
-          <span className="text-xs font-semibold text-white">
-            {toast.senderName}
-          </span>
-          <span className="text-[10px] font-mono text-gray-400">
-            mentioned you
-          </span>
+          <span className="text-xs font-semibold text-white">{toast.senderName}</span>
+          <span className="text-[10px] font-mono text-gray-400">mentioned you</span>
         </div>
         <p className="text-xs text-gray-300 line-clamp-2 italic font-mono bg-surface-card/60 p-2 rounded border border-border-subtle/50">
           "{toast.message.content}"
