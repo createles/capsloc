@@ -16,16 +16,12 @@ const STATUS_PRESETS = [
   { emoji: "💼", text: "In a Meeting" },
 ];
 
-export const UserProfileModal: React.FC<UserProfileModalProps> = ({
-  onClose,
-}) => {
+export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) => {
   const { user, updateProfile } = useAuth();
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [customStatus, setCustomStatus] = useState(user?.customStatus || "");
   const [bio, setBio] = useState(user?.bio || "");
-  const [primaryLocale, setPrimaryLocale] = useState(
-    user?.primaryLocale || "en-US",
-  );
+  const [primaryLocale, setPrimaryLocale] = useState(user?.primaryLocale || "en-US");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,9 +72,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4 bg-surface-card/40">
           <div className="flex items-center space-x-2">
             <User className="h-4 w-4 text-accent-gold" />
-            <span className="font-semibold text-sm text-white">
-              Edit Profile
-            </span>
+            <span className="font-semibold text-sm text-white">Edit Profile</span>
           </div>
           <button
             type="button"
@@ -108,24 +102,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className="min-w-0 flex-1">
                 {/* Name and Role Badge on same line */}
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-white truncate">
-                    {user.displayName}
-                  </span>
+                  <span className="font-semibold text-white truncate">{user.displayName}</span>
                   <LocRoleBadge role={user.locRole} />
                 </div>
                 {/* Username directly below */}
-                <div className="text-[11px] font-mono text-gray-400 mt-0.5">
-                  @{user.username}
-                </div>
+                <div className="text-[11px] font-mono text-gray-400 mt-0.5">@{user.username}</div>
               </div>
             </div>
           )}
 
           {/* Display Name */}
           <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">
-              Display Name
-            </label>
+            <label className="block text-[11px] font-medium text-gray-300">Display Name</label>
             <input
               type="text"
               value={displayName}
@@ -141,9 +129,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           <div className="space-y-1.5">
             <label className="block text-[11px] font-medium text-gray-300 flex items-center justify-between">
               <span>Custom Status</span>
-              <span className="text-[10px] font-mono text-gray-500">
-                {customStatus.length}/100
-              </span>
+              <span className="text-[10px] font-mono text-gray-500">{customStatus.length}/100</span>
             </label>
             <div className="relative">
               <Smile className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-500" />
@@ -173,11 +159,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <button
                   key={preset.text}
                   type="button"
-                  onClick={() =>
-                    setCustomStatus(`${preset.emoji} ${preset.text}`)
-                  }
-                  className="inline-flex items-center space-x-1 rounded-full border border-border-subtle bg-surface-card/80 hover:bg-surface-
-  hover px-2.5 py-1 text-[11px] text-gray-300 transition-colors cursor-pointer"
+                  onClick={() => setCustomStatus(`${preset.emoji} ${preset.text}`)}
+                  className="inline-flex items-center space-x-1 rounded-full border border-border-subtle bg-surface-card/80 hover:bg-surface-hover px-2.5 py-1 text-[11px] text-gray-300 transition-colors cursor-pointer"
                 >
                   <span>{preset.emoji}</span>
                   <span>{preset.text}</span>
@@ -204,9 +187,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
           {/* Primary Locale */}
           <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">
-              Primary Locale
-            </label>
+            <label className="block text-[11px] font-medium text-gray-300">Primary Locale</label>
             <div className="relative">
               <select
                 value={primaryLocale}
@@ -229,8 +210,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-
-  pointer"
+              className="rounded-md px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
             >
               Cancel
             </button>

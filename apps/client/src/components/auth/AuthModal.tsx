@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Terminal,
-  Lock,
-  Mail,
-  User,
-  Globe,
-  AlertCircle,
-  Loader2,
-  ChevronDown,
-} from "lucide-react";
+import { Terminal, Lock, Mail, User, Globe, AlertCircle, Loader2, ChevronDown } from "lucide-react";
 import { LocRole } from "@capsloc/types";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -46,15 +37,15 @@ export const AuthModal: React.FC = () => {
       }
     } catch (err: any) {
       const message =
-        err.response?.data?.message ||
-        "Authentication failed. Please verify credentials.";
+        err.response?.data?.message || "Authentication failed. Please verify credentials.";
       setError(Array.isArray(message) ? message.join(", ") : message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleQuickLogin = (quickEmail: string) => { // for quick demo role logins (e.g Dante[Translator], etc)
+  const handleQuickLogin = (quickEmail: string) => {
+    // for quick demo role logins (e.g Dante[Translator], etc)
     setEmail(quickEmail);
     setPassword("Password123!");
   };
@@ -151,8 +142,7 @@ export const AuthModal: React.FC = () => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Dante (Lead Translator)"
-                  className="mt-1 w-full rounded border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-
-  gray-600 focus:border-accent-gold focus:outline-none"
+                  className="mt-1 w-full rounded border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-gray-600 focus:border-accent-gold focus:outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -170,9 +160,7 @@ export const AuthModal: React.FC = () => {
                       <option value={LocRole.LQA_TESTER}>LQA Tester</option>
                       <option value={LocRole.SOLUTIONS_DEV}>Solutions Dev</option>
                       <option value={LocRole.LOC_PM}>Loc PM</option>
-                      <option value={LocRole.AUDIO_SPECIALIST}>
-                        Audio Specialist
-                      </option>
+                      <option value={LocRole.AUDIO_SPECIALIST}>Audio Specialist</option>
                       <option value={LocRole.GENERAL_USER}>General User</option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
@@ -210,8 +198,7 @@ export const AuthModal: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="dante@capcom.local"
-                className="w-full rounded border border-border-subtle bg-surface-card pl-8 pr-3 py-2 text-white placeholder-
-  gray-600 focus:border-accent-gold focus:outline-none"
+                className="w-full rounded border border-border-subtle bg-surface-card pl-8 pr-3 py-2 text-white placeholder-gray-600 focus:border-accent-gold focus:outline-none"
               />
             </div>
           </div>
@@ -228,8 +215,7 @@ export const AuthModal: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full rounded border border-border-subtle bg-surface-card pl-8 pr-3 py-2 text-white placeholder-
-  gray-600 focus:border-accent-gold focus:outline-none"
+                className="w-full rounded border border-border-subtle bg-surface-card pl-8 pr-3 py-2 text-white placeholder-gray-600 focus:border-accent-gold focus:outline-none"
               />
             </div>
           </div>
@@ -244,11 +230,7 @@ export const AuthModal: React.FC = () => {
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <span>
-                {isRegister
-                  ? "REGISTER & ENTER TERMINAL"
-                  : "AUTHENTICATE SESSION"}
-              </span>
+              <span>{isRegister ? "REGISTER & ENTER TERMINAL" : "AUTHENTICATE SESSION"}</span>
             )}
           </button>
         </form>
@@ -263,24 +245,21 @@ export const AuthModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleQuickLogin("dante@capcom.local")}
-                className="rounded border border-border-subtle bg-surface-card px-2 py-1.5 text-gray-300 hover:border-accent-
-  gold/50 hover:text-accent-gold transition-colors"
+                className="rounded border border-border-subtle bg-surface-card px-2 py-1.5 text-gray-300 hover:border-accent-gold/50 hover:text-accent-gold transition-colors"
               >
                 Dante (Trans)
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickLogin("jill@capcom.local")}
-                className="rounded border border-border-subtle bg-surface-card px-2 py-1.5 text-gray-300 hover:border-accent-
-  gold/50 hover:text-accent-gold transition-colors"
+                className="rounded border border-border-subtle bg-surface-card px-2 py-1.5 text-gray-300 hover:border-accent-gold/50 hover:text-accent-gold transition-colors"
               >
                 Jill (LQA)
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickLogin("leon@capcom.local")}
-                className="rounded border border-border-subtle bg-surface-card px-2 py-1.5 text-gray-300 hover:border-accent-
-  gold/50 hover:text-accent-gold transition-colors"
+                className="rounded border border-border-subtle bg-surface-card px-2 py-1.5 text-gray-300 hover:border-accent-gold/50 hover:text-accent-gold transition-colors"
               >
                 Leon (Dev)
               </button>

@@ -22,10 +22,8 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   const { user, updateProfile } = useAuth(); // use AuthContext for access to user and accessToken, updateProfile to update user status
   const { onlineUsers, unreadCounts, mentionCounts, clearUnread } = useSocket(); // grab from SocketContext
   const [channels, setChannels] = useState<ChannelDTO[]>([]);
-  const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] =
-    useState(false); // Modal Visibility
-  const [isDirectMessageModalOpen, setIsDirectMessageModalOpen] =
-    useState(false); // ^^
+  const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false); // Modal Visibility
+  const [isDirectMessageModalOpen, setIsDirectMessageModalOpen] = useState(false); // ^^
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showQuickStatus, setShowQuickStatus] = useState(false); // Quick-status modal
@@ -69,11 +67,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
 
   // Ensure active channel (e.g. newly created DM from chat hover) is loaded in sidebar
   useEffect(() => {
-    if (
-      activeChannelId &&
-      channels.length > 0 &&
-      !channels.some((c) => c.id === activeChannelId)
-    ) {
+    if (activeChannelId && channels.length > 0 && !channels.some((c) => c.id === activeChannelId)) {
       api
         .get<ChannelDTO[]>("/channels")
         .then(({ data }) => setChannels(data))
@@ -89,9 +83,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
 
   const projectChannels = channels.filter(
     // segregate channel rooms from DM rooms
-    (c) =>
-      c.type === ChannelType.PUBLIC_PROJECT ||
-      c.type === ChannelType.PRIVATE_LOCALE,
+    (c) => c.type === ChannelType.PUBLIC_PROJECT || c.type === ChannelType.PRIVATE_LOCALE,
   );
 
   const directMessages = channels.filter(
@@ -220,12 +212,8 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
             <div className="space-y-0.5">
               {projectChannels.map((channel) => {
                 const isActive = activeChannelId === channel.id;
-                const unreadCount = !isActive
-                  ? unreadCounts[channel.id] || 0
-                  : 0;
-                const mentionCount = !isActive
-                  ? mentionCounts[channel.id] || 0
-                  : 0;
+                const unreadCount = !isActive ? unreadCounts[channel.id] || 0 : 0;
+                const mentionCount = !isActive ? mentionCounts[channel.id] || 0 : 0;
                 const hasUnread = unreadCount > 0 || mentionCount > 0;
 
                 return (
@@ -252,9 +240,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                               : "text-gray-500"
                       }`}
                     />
-                    <span
-                      className={`truncate ${hasUnread ? "font-bold text-white" : ""}`}
-                    >
+                    <span className={`truncate ${hasUnread ? "font-bold text-white" : ""}`}>
                       {channel.name}
                     </span>
 
@@ -309,20 +295,15 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
             {directMessages.map((channel) => {
               const isActive = activeChannelId === channel.id;
               const unreadCount = !isActive ? unreadCounts[channel.id] || 0 : 0;
-              const mentionCount = !isActive
-                ? mentionCounts[channel.id] || 0
-                : 0;
+              const mentionCount = !isActive ? mentionCounts[channel.id] || 0 : 0;
               const hasUnread = unreadCount > 0 || mentionCount > 0;
 
               const recipient = getDmRecipient(channel);
-              const recipientName =
-                recipient?.displayName || channel.name || "Direct Message";
+              const recipientName = recipient?.displayName || channel.name || "Direct Message";
               const isOnline = recipient?.id
                 ? onlineUsers[recipient.id] === UserStatus.ONLINE
                 : false;
-              const initials = (recipientName || "DM")
-                .substring(0, 2)
-                .toUpperCase();
+              const initials = (recipientName || "DM").substring(0, 2).toUpperCase();
 
               const cardUser = recipient || {
                 id: channel.id,
@@ -453,11 +434,8 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                   <button
                     key={preset.text}
                     type="button"
-                    onClick={() =>
-                      handleSelectPreset(`${preset.emoji} ${preset.text}`)
-                    }
-                    className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card hover:bg-surface-
-  hover hover:border-accent-gold/40 p-1.5 text-left text-[11px] text-gray-200 transition-all cursor-pointer"
+                    onClick={() => handleSelectPreset(`${preset.emoji} ${preset.text}`)}
+                    className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card hover:bg-surface-hover hover:border-accent-gold/40 p-1.5 text-left text-[11px] text-gray-200 transition-all cursor-pointer"
                   >
                     <span>{preset.emoji}</span>
                     <span className="truncate">{preset.text}</span>
@@ -539,21 +517,14 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
               <div className="h-4 flex items-center justify-between text-[11px] mt-0.5 overflow-hidden">
                 <div className="truncate mr-1.5 min-w-0">
                   {user.customStatus ? (
-                    <span className="truncate italic text-gray-300">
-                      {user.customStatus}
-                    </span>
+                    <span className="truncate italic text-gray-300">{user.customStatus}</span>
                   ) : (
-                    <span className="font-mono text-gray-500 truncate">
-                      @{user.username}
-                    </span>
+                    <span className="font-mono text-gray-500 truncate">@{user.username}</span>
                   )}
                 </div>
 
                 {/* Locale Tag pinned on the right */}
-                <span
-                  className="text-[9px] font-mono text-gray-400 bg-surface-panel px-1.5 py-0.2 rounded border border-border-subtle shrink-
-  0 whitespace-nowrap"
-                >
+                <span className="text-[9px] font-mono text-gray-400 bg-surface-panel px-1.5 py-0.2 rounded border border-border-subtle shrink-0 whitespace-nowrap">
                   {user.primaryLocale}
                 </span>
               </div>
@@ -563,9 +534,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
       )}
 
       {/* Full Profile Modal */}
-      {isProfileModalOpen && (
-        <UserProfileModal onClose={() => setIsProfileModalOpen(false)} />
-      )}
+      {isProfileModalOpen && <UserProfileModal onClose={() => setIsProfileModalOpen(false)} />}
 
       {/* Channel Creation Modal */}
       {isCreateChannelModalOpen && (

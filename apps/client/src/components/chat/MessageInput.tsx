@@ -1,13 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Send,
-  Paperclip,
-  X,
-  Image as ImageIcon,
-  Loader2,
-  UploadCloud,
-  AtSign,
-} from "lucide-react";
+import { Send, Paperclip, X, Image as ImageIcon, Loader2, UploadCloud, AtSign } from "lucide-react";
 import type { AttachmentDTO, UserProfileDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
@@ -20,17 +12,11 @@ export interface MessageInputProps {
   isDm?: boolean; // appropriately replaces #channel in placeholder to @recipient
 }
 
-export const MessageInput: React.FC<MessageInputProps> = ({
-  channelId,
-  channelName,
-  isDm,
-}) => {
+export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelName, isDm }) => {
   const { user } = useAuth();
   const { sendMessage, startTyping, stopTyping } = useSocket();
   const [content, setContent] = useState("");
-  const [stagedAttachments, setStagedAttachments] = useState<AttachmentDTO[]>(
-    [],
-  );
+  const [stagedAttachments, setStagedAttachments] = useState<AttachmentDTO[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -95,9 +81,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   const insertMention = (targetUser: UserProfileDTO) => {
     if (!textareaRef.current) return;
     const beforeMention = content.slice(0, mentionCursorIndex);
-    const afterMention = content.slice(
-      textareaRef.current.selectionStart || mentionCursorIndex,
-    );
+    const afterMention = content.slice(textareaRef.current.selectionStart || mentionCursorIndex);
     const newContent = `${beforeMention}@${targetUser.username} ${afterMention}`;
 
     setContent(newContent);
@@ -106,8 +90,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     // Position cursor after inserted username
     setTimeout(() => {
       if (textareaRef.current) {
-        const newCursorPos =
-          beforeMention.length + targetUser.username.length + 2;
+        const newCursorPos = beforeMention.length + targetUser.username.length + 2;
         textareaRef.current.focus();
         textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
       }
@@ -147,17 +130,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     if (showMentionPicker && filteredMentionUsers.length > 0) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedMentionIndex(
-          (prev) => (prev + 1) % filteredMentionUsers.length,
-        );
+        setSelectedMentionIndex((prev) => (prev + 1) % filteredMentionUsers.length);
         return;
       }
       if (e.key === "ArrowUp") {
         e.preventDefault();
         setSelectedMentionIndex(
-          (prev) =>
-            (prev - 1 + filteredMentionUsers.length) %
-            filteredMentionUsers.length,
+          (prev) => (prev - 1 + filteredMentionUsers.length) % filteredMentionUsers.length,
         );
         return;
       }
@@ -355,10 +334,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           ))}
 
           {isUploading && (
-            <div
-              className="flex items-center space-x-1.5 rounded-md border border-accent-gold/30 bg-brand-navy/60 px-2.5 py-1 text-xs font-
-  sans text-accent-gold"
-            >
+            <div className="flex items-center space-x-1.5 rounded-md border border-accent-gold/30 bg-brand-navy/60 px-2.5 py-1 text-xs font-sans text-accent-gold">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-accent-gold" />
               <span>Uploading attachment...</span>
             </div>
@@ -489,11 +465,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           <button
             type="button"
             onClick={handleSend}
-            disabled={
-              (!content.trim() && stagedAttachments.length === 0) || isSending
-            }
-            className="flex items-center space-x-1.5 rounded-md bg-brand-navy hover:bg-brand-navy-light px-3 py-1.5 text-xs font-sans font-
-  semibold text-accent-gold border border-accent-gold/40 transition-colors disabled:opacity-40 disabled:hover:bg-brand-navy cursor-pointer"
+            disabled={(!content.trim() && stagedAttachments.length === 0) || isSending}
+            className="flex items-center space-x-1.5 rounded-md bg-brand-navy hover:bg-brand-navy-light px-3 py-1.5 text-xs font-sans font-semibold text-accent-gold border border-accent-gold/40 transition-colors disabled:opacity-40 disabled:hover:bg-brand-navy cursor-pointer"
           >
             <span>Send</span>
             <Send className="h-3 w-3" />
