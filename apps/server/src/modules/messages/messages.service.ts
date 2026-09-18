@@ -5,6 +5,11 @@ import { ChannelType } from '@capsloc/types';
 import { CreateMessageDto } from './dto/create-message.dto.js';
 import { GetMessagesQueryDto } from './dto/get-messages-query.dto.js';
 
+export interface MentionNotificationTarget {
+    targetUserId: string;
+    channelName: string | null;
+}
+
 @Injectable()
 export class MessagesService {
     constructor(private readonly prisma: PrismaService) { }
@@ -45,10 +50,22 @@ export class MessagesService {
         await this.validateChannelMembership(channelId, userId);
 
         const limit = query.limit ?? 50;
+        const where: any = { channelId };
+
+        if (query.stringKey) {
+            const cleanKey = query.stringKey.replace(/^[#$]/, '');
+            where.stringRefs = {
+                some: {
+                    locString: {
+                        stringKey: cleanKey,
+                    },
+                },
+            };
+        }
 
         // Peek-Ahead Trick: Request 1 extra record to test for hasMore without a COUNT(*) query
         const rawMessages = await this.prisma.message.findMany({
-            where: { channelId },
+            where,
             take: limit + 1,
             skip: query.cursor ? 1 : 0, // Skip the bookmark record itself
             cursor: query.cursor ? { id: query.cursor } : undefined,
@@ -133,5 +150,46 @@ export class MessagesService {
                 },
             },
         });
+    }
+
+    /*
+    Scans message content for @username tags, verifies user existence via Prisma,
+    queries channel name, and filters out self-mentions.
+    Encapsulates data access and user resolution away from transport gateways.
+    */
+    async resolveMentionTargets(
+        content: string,
+        channelId: string,
+        senderId: string,
+    ): Promise<MentionNotificationTarget[]> {
+        const mentionMatches = content.match(/@([a-zA-Z0-9_.-]+)/g);
+        if (!mentionMatches || mentionMatches.length === 0) return [];
+
+        const targetUsernames = Array.from(
+            new Set(mentionMatches.map((m) => m.substring(1).toLowerCase())),
+        );
+
+        const [mentionedUsers, channel] = await Promise.all([
+            this.prisma.user.findMany({
+                where: {
+                    username: {
+                        in: targetUsernames,
+                        mode: 'insensitive',
+                    },
+                },
+                select: { id: true },
+            }),
+            this.prisma.channel.findUnique({
+                where: { id: channelId },
+                select: { name: true },
+            }),
+        ]);
+
+        return mentionedUsers
+            .filter((u) => u.id !== senderId)
+            .map((u) => ({
+                targetUserId: u.id,
+                channelName: channel?.name ?? null,
+            }));
     }
 }

@@ -11,13 +11,16 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { OnEvent } from '@nestjs/event-emitter';
 import { MessagesService } from '../messages/messages.service.js';
+import { ChannelsService } from '../channels/channels.service.js';
 import {
     ClientToServerEvents,
     ServerToClientEvents,
     UserStatus,
     type JoinChannelPayload,
     type SendMessagePayload,
+    type ChannelDTO,
 } from '@capsloc/types';
 
 // Extended Socket interface retaining authenticated user identity in memory
@@ -52,9 +55,10 @@ export class ChatGateway
     constructor(
         private readonly jwtService: JwtService,
         private readonly messagesService: MessagesService,
+        private readonly channelsService: ChannelsService,
     ) { }
 
-    afterInit(server: Server) {
+    afterInit(_server: Server) { // Mark unused to appease linter
         this.logger.log('ChatGateway initialized and listening for WebSocket handshakes');
     }
 
@@ -98,6 +102,19 @@ export class ChatGateway
                     status: UserStatus.ONLINE,
                 });
                 this.logger.log(`User ${userId} is now ONLINE (Socket: ${client.id})`);
+            }
+
+            // Join personal notification room for mentions and direct alerts
+            client.join(`user:${userId}`);
+
+            // Auto-subscribe to all channels the user has access to
+            try {
+                const channelIds = await this.channelsService.findUserAccessibleChannelIds(userId);
+                for (const id of channelIds) {
+                    client.join(`channel:${id}`);
+                }
+            } catch (err: any) {
+                this.logger.warn(`Could not auto-join channels for user ${userId}: ${err.message}`);
             }
         } catch (err: any) {
             this.logger.error(`Handshake failed for socket ${client.id}: ${err.message}`);
@@ -205,6 +222,17 @@ export class ChatGateway
                 channelId,
                 userId,
             });
+
+            // Parse and notify @mentioned users via service delegation
+            const targets = await this.messagesService.resolveMentionTargets(content, channelId, userId);
+            for (const target of targets) {
+                this.server.to(`user:${target.targetUserId}`).emit('user_mentioned', {
+                    message: savedMessage as any,
+                    channelId,
+                    channelName: target.channelName,
+                    senderName: client.data.user.displayName,
+                });
+            }
         } catch (error: any) {
             client.emit('error', {
                 message: error.message || 'Failed to send message',
@@ -251,5 +279,14 @@ export class ChatGateway
             channelId: payload.channelId,
             userId: client.data.user.id,
         });
+    }
+
+    /*
+    Broadcast channel updates (e.g. sprint status change) to all sockets in channel room
+    Subscribes to decoupled domain events emitted from ChannelsService
+    */
+    @OnEvent('channel.updated')
+    broadcastChannelUpdated(channel: ChannelDTO) {
+        this.server.to(`channel:${channel.id}`).emit('channel_updated', channel);
     }
 }

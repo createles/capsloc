@@ -10,9 +10,11 @@ import { ChatModule } from './modules/chat/chat.module.js';
 import { LocStringsModule } from './modules/loc-strings/loc-strings.module.js';
 import { GlossaryModule } from './modules/glossary/glossary.module.js';
 import { UploadsModule } from './modules/uploads/uploads.module.js';
+import { EventsModule } from './modules/events/events.module.js';
 
 @Module({
   imports: [
+    EventsModule,
     PrismaModule,
     AuthModule,
     UsersModule,

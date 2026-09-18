@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { ChannelsService } from './channels.service.js';
 import { CreateChannelDto } from './dto/create-channel.dto.js';
 import { CreateDmDto } from './dto/create-dm.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { AddChannelMemberDto } from './dto/add-channel-member.dto.js';
+import { UpdateChannelDto } from './dto/update-channel.dto.js';
 
 @UseGuards(JwtAuthGuard)
 @Controller('channels')
@@ -46,12 +47,34 @@ export class ChannelsController {
   }
 
   /*
+    GET /api/channels/unread/summary
+    Returns unread counts and mention counts for caller across all channels
+    Must be declared BEFORE ':id' to prevent route conflict
+  */
+  @Get('unread/summary')
+  async getUnreadSummary(@CurrentUser('id') userId: string) {
+    return this.channelsService.getUnreadSummary(userId);
+  }
+
+  /*
     GET /api/channels/:id
     Returns channel details if user is authorized
     */
   @Get(':id')
   async findById(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.channelsService.findById(id, userId);
+  }
+
+  /*
+    POST /api/channels/:id/read
+    Updates lastReadAt for caller on this channel
+  */
+  @Post(':id/read')
+  async markAsRead(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.channelsService.markAsRead(id, userId);
   }
 
   /*
@@ -62,6 +85,7 @@ export class ChannelsController {
   async join(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.channelsService.join(id, userId);
   }
+
 
   /* 
     GET /api/channels/:id/members
@@ -86,5 +110,18 @@ export class ChannelsController {
     @Body() dto: AddChannelMemberDto,
   ) {
     return this.channelsService.addMember(channelId, callerId, dto);
+  }
+
+  /*
+    PATCH /api/channels/:id
+    Updates channel status or metadata (admin only)
+  */
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateChannelDto,
+  ) {
+    return this.channelsService.update(id, userId, dto);
   }
 }

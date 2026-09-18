@@ -4,15 +4,36 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { safeUserSelect } from '../users/users.service.js';
 import { ChannelType } from '@capsloc/types';
 import { CreateChannelDto } from './dto/create-channel.dto.js';
 import { AddChannelMemberDto } from './dto/add-channel-member.dto.js';
+import { UpdateChannelDto } from './dto/update-channel.dto.js';
 
 @Injectable()
 export class ChannelsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
+
+  /*
+    Resolves all channel IDs accessible to a user (public project channels + enrolled memberships)
+    */
+  async findUserAccessibleChannelIds(userId: string): Promise<string[]> {
+    const channels = await this.prisma.channel.findMany({
+      where: {
+        OR: [
+          { type: ChannelType.PUBLIC_PROJECT },
+          { members: { some: { userId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    return channels.map((c) => c.id);
+  }
 
   /*
     List all public channels + private/DM channels where caller is enrolled
@@ -212,35 +233,31 @@ export class ChannelsService {
     List all enrolled members of a channel.
     If channel is not public, must be member of channel to view member list.
     */
-  async getMembers(
-    channelId: string,
-    callerId: string,
-  ) {
+  async getMembers(channelId: string, callerId: string) {
     const channel = await this.prisma.channel.findUnique({
-        where: { id: channelId },
-        include: { members: true },
+      where: { id: channelId },
+      include: { members: true },
     });
 
     if (!channel) {
-        throw new NotFoundException('Channel not found');
+      throw new NotFoundException('Channel not found');
     }
 
     if (channel.type !== ChannelType.PUBLIC_PROJECT) {
-        const isMember = channel.members.some((m) => m.userId === callerId);
-        if (!isMember) {
-            throw new ForbiddenException('Access denied to members list for this private channel');
-        }
+      const isMember = channel.members.some((m) => m.userId === callerId);
+      if (!isMember) {
+        throw new ForbiddenException(
+          'Access denied to members list for this private channel',
+        );
+      }
     }
 
     return this.prisma.channelMember.findMany({
-        where: { channelId },
-        include: {
-            user: { select: safeUserSelect },
-        },
-        orderBy: [
-            { role: 'asc' },
-            { joinedAt: 'asc' },
-        ],
+      where: { channelId },
+      include: {
+        user: { select: safeUserSelect },
+      },
+      orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
     });
   }
 
@@ -306,5 +323,164 @@ export class ChannelsService {
         user: { select: safeUserSelect },
       },
     });
+  }
+
+  /*
+    Mark channel as read: updates lastReadAt timestamp for the caller on this channel.
+    Upserts channelMember if caller was browsing a public channel they hadn't formally joined.
+  */
+  async markAsRead(channelId: string, userId: string) {
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+    });
+
+    if (!channel) {
+      throw new NotFoundException('Channel not found');
+    }
+
+    const now = new Date();
+    const updatedMember = await this.prisma.channelMember.upsert({
+      where: {
+        channelId_userId: { channelId, userId },
+      },
+      update: {
+        lastReadAt: now,
+      },
+      create: {
+        channelId,
+        userId,
+        role: 'member',
+        lastReadAt: now,
+      },
+    });
+
+    return {
+      channelId,
+      userId,
+      lastReadAt: updatedMember.lastReadAt.toISOString(),
+    };
+  }
+
+  /*
+    Compute unread message and mention counters across all channels for caller.
+    Compares message.createdAt against caller's channelMember.lastReadAt.
+  */
+  async getUnreadSummary(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { username: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const memberships = await this.prisma.channelMember.findMany({
+      where: { userId },
+      select: {
+        channelId: true,
+        lastReadAt: true,
+      },
+    });
+
+    const unreadCounts: Record<string, number> = {};
+    const mentionCounts: Record<string, number> = {};
+
+    await Promise.all(
+      memberships.map(async (m) => {
+        const [unread, mentions] = await Promise.all([
+          this.prisma.message.count({
+            where: {
+              channelId: m.channelId,
+              createdAt: { gt: m.lastReadAt },
+              senderId: { not: userId },
+            },
+          }),
+          this.prisma.message.count({
+            where: {
+              channelId: m.channelId,
+              createdAt: { gt: m.lastReadAt },
+              senderId: { not: userId },
+              content: {
+                contains: `@${user.username}`,
+                mode: 'insensitive',
+              },
+            },
+          }),
+        ]);
+
+        if (unread > 0) {
+          unreadCounts[m.channelId] = unread;
+        }
+        if (mentions > 0) {
+          mentionCounts[m.channelId] = mentions;
+        }
+      }),
+    );
+
+    return {
+      unreadCounts,
+      mentionCounts,
+    };
+  }
+
+  /*
+    Update channel metadata (sprint status, description, name).
+    Requires caller to be channel admin (creator or admin role member).
+    Cannot update direct message channels.
+  */
+  async update(channelId: string, callerId: string, dto: UpdateChannelDto) {
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+      include: {
+        members: true,
+      },
+    });
+
+    if (!channel) {
+      throw new NotFoundException('Channel not found');
+    }
+
+    if (channel.type === ChannelType.DIRECT_MESSAGE) {
+      throw new BadRequestException(
+        'Direct message channels do not support sprint status or metadata edits',
+      );
+    }
+
+    const isCreator = channel.createdById === callerId;
+    const isAdmin = channel.members.some(
+      (m) => m.userId === callerId && m.role === 'admin',
+    );
+
+    if (!isCreator && !isAdmin) {
+      throw new ForbiddenException(
+        'Only channel admins can edit channel sprint status or metadata',
+      );
+    }
+
+    const updated = await this.prisma.channel.update({
+      where: { id: channelId },
+      data: {
+        status:
+          dto.status !== undefined ? dto.status.trim() || null : undefined,
+        description:
+          dto.description !== undefined
+            ? dto.description.trim() || null
+            : undefined,
+        name: dto.name !== undefined ? dto.name.trim() || undefined : undefined,
+      },
+      include: {
+        members: {
+          include: {
+            user: { select: safeUserSelect },
+          },
+        },
+      },
+    });
+
+    // Decoupled Domain Event: Broadcasts to in-memory listeners
+    this.eventEmitter.emit('channel.updated', updated);
+
+    return updated;
   }
 }

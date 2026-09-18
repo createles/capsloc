@@ -24,15 +24,23 @@ export class LocStringsService {
             where: { stringKey: cleanKey },
             include: {
                 references: {
-                    take: 5,
+                    take: 20,
                     orderBy: { message: { createdAt: 'desc' } },
                     include: {
                         message: {
                             select: {
                                 id: true,
+                                channelId: true,
+                                channel: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        type: true,
+                                    },
+                                },
                                 content: true,
                                 createdAt: true,
-                                sender: { select: safeUserSelect, },
+                                sender: { select: safeUserSelect },
                             },
                         },
                     },
