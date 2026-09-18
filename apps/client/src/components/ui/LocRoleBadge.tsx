@@ -14,11 +14,11 @@ const ROLE_STYLES: Record<LocRole, { label: string; style: string }> = {
   },
   [LocRole.LQA_TESTER]: {
     label: "LQA Tester",
-    style: "bg-amber-500/10 text-amber-400 border-amber-500/25",
+    style: "bg-orange-500/10 text-orange-400 border-orange-500/25",
   },
   [LocRole.SOLUTIONS_DEV]: {
     label: "Solutions Dev",
-    style: "bg-teal-500/10 text-teal-400 border-teal-500/25",
+    style: "bg-indigo-500/10 text-indigo-400 border-indigo-500/25",
   },
   [LocRole.LOC_PM]: {
     label: "Loc PM",

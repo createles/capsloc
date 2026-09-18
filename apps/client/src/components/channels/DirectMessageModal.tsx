@@ -6,8 +6,8 @@ import {
   type ChannelDTO,
 } from "@capsloc/types";
 import { api } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
-import { useSocket } from "../../context/SocketContext";
+import { useAuth } from "../../hooks/useAuth";
+import { useSocket } from "../../hooks/useSocket";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 
 export interface DirectMessageModalProps {
@@ -182,13 +182,13 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
                       </span>
                       <LocRoleBadge role={teammate.locRole} />
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-gray-400 mt-0.5">
+                    <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
                       <span className="font-mono text-gray-500 truncate mr-2">
                         @{teammate.username}
                       </span>
                       {teammate.customStatus && (
-                        <span className="truncate italic text-gray-400 max-w-35">
-                          {teammate.customStatus}
+                        <span className="truncate italic text-gray-400 max-w-60">
+                          "{teammate.customStatus}"
                         </span>
                       )}
                     </div>

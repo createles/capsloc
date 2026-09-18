@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { X, User, Loader2, Smile } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { X, User, Loader2, Smile, ChevronDown } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 
 export interface UserProfileModalProps {
@@ -207,19 +207,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <label className="block text-[11px] font-medium text-gray-300">
               Primary Locale
             </label>
-            <select
-              value={primaryLocale}
-              onChange={(e) => setPrimaryLocale(e.target.value)}
-              className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-white focus:border-accent-gold/50
-  focus:outline-none"
-            >
-              <option value="en-US">English (en-US)</option>
-              <option value="ja-JP">Japanese (ja-JP)</option>
-              <option value="de-DE">German (de-DE)</option>
-              <option value="fr-FR">French (fr-FR)</option>
-              <option value="es-ES">Spanish (es-ES)</option>
-              <option value="it-IT">Italian (it-IT)</option>
-            </select>
+            <div className="relative">
+              <select
+                value={primaryLocale}
+                onChange={(e) => setPrimaryLocale(e.target.value)}
+                className="w-full appearance-none rounded-md border border-border-subtle bg-surface-card pl-3 pr-10 py-2 text-white focus:border-accent-gold/50 focus:outline-none cursor-pointer"
+              >
+                <option value="en-US">English (en-US)</option>
+                <option value="ja-JP">Japanese (ja-JP)</option>
+                <option value="de-DE">German (de-DE)</option>
+                <option value="fr-FR">French (fr-FR)</option>
+                <option value="es-ES">Spanish (es-ES)</option>
+                <option value="it-IT">Italian (it-IT)</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
           </div>
 
           {/* Actions */}

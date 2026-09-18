@@ -7,9 +7,10 @@ import {
   Globe,
   AlertCircle,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import { LocRole } from "@capsloc/types";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 
 export const AuthModal: React.FC = () => {
   const { login, register } = useAuth();
@@ -159,21 +160,23 @@ export const AuthModal: React.FC = () => {
                   <label className="block text-[11px] font-mono uppercase text-gray-400">
                     Loc Role
                   </label>
-                  <select
-                    value={locRole}
-                    onChange={(e) => setLocRole(e.target.value as LocRole)}
-                    className="mt-1 w-full rounded border border-border-subtle bg-surface-card px-2 py-2 text-white
-  focus:border-accent-gold focus:outline-none"
-                  >
-                    <option value={LocRole.TRANSLATOR}>Translator</option>
-                    <option value={LocRole.LQA_TESTER}>LQA Tester</option>
-                    <option value={LocRole.SOLUTIONS_DEV}>Solutions Dev</option>
-                    <option value={LocRole.LOC_PM}>Loc PM</option>
-                    <option value={LocRole.AUDIO_SPECIALIST}>
-                      Audio Specialist
-                    </option>
-                    <option value={LocRole.GENERAL_USER}>General User</option>
-                  </select>
+                  <div className="relative mt-1">
+                    <select
+                      value={locRole}
+                      onChange={(e) => setLocRole(e.target.value as LocRole)}
+                      className="w-full appearance-none rounded border border-border-subtle bg-surface-card pl-2.5 pr-8 py-2 text-white focus:border-accent-gold focus:outline-none cursor-pointer"
+                    >
+                      <option value={LocRole.TRANSLATOR}>Translator</option>
+                      <option value={LocRole.LQA_TESTER}>LQA Tester</option>
+                      <option value={LocRole.SOLUTIONS_DEV}>Solutions Dev</option>
+                      <option value={LocRole.LOC_PM}>Loc PM</option>
+                      <option value={LocRole.AUDIO_SPECIALIST}>
+                        Audio Specialist
+                      </option>
+                      <option value={LocRole.GENERAL_USER}>General User</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[11px] font-mono uppercase text-gray-400">
