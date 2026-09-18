@@ -5,6 +5,7 @@ export interface ChannelDTO {
     id: string;
     name?: string | null;
     description?: string | null;
+    status?: string | null; // e.g., "last 2 weeks until 9/20/26 deadline" (Sprint/Milestone state)
     type: ChannelType;
     projectTag?: string | null;
     localeTag?: string | null;
@@ -12,6 +13,12 @@ export interface ChannelDTO {
     createdAt: string;
     updatedAt: string;
     members?: ChannelMemberDTO[];
+}
+
+export interface UpdateChannelDTO {
+    name?: string;
+    description?: string;
+    status?: string;
 }
 
 export interface ChannelMemberDTO {
@@ -39,4 +46,9 @@ export interface CreateDMDTO {
 export interface AddChannelMemberDTO {
     userId: string;
     role?: 'admin' | 'member';
+}
+
+export interface UnreadSummaryDTO {
+    unreadCounts: Record<string, number>;
+    mentionCounts: Record<string, number>;
 }

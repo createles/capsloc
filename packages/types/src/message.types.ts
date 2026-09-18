@@ -37,6 +37,7 @@ export interface CreateMessageDTO {
 export interface GetMessagesQueryDTO {
     cursor?: string;
     limit?: number;
+    stringKey?: string;
 }
 
 // The packet returned to frontend containing the messages and the next bookmark

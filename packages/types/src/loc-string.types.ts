@@ -1,6 +1,25 @@
 import { StringStatus } from './enums.js';
+import { UserProfileDTO } from './user.types.js';
 
-export interface LocStringDTO { //
+export interface LocStringMessageRefDTO {
+    id: string;
+    messageId: string;
+    locStringId: string;
+    message: {
+        id: string;
+        channelId: string;
+        channel?: {
+            id: string;
+            name?: string | null;
+            type: string;
+        } | null;
+        content: string;
+        createdAt: string;
+        sender: UserProfileDTO;
+    };
+}
+
+export interface LocStringDTO {
     id: string;
     stringKey: string; // e.g. "LOC-04829"
     projectTag: string; // e.g. "MH-WILDS, RE-9"
@@ -12,6 +31,7 @@ export interface LocStringDTO { //
     status: StringStatus;
     createdAt: string;
     updatedAt: string;
+    references?: LocStringMessageRefDTO[];
 }
 
 export interface GlossaryTermDTO { // For Localization Inspector
