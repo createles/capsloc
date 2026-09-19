@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Hash, Loader2, Smile, Check, X, Plus } from "lucide-react";
-import { ChannelType, UserStatus, type ChannelDTO } from "@capsloc/types";
+import { ChannelType, UserStatus, type ChannelDTO, type UserProfileDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
@@ -20,7 +20,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   onSelectChannel,
 }) => {
   const { user, updateProfile } = useAuth(); // use AuthContext for access to user and accessToken, updateProfile to update user status
-  const { onlineUsers, unreadCounts, mentionCounts, clearUnread } = useSocket(); // grab from SocketContext
+  const { socket, onlineUsers, unreadCounts, mentionCounts, clearUnread } = useSocket(); // grab from SocketContext
   const [channels, setChannels] = useState<ChannelDTO[]>([]);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false); // Modal Visibility
   const [isDirectMessageModalOpen, setIsDirectMessageModalOpen] = useState(false); // ^^
@@ -74,6 +74,32 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
         .catch(console.error);
     }
   }, [activeChannelId, channels]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setChannels((prevChannels) =>
+        prevChannels.map((channel) => {
+          if (!channel.members) return channel;
+          const hasUser = channel.members.some((m) => m.userId === updatedUser.id);
+          if (!hasUser) return channel;
+          return {
+            ...channel,
+            members: channel.members.map((m) =>
+              m.userId === updatedUser.id
+                ? { ...m, user: { ...m.user, ...updatedUser } }
+                : m
+            ),
+          };
+        })
+      );
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
 
   const handleChannelClick = (channel: ChannelDTO) => {
     clearUnread(channel.id);

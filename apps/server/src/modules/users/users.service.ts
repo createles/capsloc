@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { UpdateProfileDto } from './dto/update-profile.dto.js';
 
@@ -21,7 +22,10 @@ export const safeUserSelect = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   /**
    * Find all users in directory ordered by username asc
@@ -56,10 +60,12 @@ export class UsersService {
    * Returns updated safe user record
    */
   async updateProfile(userId: string, dto: UpdateProfileDto) {
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id: userId },
       data: dto,
       select: safeUserSelect,
     });
+    this.eventEmitter.emit('user.updated', updated);
+    return updated;
   }
 }

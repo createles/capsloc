@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { OnEvent } from '@nestjs/event-emitter';
 import { MessagesService } from '../messages/messages.service.js';
 import { ChannelsService } from '../channels/channels.service.js';
-import { ClientToServerEvents, ServerToClientEvents, UserStatus, type JoinChannelPayload, type SendMessagePayload, type ChannelDTO } from '@capsloc/types';
+import { ClientToServerEvents, ServerToClientEvents, UserStatus, type JoinChannelPayload, type SendMessagePayload, type ChannelDTO, type UserProfileDTO } from '@capsloc/types';
 
 // Extended Socket interface retaining authenticated user identity in memory
 export interface AuthenticatedSocket extends Socket<ClientToServerEvents, ServerToClientEvents> {
@@ -264,5 +264,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @OnEvent('channel.updated')
   broadcastChannelUpdated(channel: ChannelDTO) {
     this.server.to(`channel:${channel.id}`).emit('channel_updated', channel);
+  }
+
+  @OnEvent('user.updated')
+  broadcastUserUpdated(user: UserProfileDTO) {
+    this.server.emit('user_updated', user);
   }
 }

@@ -16,7 +16,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
   onDmSelected,
 }) => {
   const { user: currentUser } = useAuth();
-  const { onlineUsers } = useSocket();
+  const { socket, onlineUsers } = useSocket();
   const [users, setUsers] = useState<UserProfileDTO[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +47,20 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
 
     fetchUsers();
   }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+      );
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
 
   const handleSelectTeammate = async (targetUser: UserProfileDTO) => {
     if (isSubmitting) return;

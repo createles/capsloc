@@ -105,6 +105,31 @@ const LocTerminal: React.FC = () => {
     };
   }, [socket]);
 
+  // Listen for real-time user updates (custom status, profile)
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setActiveChannel((prev) => {
+        if (!prev || !prev.members) return prev;
+        const hasUser = prev.members.some((m) => m.userId === updatedUser.id);
+        if (!hasUser) return prev;
+        return {
+          ...prev,
+          members: prev.members.map((m) =>
+            m.userId === updatedUser.id
+              ? { ...m, user: { ...m.user, ...updatedUser } }
+              : m
+          ),
+        };
+      });
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
+
   const handleDismissBanner = (channelId: string) => {
     setDismissedBannerChannelIds((prev) => ({ ...prev, [channelId]: true }));
   };
