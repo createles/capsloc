@@ -89,6 +89,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         this.logger.log(`User ${userId} is now ONLINE (Socket: ${client.id})`);
       }
 
+      // Send complete active online users snapshot directly to newly connected client
+      const activeOnlineUserIds = Array.from(this.activeUserSockets.entries())
+        .filter(([, sockets]) => sockets.size > 0)
+        .map(([id]) => id);
+
+      client.emit('online_users', { userIds: activeOnlineUserIds });
+
       // Join personal notification room for mentions and direct alerts
       client.join(`user:${userId}`);
 

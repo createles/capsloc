@@ -4,6 +4,7 @@ import { type TypedSocket } from "./SocketContext";
 import {
   UserStatus,
   type UserMentionedPayload,
+  type OnlineUsersPayload,
   type MessageDTO,
   type UnreadSummaryDTO,
   type JoinChannelPayload,
@@ -55,6 +56,17 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setOnlineUsers((prev) => ({
         ...prev,
         [payload.userId]: payload.status,
+      }));
+    });
+
+    socketInstance.on("online_users", (payload: OnlineUsersPayload) => {
+      const initialMap: Record<string, UserStatus> = {};
+      for (const id of payload.userIds) {
+        initialMap[id] = UserStatus.ONLINE;
+      }
+      setOnlineUsers((prev) => ({
+        ...prev,
+        ...initialMap,
       }));
     });
 
