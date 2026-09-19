@@ -25,7 +25,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
     setError(null);
 
     try {
-      const response = await api.patch<ChannelDTO>(`/api/channels/${channel.id}`, {
+      const response = await api.patch<ChannelDTO>(`/channels/${channel.id}`, {
         status: status.trim() || null,
         description: description.trim() || null,
       });
@@ -46,7 +46,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
     setError(null);
 
     try {
-      const response = await api.patch<ChannelDTO>(`/api/channels/${channel.id}`, {
+      const response = await api.patch<ChannelDTO>(`/channels/${channel.id}`, {
         status: null,
       });
       onUpdated(response.data);

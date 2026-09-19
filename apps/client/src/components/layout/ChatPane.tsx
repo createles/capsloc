@@ -1,6 +1,6 @@
 import React from "react";
 import { Terminal, BookOpen, UserPlus, Users, Pin, Pencil, X } from "lucide-react";
-import { type ChannelDTO, ChannelType, UserStatus, type UserProfileDTO } from "@capsloc/types";
+import { type ChannelDTO, ChannelType, UserStatus, type UserProfileDTO, LocRole } from "@capsloc/types";
 import { MessageList } from "../chat/MessageList";
 import { TypingIndicator } from "../chat/TypingIndicator";
 import { MessageInput } from "../chat/MessageInput";
@@ -61,8 +61,9 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
 
   const isChannelAdmin =
     activeChannel?.type !== ChannelType.DIRECT_MESSAGE &&
-    (activeChannel?.createdById === currentUser?.id ||
-      activeChannel?.members?.some((m) => m.userId === currentUser?.id && m.role === "admin"));
+    (currentUser?.locRole === LocRole.LOC_PM ||
+      activeChannel?.createdById === currentUser?.id ||
+      activeChannel?.members?.some((m) => m.userId === currentUser?.id && m.role?.toLowerCase() === "admin"));
 
   return (
     <main className="flex-1 flex flex-col bg-surface-canvas overflow-hidden min-w-0">

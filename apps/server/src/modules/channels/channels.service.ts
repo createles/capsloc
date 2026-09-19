@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { safeUserSelect } from '../users/users.service.js';
-import { ChannelType } from '@capsloc/types';
+import { ChannelType, LocRole } from '@capsloc/types';
 import { CreateChannelDto } from './dto/create-channel.dto.js';
 import { AddChannelMemberDto } from './dto/add-channel-member.dto.js';
 import { UpdateChannelDto } from './dto/update-channel.dto.js';
@@ -415,19 +415,25 @@ export class ChannelsService {
       throw new BadRequestException('Direct message channels do not support sprint status or metadata edits');
     }
 
-    const isCreator = channel.createdById === callerId;
-    const isAdmin = channel.members.some((m) => m.userId === callerId && m.role === 'admin');
+    const caller = await this.prisma.user.findUnique({
+      where: { id: callerId },
+      select: { locRole: true },
+    });
 
-    if (!isCreator && !isAdmin) {
-      throw new ForbiddenException('Only channel admins can edit channel sprint status or metadata');
+    const isCreator = channel.createdById === callerId;
+    const isChannelAdminMember = channel.members.some((m) => m.userId === callerId && m.role?.toLowerCase() === 'admin');
+    const isLocPm = caller?.locRole === LocRole.LOC_PM;
+
+    if (!isCreator && !isChannelAdminMember && !isLocPm) {
+      throw new ForbiddenException('Only channel admins or LOC PMs can edit channel sprint status or metadata');
     }
 
     const updated = await this.prisma.channel.update({
       where: { id: channelId },
       data: {
-        status: dto.status !== undefined ? dto.status.trim() || null : undefined,
-        description: dto.description !== undefined ? dto.description.trim() || null : undefined,
-        name: dto.name !== undefined ? dto.name.trim() || undefined : undefined,
+        status: dto.status !== undefined ? (dto.status ? dto.status.trim() : null) : undefined,
+        description: dto.description !== undefined ? (dto.description ? dto.description.trim() : null) : undefined,
+        name: dto.name !== undefined ? (dto.name ? dto.name.trim() : undefined) : undefined,
       },
       include: {
         members: {

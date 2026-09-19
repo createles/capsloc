@@ -84,8 +84,9 @@ export const ChannelMembersModal: React.FC<ChannelMembersModalProps> = ({
   });
 
   const isChannelAdmin =
+    user?.locRole === LocRole.LOC_PM ||
     channel.createdById === user?.id ||
-    channel.members?.some((m) => m.userId === user?.id && m.role === "admin");
+    channel.members?.some((m) => m.userId === user?.id && m.role?.toLowerCase() === "admin");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 select-none animate-in fade-in duration-150">

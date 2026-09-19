@@ -1,4 +1,4 @@
-import { IsString, IsOptional, MaxLength } from 'class-validator';
+import { IsString, IsOptional, MaxLength, ValidateIf } from 'class-validator';
 import { type UpdateChannelDTO } from '@capsloc/types';
 
 export class UpdateChannelDto implements UpdateChannelDTO {
@@ -8,12 +8,14 @@ export class UpdateChannelDto implements UpdateChannelDTO {
   name?: string;
 
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsString()
   @MaxLength(250)
-  description?: string;
+  description?: string | null;
 
   @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsString()
   @MaxLength(100)
-  status?: string;
+  status?: string | null;
 }
