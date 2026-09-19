@@ -71,9 +71,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
         <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4 bg-surface-card/40">
           <div className="flex items-center space-x-2">
             <Hash className="h-4 w-4 text-accent-gold" />
-            <span className="font-semibold text-sm text-white">
-              Create Channel
-            </span>
+            <span className="font-semibold text-sm text-white">Create Channel</span>
           </div>
           <button
             type="button"
@@ -93,9 +91,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
 
           {/* Channel Name */}
           <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">
-              Channel Name
-            </label>
+            <label className="block text-[11px] font-medium text-gray-300">Channel Name</label>
             <div className="relative flex items-center">
               <span className="absolute left-3 text-gray-500 font-mono">#</span>
               <input
@@ -114,9 +110,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           {/* Project Tag & Locale Tag Grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="block text-[11px] font-medium text-gray-300">
-                Project Tag
-              </label>
+              <label className="block text-[11px] font-medium text-gray-300">Project Tag</label>
               <input
                 type="text"
                 value={projectTag}
@@ -128,9 +122,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="block text-[11px] font-medium text-gray-300">
-                Locale Tag
-              </label>
+              <label className="block text-[11px] font-medium text-gray-300">Locale Tag</label>
               <input
                 type="text"
                 value={localeTag}
@@ -175,9 +167,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 <Globe className="h-4 w-4 text-accent-gold shrink-0" />
                 <div>
                   <div className="font-semibold text-xs text-white">Public</div>
-                  <div className="text-[10px] text-gray-400">
-                    Open to all team members
-                  </div>
+                  <div className="text-[10px] text-gray-400">Open to all team members</div>
                 </div>
               </button>
 
@@ -192,12 +182,8 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               >
                 <Lock className="h-4 w-4 text-accent-gold shrink-0" />
                 <div>
-                  <div className="font-semibold text-xs text-white">
-                    Private
-                  </div>
-                  <div className="text-[10px] text-gray-400">
-                    Restricted locale team
-                  </div>
+                  <div className="font-semibold text-xs text-white">Private</div>
+                  <div className="text-[10px] text-gray-400">Restricted locale team</div>
                 </div>
               </button>
             </div>
@@ -208,8 +194,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-
-  pointer"
+              className="rounded-md px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
             >
               Cancel
             </button>

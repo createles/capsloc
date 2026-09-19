@@ -59,16 +59,13 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
       >
         <div className="flex items-center space-x-3 text-gray-300 font-sans">
           <ImageIcon className="h-4 w-4 text-accent-gold shrink-0" />
-          <span className="font-semibold text-white truncate max-w-sm">
-            {attachment.fileName}
-          </span>
+          <span className="font-semibold text-white truncate max-w-sm">{attachment.fileName}</span>
           <span className="text-gray-500 font-mono text-[11px] shrink-0">
             ({(attachment.fileSize / 1024).toFixed(1)} KB)
           </span>
           {uploaderName && (
             <span className="text-gray-400 text-[11px] hidden sm:inline truncate">
-              Uploaded by{" "}
-              <strong className="text-gray-200">{uploaderName}</strong>
+              Uploaded by <strong className="text-gray-200">{uploaderName}</strong>
             </span>
           )}
           {attachment.localeTag && (
@@ -92,8 +89,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
               type="button"
               onClick={handleZoomOut}
               disabled={zoom <= 1}
-              className="p-1 rounded hover:text-white hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-
-  colors cursor-pointer"
+              className="p-1 rounded hover:text-white hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
               title="Zoom Out"
             >
               <ZoomOut className="h-3.5 w-3.5" />
@@ -105,8 +101,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
               type="button"
               onClick={handleZoomIn}
               disabled={zoom >= 2.5}
-              className="p-1 rounded hover:text-white hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-
-  colors cursor-pointer"
+              className="p-1 rounded hover:text-white hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
               title="Zoom In"
             >
               <ZoomIn className="h-3.5 w-3.5" />

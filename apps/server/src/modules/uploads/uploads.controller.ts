@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  UseGuards,
-  UseInterceptors,
-  UploadedFile,
-  Body,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Post, UseGuards, UseInterceptors, UploadedFile, Body, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
@@ -32,32 +24,13 @@ const multerDiskStorage = diskStorage({
 
 // SPECIFICATION - File Filter Security Check:
 // Whitelist allowed MIME types and .log extensions
-const multerFileFilter = (
-  _req: any,
-  file: Express.Multer.File,
-  cb: (error: Error | null, acceptFile: boolean) => void,
-) => {
-  const allowedMimes = [
-    'image/png',
-    'image/jpeg',
-    'image/webp',
-    'image/gif',
-    'text/plain',
-    'application/json',
-    'text/csv',
-    'application/pdf',
-  ];
+const multerFileFilter = (_req: any, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
+  const allowedMimes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'application/json', 'text/csv', 'application/pdf'];
 
-  if (
-    allowedMimes.includes(file.mimetype) ||
-    file.originalname.endsWith('.log')
-  ) {
+  if (allowedMimes.includes(file.mimetype) || file.originalname.endsWith('.log')) {
     cb(null, true);
   } else {
-    cb(
-      new BadRequestException(`Unsupported file type: ${file.mimetype}`),
-      false,
-    );
+    cb(new BadRequestException(`Unsupported file type: ${file.mimetype}`), false);
   }
 };
 
@@ -75,10 +48,7 @@ export class UploadsController {
       fileFilter: multerFileFilter,
     }),
   )
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() dto: UploadAttachmentDto,
-  ) {
+  async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() dto: UploadAttachmentDto) {
     return this.uploadsService.saveAttachment(file, dto);
   }
 }

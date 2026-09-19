@@ -1,32 +1,205 @@
-import React, { useState } from "react";
-import {
-  Terminal,
-  LogOut,
-  Loader2,
-  Wifi,
-  WifiOff,
-  BookOpen,
-} from "lucide-react";
-import { type ChannelDTO } from "@capsloc/types";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import { SocketProvider, useSocket } from "./context/SocketContext";
+import React, { useState, useEffect, useRef } from "react";
+import { Loader2 } from "lucide-react";
+import { type ChannelDTO, type UserProfileDTO } from "@capsloc/types";
+import { api } from "./services/api";
+import { AuthProvider } from "./context/AuthProvider";
+import { useAuth } from "./hooks/useAuth";
+import { SocketProvider } from "./context/SocketProvider";
+import { useSocket } from "./hooks/useSocket";
 import { AuthModal } from "./components/auth/AuthModal";
+import { Header } from "./components/layout/Header";
 import { ChannelSidebar } from "./components/layout/ChannelSidebar";
-import { MessageList } from "./components/chat/MessageList";
-import { TypingIndicator } from "./components/chat/TypingIndicator";
-import { MessageInput } from "./components/chat/MessageInput";
+import { ChatPane } from "./components/layout/ChatPane";
 import { LocInspectorDrawer } from "./components/inspector/LocInspectorDrawer";
+import { InviteMemberModal } from "./components/channels/InviteMemberModal";
+import { ChannelMembersModal } from "./components/channels/ChannelMembersModal";
+import { EditChannelStatusModal } from "./components/channels/EditChannelStatusModal";
+import { MentionToast } from "./components/common/MentionToast";
+
+const INSPECTOR_STORAGE_KEY = "capsloc:inspector_open";
+
+const getInitialInspectorOpen = (): boolean => {
+  try {
+    return sessionStorage.getItem(INSPECTOR_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+};
 
 const LocTerminal: React.FC = () => {
   const { user, logout, isLoading, isAuthenticated } = useAuth();
-  const { isConnected } = useSocket();
+  const {
+    socket,
+    isConnected,
+    onlineUsers,
+    activeMentionToast,
+    dismissMentionToast,
+    setActiveChannelId,
+  } = useSocket();
   const [activeChannel, setActiveChannel] = useState<ChannelDTO | null>(null);
 
   // Decoupled drawer state:
-  const [selectedStringKey, setSelectedStringKey] = useState<string | null>(
-    "LOC-MH-001",
-  );
-  const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(true);
+  const isInspectorOpenRef = useRef<boolean>(getInitialInspectorOpen());
+  const [selectedStringKey, setSelectedStringKey] = useState<string | null>(null);
+  const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(getInitialInspectorOpen());
+
+  useEffect(() => {
+    isInspectorOpenRef.current = isInspectorOpen;
+    try {
+      sessionStorage.setItem(INSPECTOR_STORAGE_KEY, String(isInspectorOpen));
+    } catch (e) {
+      console.error("Failed to persist inspector state to sessionStorage:", e);
+    }
+  }, [isInspectorOpen]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        sessionStorage.setItem(INSPECTOR_STORAGE_KEY, String(isInspectorOpenRef.current));
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  // In-chat tag highlight state
+  const [highlightedTagKey, setHighlightedTagKey] = useState<string | null>(null);
+  const [mentionsCount, setMentionsCount] = useState<number>(0);
+
+  // Modals state
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [isEditStatusModalOpen, setIsEditStatusModalOpen] = useState(false);
+
+  // Pinned sprint status banner state
+  const [dismissedBannerChannelIds, setDismissedBannerChannelIds] = useState<
+    Record<string, boolean>
+  >({});
+
+  // Listen for real-time channel updates (sprint status, description)
+  useEffect(() => {
+    if (!socket) return;
+    const handleChannelUpdated = (updatedChannel: ChannelDTO) => {
+      setActiveChannel((prev) => {
+        if (prev?.id === updatedChannel.id) {
+          if (prev.status !== updatedChannel.status) {
+            setDismissedBannerChannelIds((d) => {
+              const next = { ...d };
+              delete next[updatedChannel.id];
+              return next;
+            });
+          }
+          return { ...prev, ...updatedChannel };
+        }
+        return prev;
+      });
+    };
+
+    socket.on("channel_updated", handleChannelUpdated);
+    return () => {
+      socket.off("channel_updated", handleChannelUpdated);
+    };
+  }, [socket]);
+
+  // Listen for real-time user updates (custom status, profile)
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setActiveChannel((prev) => {
+        if (!prev || !prev.members) return prev;
+        const hasUser = prev.members.some((m) => m.userId === updatedUser.id);
+        if (!hasUser) return prev;
+        return {
+          ...prev,
+          members: prev.members.map((m) =>
+            m.userId === updatedUser.id
+              ? { ...m, user: { ...m.user, ...updatedUser } }
+              : m
+          ),
+        };
+      });
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
+
+  const handleDismissBanner = (channelId: string) => {
+    setDismissedBannerChannelIds((prev) => ({ ...prev, [channelId]: true }));
+  };
+
+  const handleRestoreBanner = (channelId: string) => {
+    setDismissedBannerChannelIds((prev) => {
+      const next = { ...prev };
+      delete next[channelId];
+      return next;
+    });
+  };
+
+  const isBannerVisible =
+    Boolean(activeChannel?.status) && !dismissedBannerChannelIds[activeChannel?.id || ""];
+
+  const handleSelectChannel = (channel: ChannelDTO) => {
+    setActiveChannel(channel);
+    setActiveChannelId(channel.id);
+    setHighlightedTagKey(null);
+    setMentionsCount(0);
+  };
+
+  const handleMemberAdded = (updatedChannel: ChannelDTO) => {
+    setActiveChannel(updatedChannel);
+  };
+
+  const handleJumpToChannel = async (channelId: string) => {
+    try {
+      const { data } = await api.get<ChannelDTO>(`/channels/${channelId}`);
+      setActiveChannel(data);
+      setActiveChannelId(data.id);
+      setHighlightedTagKey(null);
+      setMentionsCount(0);
+    } catch (err) {
+      console.error("Failed to jump to channel:", err);
+    }
+  };
+
+  const handleOpenDm = async (recipientId: string) => {
+    try {
+      const { data: dmChannel } = await api.post<ChannelDTO>("/channels/dm", {
+        recipientId,
+      });
+      handleSelectChannel(dmChannel);
+    } catch (err) {
+      console.error("Failed to open direct message channel:", err);
+    }
+  };
+
+  const handleToggleTagHighlight = (key: string) => {
+    setHighlightedTagKey((prev) => (prev === key ? null : key));
+  };
+
+  const handleSelectStringKey = (key: string) => {
+    setSelectedStringKey(key);
+    setIsInspectorOpen(true);
+    setHighlightedTagKey(null);
+  };
+
+  const handleToggleInspector = () => {
+    setIsInspectorOpen((prev) => {
+      if (prev) setHighlightedTagKey(null);
+      return !prev;
+    });
+  };
+
+  const handleCloseInspector = () => {
+    setIsInspectorOpen(false);
+    setHighlightedTagKey(null);
+  };
 
   if (isLoading) {
     return (
@@ -41,167 +214,82 @@ const LocTerminal: React.FC = () => {
     return <AuthModal />;
   }
 
-  const handleSelectStringKey = (key: string) => {
-    setSelectedStringKey(key);
-    setIsInspectorOpen(true);
-  };
-
-  const handleToggleInspector = () => {
-    setIsInspectorOpen((prev) => !prev);
-  };
-
-  const handleCloseInspector = () => {
-    setIsInspectorOpen(false);
-  };
-
   return (
     <div className="flex h-screen w-screen flex-col bg-surface-canvas text-gray-200">
-      {/* Top Header */}
-      <header className="flex h-12 items-center justify-between border-b border-border-subtle bg-surface-panel px-4 select-none">
-        <div className="flex items-center space-x-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-navy border border-accent-gold/40">
-            <Terminal className="h-4 w-4 text-accent-gold" />
-          </div>
-          <div className="flex items-baseline space-x-2">
-            <span className="font-sans text-sm font-bold tracking-tight text-white">
-              CapsLoc
-            </span>
-            <span className="text-[11px] font-sans text-gray-400">
-              Localization Studio
-            </span>
-          </div>
-          <span className="rounded-md bg-surface-card px-2 py-0.5 text-[10px] font-mono text-gray-400 border border-border-subtle">
-            v0.2.0
-          </span>
-        </div>
+      {/* 1. Top Header */}
+      <Header isConnected={isConnected} onLogout={logout} />
 
-        <div className="flex items-center space-x-4 text-xs font-sans">
-          {/* Network Presence Badge */}
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 border transition-colors ${
-              isConnected
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-            }`}
-          >
-            {isConnected ? (
-              <>
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <Wifi className="h-3 w-3 text-emerald-400" />
-                <span>Connected</span>
-              </>
-            ) : (
-              <>
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                <WifiOff className="h-3 w-3 text-amber-400" />
-                <span>Connecting...</span>
-              </>
-            )}
-          </span>
-
-          {/* Sign Out Button */}
-          <button
-            type="button"
-            onClick={logout}
-            className="flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-gray-400 hover:bg-surface-hover hover:text-white transition-
-  colors cursor-pointer"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Three-Pane Layout */}
+      {/* 2. Main Three-Pane Work Area (Left -> Right) */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar */}
+        {/* [LEFT] Channel Sidebar */}
         <ChannelSidebar
           activeChannelId={activeChannel?.id || null}
-          onSelectChannel={setActiveChannel}
+          onSelectChannel={handleSelectChannel}
         />
 
-        {/* Center Chat Viewport */}
-        <main className="flex-1 flex flex-col bg-surface-canvas overflow-hidden min-w-0">
-          {/* Channel Header Bar */}
-          <div
-            className="border-b border-border-subtle bg-surface-panel/70 px-4 py-2.5 text-xs font-sans text-gray-400 flex items-center
-  justify-between shrink-0"
-          >
-            <div className="flex items-center space-x-2 truncate">
-              <span className="text-white font-semibold text-sm">
-                #{activeChannel?.name || "select-channel"}
-              </span>
-              {activeChannel?.localeTag && (
-                <span
-                  className="rounded-md bg-brand-navy/60 px-2 py-0.5 text-[10px] font-mono text-accent-gold border border-accent-
-  gold/20"
-                >
-                  {activeChannel.localeTag}
-                </span>
-              )}
-              {activeChannel?.description && (
-                <span className="text-gray-400 text-xs truncate max-w-md hidden md:inline ml-2">
-                  {activeChannel.description}
-                </span>
-              )}
-            </div>
+        {/* [CENTER] Chat Pane & Active Input */}
+        <ChatPane
+          activeChannel={activeChannel}
+          currentUser={user}
+          onlineUsers={onlineUsers}
+          isInspectorOpen={isInspectorOpen}
+          selectedStringKey={selectedStringKey}
+          highlightedTagKey={highlightedTagKey}
+          onToggleInspector={handleToggleInspector}
+          onSelectStringKey={handleSelectStringKey}
+          onDismissTagHighlight={() => setHighlightedTagKey(null)}
+          onReportMatchesCount={setMentionsCount}
+          onOpenDm={handleOpenDm}
+          onOpenMembers={() => setIsMembersModalOpen(true)}
+          onOpenInvite={() => setIsInviteModalOpen(true)}
+          onOpenEditStatus={() => setIsEditStatusModalOpen(true)}
+          isBannerVisible={isBannerVisible}
+          onDismissBanner={handleDismissBanner}
+          onRestoreBanner={handleRestoreBanner}
+        />
 
-            {/* Right: Inspector Drawer Toggle Button */}
-            {activeChannel && (
-              <button
-                type="button"
-                onClick={handleToggleInspector}
-                className={`flex items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
-                  isInspectorOpen
-                    ? "bg-brand-navy text-accent-gold border border-accent-gold/30"
-                    : "text-gray-400 hover:text-white hover:bg-surface-hover border border-transparent"
-                }`}
-                title={
-                  isInspectorOpen
-                    ? "Collapse String Inspector"
-                    : "Open String Inspector"
-                }
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                <span>Inspector</span>
-                {selectedStringKey && (
-                  <span className="font-mono text-[10px] text-accent-gold/90 bg-black/30 px-1.5 py-0.2 rounded">
-                    #{selectedStringKey}
-                  </span>
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Messages Stream & Active Input */}
-          {activeChannel ? (
-            <>
-              <MessageList
-                channelId={activeChannel.id}
-                onSelectStringKey={handleSelectStringKey}
-              />
-              <TypingIndicator channelId={activeChannel.id} />
-              <MessageInput
-                channelId={activeChannel.id}
-                channelName={activeChannel.name}
-              />
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center font-sans text-xs text-gray-500 space-y-2">
-              <Terminal className="h-8 w-8 text-gray-600 mb-2" />
-              <span>Select a channel to start messaging</span>
-            </div>
-          )}
-        </main>
-
-        {/* Right Localization Inspector Slide-Out Drawer */}
+        {/* [RIGHT] Localization Inspector Slide-Out Drawer */}
         {isInspectorOpen && (
           <LocInspectorDrawer
             stringKey={selectedStringKey}
             onClose={handleCloseInspector}
+            mentionsCountInCurrentChat={mentionsCount}
+            isTagHighlightActive={!!highlightedTagKey && highlightedTagKey === selectedStringKey}
+            onToggleTagHighlight={handleToggleTagHighlight}
           />
         )}
       </div>
+
+      {/* 3. Global Overlays & Modals */}
+      {isEditStatusModalOpen && activeChannel && (
+        <EditChannelStatusModal
+          channel={activeChannel}
+          onClose={() => setIsEditStatusModalOpen(false)}
+          onUpdated={(updated) => setActiveChannel(updated)}
+        />
+      )}
+
+      {isInviteModalOpen && activeChannel && (
+        <InviteMemberModal
+          channel={activeChannel}
+          onClose={() => setIsInviteModalOpen(false)}
+          onMemberAdded={handleMemberAdded}
+        />
+      )}
+
+      {isMembersModalOpen && activeChannel && (
+        <ChannelMembersModal
+          channel={activeChannel}
+          onClose={() => setIsMembersModalOpen(false)}
+          onOpenInvite={() => setIsInviteModalOpen(true)}
+        />
+      )}
+
+      <MentionToast
+        toast={activeMentionToast}
+        onDismiss={dismissMentionToast}
+        onJumpToChannel={handleJumpToChannel}
+      />
     </div>
   );
 };

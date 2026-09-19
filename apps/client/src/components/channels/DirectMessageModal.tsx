@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { X, Users, Search, Loader2, MessageSquare } from "lucide-react";
-import {
-  UserStatus,
-  type UserProfileDTO,
-  type ChannelDTO,
-} from "@capsloc/types";
+import { UserStatus, type UserProfileDTO, type ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
-import { useAuth } from "../../context/AuthContext";
-import { useSocket } from "../../context/SocketContext";
+import { useAuth } from "../../hooks/useAuth";
+import { useSocket } from "../../hooks/useSocket";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 
 export interface DirectMessageModalProps {
@@ -20,7 +16,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
   onDmSelected,
 }) => {
   const { user: currentUser } = useAuth();
-  const { onlineUsers } = useSocket();
+  const { socket, onlineUsers } = useSocket();
   const [users, setUsers] = useState<UserProfileDTO[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -52,6 +48,20 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
     fetchUsers();
   }, [currentUser?.id]);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+      );
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
+
   const handleSelectTeammate = async (targetUser: UserProfileDTO) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -67,9 +77,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error("Failed to start DM:", err);
-      setError(
-        err.response?.data?.message || "Failed to start direct message.",
-      );
+      setError(err.response?.data?.message || "Failed to start direct message.");
     } finally {
       setIsSubmitting(false);
     }
@@ -77,10 +85,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
 
   const filteredUsers = users.filter((u) => {
     const q = searchQuery.toLowerCase();
-    return (
-      u.displayName.toLowerCase().includes(q) ||
-      u.username.toLowerCase().includes(q)
-    );
+    return u.displayName.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
   });
 
   return (
@@ -97,9 +102,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
         <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4 bg-surface-card/40 shrink-0">
           <div className="flex items-center space-x-2">
             <Users className="h-4 w-4 text-accent-gold" />
-            <span className="font-semibold text-sm text-white">
-              Direct Messages
-            </span>
+            <span className="font-semibold text-sm text-white">Direct Messages</span>
           </div>
           <button
             type="button"
@@ -146,9 +149,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
           ) : (
             filteredUsers.map((teammate) => {
               const isOnline = onlineUsers[teammate.id] === UserStatus.ONLINE;
-              const initials = teammate.displayName
-                .substring(0, 2)
-                .toUpperCase();
+              const initials = teammate.displayName.substring(0, 2).toUpperCase();
 
               return (
                 <button
@@ -182,22 +183,19 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
                       </span>
                       <LocRoleBadge role={teammate.locRole} />
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-gray-400 mt-0.5">
+                    <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
                       <span className="font-mono text-gray-500 truncate mr-2">
                         @{teammate.username}
                       </span>
                       {teammate.customStatus && (
-                        <span className="truncate italic text-gray-400 max-w-35">
-                          {teammate.customStatus}
+                        <span className="truncate italic text-gray-400 max-w-60">
+                          "{teammate.customStatus}"
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <MessageSquare
-                    className="h-4 w-4 text-gray-600 group-hover:text-accent-gold transition-colors shrink-0 opacity-0 group-
-  hover:opacity-100"
-                  />
+                  <MessageSquare className="h-4 w-4 text-gray-600 group-hover:text-accent-gold transition-colors shrink-0 opacity-0 group-hover:opacity-100" />
                 </button>
               );
             })

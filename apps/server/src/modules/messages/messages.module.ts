@@ -4,9 +4,9 @@ import { MessagesService } from './messages.service.js';
 import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
-    imports: [AuthModule],
-    controllers: [MessagesController],
-    providers: [MessagesService],
-    exports: [MessagesService], // Exported for ChatGateway consumption in our Socket.io implementation
+  imports: [AuthModule],
+  controllers: [MessagesController],
+  providers: [MessagesService],
+  exports: [MessagesService], // Exported for ChatGateway consumption in our Socket.io implementation
 })
-export class MessagesModule { }
+export class MessagesModule {}

@@ -16,20 +16,12 @@ export class UploadsService {
 
     // 1. If MIME starts with 'image/':
     if (mimetype.startsWith('image/')) {
-      if (
-        lowerName.includes('bug') ||
-        lowerName.includes('overflow') ||
-        lowerName.includes('clip')
-      ) {
+      if (lowerName.includes('bug') || lowerName.includes('overflow') || lowerName.includes('clip')) {
         return AttachmentType.SCREENSHOT_BUG;
       }
       return AttachmentType.IMAGE;
     }
-    if (
-      mimetype === 'text/plain' ||
-      lowerName.endsWith('.log') ||
-      lowerName.endsWith('.crash')
-    ) {
+    if (mimetype === 'text/plain' || lowerName.endsWith('.log') || lowerName.endsWith('.crash')) {
       return AttachmentType.LOG_FILE;
     }
 
@@ -55,6 +47,5 @@ export class UploadsService {
         localeTag: dto.localeTag || null,
       },
     });
-
   }
 }

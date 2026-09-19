@@ -80,6 +80,7 @@ model Channel {
   id          String      @id @default(uuid())
   name        String?
   description String?
+  status      String? // e.g., "last 2 weeks until 9/20/26 deadline" (Sprint/Milestone state)
   type        ChannelType @default(PUBLIC_PROJECT)
   projectTag  String? // e.g., "MH-WILDS", "RE-ENGINE", "DD2"
   localeTag   String? // e.g., "JA->EN", "EFIGS", "GLOBAL"
