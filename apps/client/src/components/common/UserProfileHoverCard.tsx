@@ -184,15 +184,13 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
             </div>
 
             {/* Custom Status Note */}
-            {user.customStatus ? (
+            {user.customStatus && (
               <div className="rounded-lg bg-surface-card/60 border border-border-subtle/60 p-2 text-xs">
                 <span className="text-[10px] font-mono uppercase text-gray-500 block mb-0.5">
                   Status
                 </span>
                 <p className="italic text-gray-200 break-words font-sans">"{user.customStatus}"</p>
               </div>
-            ) : (
-              <div className="text-[11px] text-gray-500 italic">No custom status set</div>
             )}
 
             {/* Send Message Button / Self Notice */}
