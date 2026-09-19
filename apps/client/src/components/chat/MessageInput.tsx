@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, X, Image as ImageIcon, Loader2, UploadCloud, AtSign } from "lucide-react";
-import type { AttachmentDTO, UserProfileDTO } from "@capsloc/types";
+import type { AttachmentDTO, ChannelMemberDTO, UserProfileDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
@@ -32,24 +32,31 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Pre-load user directory for @tag autocomplete
+  // Pre-load room members for @tag autocomplete
   useEffect(() => {
     let isMounted = true;
-    const fetchUsers = async () => {
+    const fetchRoomMembers = async () => {
+      if (!channelId) return;
       try {
-        const { data } = await api.get<UserProfileDTO[]>("/users");
+        const { data } = await api.get<ChannelMemberDTO[]>(`/channels/${channelId}/members`);
         if (isMounted) {
-          setDirectoryUsers(data);
+          const roomUsers = data
+            .map((m) => m.user)
+            .filter((u): u is UserProfileDTO => Boolean(u));
+          setDirectoryUsers(roomUsers);
         }
       } catch (err) {
-        console.error("Failed to load user directory for mentions:", err);
+        console.error("Failed to load room members for mentions:", err);
+        if (isMounted) {
+          setDirectoryUsers([]);
+        }
       }
     };
-    fetchUsers();
+    fetchRoomMembers();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [channelId]);
 
   // Keep stopTypingRef pointing to the latest socket dispatcher:
   const stopTypingRef = useRef(stopTyping);

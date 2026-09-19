@@ -165,27 +165,39 @@ export class MessagesService {
 
     const targetUsernames = Array.from(new Set(mentionMatches.map((m) => m.substring(1).toLowerCase())));
 
-    const [mentionedUsers, channel] = await Promise.all([
-      this.prisma.user.findMany({
-        where: {
-          username: {
-            in: targetUsernames,
-            mode: 'insensitive',
+    const channel = await this.prisma.channel.findUnique({
+      where: { id: channelId },
+      select: {
+        id: true,
+        name: true,
+        members: {
+          select: {
+            userId: true,
           },
         },
-        select: { id: true },
-      }),
-      this.prisma.channel.findUnique({
-        where: { id: channelId },
-        select: { name: true },
-      }),
-    ]);
+      },
+    });
+
+    if (!channel) return [];
+
+    const memberUserIds = channel.members.map((m) => m.userId);
+
+    const mentionedUsers = await this.prisma.user.findMany({
+      where: {
+        id: { in: memberUserIds },
+        username: {
+          in: targetUsernames,
+          mode: 'insensitive',
+        },
+      },
+      select: { id: true },
+    });
 
     return mentionedUsers
       .filter((u) => u.id !== senderId)
       .map((u) => ({
         targetUserId: u.id,
-        channelName: channel?.name ?? null,
+        channelName: channel.name ?? null,
       }));
   }
 }
