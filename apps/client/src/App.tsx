@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
-import { type ChannelDTO } from "@capsloc/types";
+import { type ChannelDTO, type UserProfileDTO } from "@capsloc/types";
 import { api } from "./services/api";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./hooks/useAuth";
@@ -16,6 +16,16 @@ import { ChannelMembersModal } from "./components/channels/ChannelMembersModal";
 import { EditChannelStatusModal } from "./components/channels/EditChannelStatusModal";
 import { MentionToast } from "./components/common/MentionToast";
 
+const INSPECTOR_STORAGE_KEY = "capsloc:inspector_open";
+
+const getInitialInspectorOpen = (): boolean => {
+  try {
+    return sessionStorage.getItem(INSPECTOR_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+};
+
 const LocTerminal: React.FC = () => {
   const { user, logout, isLoading, isAuthenticated } = useAuth();
   const {
@@ -29,8 +39,32 @@ const LocTerminal: React.FC = () => {
   const [activeChannel, setActiveChannel] = useState<ChannelDTO | null>(null);
 
   // Decoupled drawer state:
+  const isInspectorOpenRef = useRef<boolean>(getInitialInspectorOpen());
   const [selectedStringKey, setSelectedStringKey] = useState<string | null>(null);
-  const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(true);
+  const [isInspectorOpen, setIsInspectorOpen] = useState<boolean>(getInitialInspectorOpen());
+
+  useEffect(() => {
+    isInspectorOpenRef.current = isInspectorOpen;
+    try {
+      sessionStorage.setItem(INSPECTOR_STORAGE_KEY, String(isInspectorOpen));
+    } catch (e) {
+      console.error("Failed to persist inspector state to sessionStorage:", e);
+    }
+  }, [isInspectorOpen]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        sessionStorage.setItem(INSPECTOR_STORAGE_KEY, String(isInspectorOpenRef.current));
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   // In-chat tag highlight state
   const [highlightedTagKey, setHighlightedTagKey] = useState<string | null>(null);
