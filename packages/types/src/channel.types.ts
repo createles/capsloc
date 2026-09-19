@@ -17,8 +17,8 @@ export interface ChannelDTO {
 
 export interface UpdateChannelDTO {
   name?: string;
-  description?: string;
-  status?: string;
+  description?: string | null;
+  status?: string | null;
 }
 
 export interface ChannelMemberDTO {

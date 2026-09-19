@@ -1,5 +1,6 @@
 import { MessageDTO } from "./message.types.js";
 import { ChannelDTO } from "./channel.types.js";
+import { UserProfileDTO } from "./user.types.js";
 import { UserStatus } from "./enums.js";
 
 export interface JoinChannelPayload {
@@ -33,13 +34,19 @@ export interface UserMentionedPayload {
   senderName: string;
 }
 
+export interface OnlineUsersPayload {
+  userIds: string[];
+}
+
 export interface ServerToClientEvents {
   new_message: (message: MessageDTO) => void;
   user_mentioned: (payload: UserMentionedPayload) => void;
   user_typing: (payload: TypingIndicatorPayload) => void;
   user_stop_typing: (payload: { channelId: string; userId: string }) => void;
   user_presence: (payload: UserPresencePayload) => void;
+  online_users: (payload: OnlineUsersPayload) => void;
   channel_updated: (channel: ChannelDTO) => void;
+  user_updated: (user: UserProfileDTO) => void;
   error: (error: { message: string; code?: string }) => void;
 }
 
