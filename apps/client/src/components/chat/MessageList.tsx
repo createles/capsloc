@@ -16,6 +16,7 @@ import { UserStatus, type MessageDTO, type PaginatedMessagesDTO } from "@capsloc
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 import { ImageLightboxModal } from "./ImageLightBoxModal";
 import { UserProfileHoverCard } from "../common/UserProfileHoverCard";
@@ -90,6 +91,7 @@ const MessageHoverBar: React.FC<{
   content: string;
   onSelectStringKey?: (key: string) => void;
 }> = ({ content, onSelectStringKey }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const tagMatch = content.match(/(#LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+)/i);
   const matchedKey = tagMatch ? tagMatch[0].replace(/^[#$]/, "") : null;
@@ -110,7 +112,7 @@ const MessageHoverBar: React.FC<{
         type="button"
         onClick={handleCopy}
         className="cursor-pointer rounded p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
-        title="Copy message text"
+        title={t("message.copyText")}
       >
         {copied ? (
           <Check className="h-3.5 w-3.5 text-emerald-400" />
@@ -124,7 +126,7 @@ const MessageHoverBar: React.FC<{
           type="button"
           onClick={() => onSelectStringKey(matchedKey)}
           className="cursor-pointer rounded p-1 text-emerald-400 transition-colors hover:bg-emerald-950/50 hover:text-emerald-300"
-          title={`Inspect ${tagMatch?.[0]}`}
+          title={`${t("message.inspectTag")} ${tagMatch?.[0]}`}
         >
           <FileCode className="h-3.5 w-3.5" />
         </button>
@@ -176,6 +178,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const { user } = useAuth();
   const { socket, isConnected, onlineUsers, joinChannel, leaveChannel } = useSocket();
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState<boolean>(false);
@@ -184,14 +187,14 @@ export const MessageList: React.FC<MessageListProps> = ({
   const [activeLightbox, setActiveLightbox] = useState<{
     attachment: AttachmentDTO;
     uploaderName?: string;
-  } | null>(null); // Lightbox state handler
+  } | null>(null);
 
   // Scroll management & unread tracking:
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const isAtBottomRef = useRef<boolean>(true);
-  const isInitialLoadRef = useRef<boolean>(true); // Tracks initial asset load settling
+  const isInitialLoadRef = useRef<boolean>(true);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   // In-chat tag highlight & jump navigation:
@@ -201,14 +204,13 @@ export const MessageList: React.FC<MessageListProps> = ({
     return messages.filter((m) => m.content.toLowerCase().includes(tag)).map((m) => m.id);
   }, [messages, highlightedTagKey]);
 
-  // Count occurrences of currently inspected string in this channel (independent of active highlighting)
   const inspectedMatchesCount = useMemo(() => {
     if (!inspectedStringKey) return 0;
     const cleanKey = inspectedStringKey.toLowerCase().replace(/^#/, "");
     return messages.filter((m) => m.content.toLowerCase().includes(cleanKey)).length;
   }, [messages, inspectedStringKey]);
 
-  const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0); // Initial tag match index
+  const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
 
   // Adjust state during render when highlighted tag changes:
   const [prevTagKey, setPrevTagKey] = useState(highlightedTagKey);
@@ -229,7 +231,6 @@ export const MessageList: React.FC<MessageListProps> = ({
     }
   }, [highlightedTagKey, matchingMessageIds]);
 
-  // Report match count to parent / inspector
   useEffect(() => {
     onReportMatchesCount?.(inspectedMatchesCount);
   }, [inspectedMatchesCount, onReportMatchesCount]);
@@ -257,7 +258,6 @@ export const MessageList: React.FC<MessageListProps> = ({
     scrollToMatch(prevIdx);
   };
 
-  // Declarative Room Subscription
   useEffect(() => {
     if (!channelId || !isConnected) return;
     joinChannel(channelId);
@@ -266,7 +266,6 @@ export const MessageList: React.FC<MessageListProps> = ({
     };
   }, [channelId, isConnected, joinChannel, leaveChannel]);
 
-  // Initial message history fetch with 250ms minimum loading display floor
   useEffect(() => {
     let isMounted = true;
     const startTime = Date.now();
@@ -314,11 +313,9 @@ export const MessageList: React.FC<MessageListProps> = ({
     bottomRef.current?.scrollIntoView({ behavior });
   };
 
-  // Scroll to bottom on initial load with ResizeObserver for async image/font expansion
   useEffect(() => {
     if (!containerRef.current || isLoading) return;
 
-    // Observe container resizing as images & fonts expand asynchronously
     const resizeObserver = new ResizeObserver(() => {
       if (isInitialLoadRef.current || isAtBottomRef.current) {
         scrollToBottom("instant");
@@ -327,10 +324,8 @@ export const MessageList: React.FC<MessageListProps> = ({
 
     resizeObserver.observe(containerRef.current);
 
-    // Initial paint-delayed scroll
     const timer = setTimeout(() => {
       scrollToBottom("instant");
-      // Settle initial load window after 1.5s
       setTimeout(() => {
         isInitialLoadRef.current = false;
       }, 1500);
@@ -342,7 +337,6 @@ export const MessageList: React.FC<MessageListProps> = ({
     };
   }, [isLoading, channelId]);
 
-  // Scroll event handler with 80px bottom threshold
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
@@ -355,7 +349,6 @@ export const MessageList: React.FC<MessageListProps> = ({
     }
   };
 
-  // Real-time socket message listener with Scroll-Lock
   useEffect(() => {
     if (!socket) return;
 
@@ -370,12 +363,10 @@ export const MessageList: React.FC<MessageListProps> = ({
       const isOwnMessage = newMessage.senderId === user?.id;
 
       if (isOwnMessage || isAtBottomRef.current) {
-        // Align auto-scroll with browser rendering frame
         requestAnimationFrame(() => {
           scrollToBottom("smooth");
         });
       } else {
-        // SCROLL-LOCK: User is scrolled up reading history
         setUnreadCount((prev) => prev + 1);
       }
     };
@@ -386,7 +377,6 @@ export const MessageList: React.FC<MessageListProps> = ({
     };
   }, [socket, channelId, user?.id]);
 
-  // Cursor pagination: Load earlier history
   const loadEarlierMessages = async () => {
     if (!hasMore || !nextCursor || isLoadingMore) return;
     setIsLoadingMore(true);
@@ -416,8 +406,8 @@ export const MessageList: React.FC<MessageListProps> = ({
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
 
-    if (date.toDateString() === today.toDateString()) return "Today";
-    if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+    if (date.toDateString() === today.toDateString()) return t("message.today");
+    if (date.toDateString() === yesterday.toDateString()) return t("message.yesterday");
     return date.toLocaleDateString(undefined, {
       weekday: "short",
       month: "short",
@@ -439,7 +429,10 @@ export const MessageList: React.FC<MessageListProps> = ({
             #{highlightedTagKey.replace(/^#/, "")}
           </span>
           <span className="font-mono text-[11px] text-gray-300">
-            {currentMatchIndex + 1} of {matchingMessageIds.length} mentions
+            {t("message.mentionsCount", {
+              current: currentMatchIndex + 1,
+              total: matchingMessageIds.length,
+            })}
           </span>
           <div className="flex items-center space-x-1 border-l border-border-subtle pl-2">
             <button
@@ -492,7 +485,7 @@ export const MessageList: React.FC<MessageListProps> = ({
               ) : (
                 <ArrowUp className="h-3.5 w-3.5" />
               )}
-              <span>Load older messages</span>
+              <span>{t("message.loadOlder")}</span>
             </button>
           </div>
         )}
@@ -500,10 +493,8 @@ export const MessageList: React.FC<MessageListProps> = ({
         {/* Empty State */}
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center py-16 text-center font-sans text-xs text-gray-500">
-            <span className="text-sm font-medium text-gray-400">No messages yet</span>
-            <span className="mt-1 text-[11px] text-gray-500">
-              Messages with #LOC-XXXX or $STR_XXXX tags are automatically linked for inspection.
-            </span>
+            <span className="text-sm font-medium text-gray-400">{t("message.noMessages")}</span>
+            <span className="mt-1 text-[11px] text-gray-500">{t("message.emptyGuide")}</span>
           </div>
         ) : (
           messages.map((message, index) => {
@@ -519,7 +510,6 @@ export const MessageList: React.FC<MessageListProps> = ({
               !!user?.username &&
               message.content.toLowerCase().includes(`@${user.username.toLowerCase()}`);
 
-            // Clustering check: same sender within 5 minutes on the same day (mentions break cluster for visibility)
             const isClustered =
               !showDateDivider &&
               !isMentioned &&
@@ -569,14 +559,12 @@ export const MessageList: React.FC<MessageListProps> = ({
                   />
 
                   {isClustered ? (
-                    // Grouped follow-up: compact single-line timestamp on hover (never wraps)
                     <div className="flex h-5 w-8 shrink-0 items-center justify-end text-right select-none">
                       <span className="font-mono text-[9px] leading-none whitespace-nowrap text-slate-500 tabular-nums opacity-0 transition-opacity group-hover:opacity-100">
                         {formatTimestamp(message.createdAt)}
                       </span>
                     </div>
                   ) : (
-                    // First in cluster: avatar with hover card
                     <UserProfileHoverCard
                       user={message.sender}
                       isOnline={onlineUsers[message.sender.id] === UserStatus.ONLINE}
@@ -649,7 +637,6 @@ export const MessageList: React.FC<MessageListProps> = ({
                                   <img
                                     src={att.fileUrl}
                                     alt={att.fileName}
-                                    // Re-scroll to bottom as each image finishes downloading
                                     onLoad={() => {
                                       if (isInitialLoadRef.current || isAtBottomRef.current) {
                                         scrollToBottom("instant");
@@ -692,7 +679,9 @@ export const MessageList: React.FC<MessageListProps> = ({
             className="flex animate-bounce cursor-pointer items-center space-x-2 rounded-full border border-accent-gold/40 bg-brand-navy px-4 py-1.5 font-sans text-xs font-medium text-accent-gold shadow-xl transition-all hover:border-accent-gold hover:bg-brand-navy-light"
           >
             <span>
-              {unreadCount} {unreadCount === 1 ? "New Message" : "New Messages"}
+              {t(unreadCount === 1 ? "message.newMessage" : "message.newMessages", {
+                count: unreadCount,
+              })}
             </span>
             <ArrowDown className="h-3.5 w-3.5" />
           </button>

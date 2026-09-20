@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { X, Pin, Loader2, Trash2 } from "lucide-react";
 import type { ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
+import { useTranslation } from "../../i18n";
 
 export interface EditChannelStatusModalProps {
   channel: ChannelDTO;
@@ -14,6 +15,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
   onClose,
   onUpdated,
 }) => {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<string>(channel.status || "");
   const [description, setDescription] = useState<string>(channel.description || "");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -63,7 +65,10 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none">
-      <div className="animate-in zoom-in-95 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80 duration-150">
+      <div
+        className="animate-in zoom-in-95 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/[0.08] bg-surface-card/50 px-6 py-4">
           <div className="flex items-center space-x-2.5">
@@ -71,7 +76,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
               <Pin className="h-4 w-4 text-accent-gold" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">Edit Channel Sprint Status</h3>
+              <h3 className="text-sm font-semibold text-white">{t("editStatus.title")}</h3>
               <p className="font-mono text-[11px] text-slate-400">#{channel.name || "channel"}</p>
             </div>
           </div>
@@ -95,7 +100,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
           {/* Sprint Status Input */}
           <div>
             <label className="mb-1.5 flex items-center justify-between font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              <span>Sprint Status / Pinned Milestone</span>
+              <span>{t("editStatus.sprintStatus")}</span>
               <span className="font-mono text-[10px] text-slate-500">{status.length}/100</span>
             </label>
             <div className="relative">
@@ -120,20 +125,20 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
               )}
             </div>
             <p className="mt-1.5 font-mono text-[10px] text-slate-400">
-              Displayed as a pinned rectangular banner across the top of the chat stream.
+              {t("editStatus.bannerNotice")}
             </p>
           </div>
 
           {/* Description Input */}
           <div>
             <label className="mb-1.5 flex items-center justify-between font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              <span>Channel Description</span>
+              <span>{t("editStatus.channelDescription")}</span>
               <span className="font-mono text-[10px] text-slate-500">{description.length}/250</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Channel purpose and localization scope..."
+              placeholder={t("editStatus.descPlaceholder")}
               maxLength={250}
               rows={2}
               className="focus:bg-surface-elevated w-full resize-none rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
@@ -150,7 +155,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
                 className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-medium text-rose-400 transition-all hover:bg-rose-500/20 hover:text-rose-300 active:scale-[0.98] disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                <span>Clear Status</span>
+                <span>{t("editStatus.clearStatus")}</span>
               </button>
             ) : (
               <div />
@@ -162,7 +167,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
                 onClick={onClose}
                 className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-xs font-medium text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
               >
-                Cancel
+                {t("editStatus.cancel")}
               </button>
               <button
                 type="submit"
@@ -170,7 +175,7 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
                 className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/50 bg-accent-gold/10 px-4 py-2 font-mono text-xs font-bold tracking-wider text-accent-gold uppercase shadow-sm shadow-accent-gold/10 transition-all duration-150 hover:bg-accent-gold hover:text-surface-canvas active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
               >
                 {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                <span>Save Status</span>
+                <span>{t("editStatus.saveStatus")}</span>
               </button>
             </div>
           </div>

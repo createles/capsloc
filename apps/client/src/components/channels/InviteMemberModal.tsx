@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, Search, Loader2, UserPlus, Check } from "lucide-react";
 import type { UserProfileDTO, ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
+import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 
 export interface InviteMemberModalProps {
@@ -15,6 +16,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   onClose,
   onMemberAdded,
 }) => {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserProfileDTO[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -26,9 +28,8 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
     const fetchUsers = async () => {
       try {
         const { data } = await api.get<UserProfileDTO[]>("/users");
-        // Exclude users who are already enrolled in this channel
         const enrolledUserIds = new Set(channel.members?.map((m) => m.userId) || []);
-        const availableUsers = data.filter((u) => !enrolledUserIds.has(u.id)); // Returns users who are not members
+        const availableUsers = data.filter((u) => !enrolledUserIds.has(u.id));
         setUsers(availableUsers);
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to load user directory");
@@ -44,14 +45,12 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
     setInvitingId(targetUser.id);
     setError(null);
     try {
-      // Call POST /api/channels/:id/members
       const { data: newMember } = await api.post(`/channels/${channel.id}/members`, {
         userId: targetUser.id,
       });
 
       setInvitedIds((prev) => new Set(prev).add(targetUser.id));
 
-      // Update parent channel state
       const updatedMembers = [...(channel.members || []), newMember];
       onMemberAdded({
         ...channel,
@@ -82,7 +81,9 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
               <UserPlus className="h-4 w-4 text-accent-gold" />
             </div>
-            <h2 className="text-sm font-semibold text-white">Invite to #{channel.name}</h2>
+            <h2 className="text-sm font-semibold text-white">
+              {t("invite.title", { channel: channel.name || "channel" })}
+            </h2>
           </div>
           <button
             type="button"
@@ -106,7 +107,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search colleagues by name or role..."
+            placeholder={t("invite.searchPlaceholder")}
             className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-3 pl-9 text-xs text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
           />
         </div>
@@ -116,13 +117,11 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
           {isLoading ? (
             <div className="flex items-center justify-center space-x-2 py-8 text-xs text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
-              <span>Scanning directory...</span>
+              <span>{t("invite.scanning")}</span>
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="py-8 text-center text-xs text-slate-500">
-              {searchQuery
-                ? "No colleagues match your search."
-                : "All workspace colleagues are already enrolled."}
+              {searchQuery ? t("invite.noMatches") : t("invite.allEnrolled")}
             </div>
           ) : (
             filteredUsers.map((u) => {
@@ -167,10 +166,10 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                     ) : isInvited ? (
                       <>
                         <Check className="h-3.5 w-3.5" />
-                        <span>Enrolled</span>
+                        <span>{t("invite.enrolled")}</span>
                       </>
                     ) : (
-                      <span>Invite</span>
+                      <span>{t("invite.inviteBtn")}</span>
                     )}
                   </button>
                 </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, ZoomIn, ZoomOut, Download, Image as ImageIcon } from "lucide-react";
 import type { AttachmentDTO } from "@capsloc/types";
+import { useTranslation } from "../../i18n";
 
 export interface ImageLightboxModalProps {
   attachment: AttachmentDTO | null;
@@ -14,9 +15,9 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
   uploaderName,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [zoom, setZoom] = useState<number>(1);
 
-  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -37,7 +38,6 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
     setZoom((prev) => Math.max(Number((prev - 0.5).toFixed(2)), 1));
   };
 
-  // Canvas toggle: 1x -> 1.75x, and >1x -> 1x
   const handleCanvasClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (zoom === 1) {
@@ -67,7 +67,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
           </span>
           {uploaderName && (
             <span className="hidden truncate text-[11px] text-slate-400 sm:inline">
-              Uploaded by <strong className="text-slate-200">{uploaderName}</strong>
+              {t("lightbox.uploadedBy")} <strong className="text-slate-200">{uploaderName}</strong>
             </span>
           )}
           {attachment.localeTag && (
@@ -86,7 +86,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
               onClick={handleZoomOut}
               disabled={zoom <= 1}
               className="cursor-pointer rounded-md p-1 transition-all hover:bg-white/[0.08] hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
-              title="Zoom Out"
+              title={t("lightbox.zoomOut")}
             >
               <ZoomOut className="h-3.5 w-3.5" />
             </button>
@@ -98,7 +98,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
               onClick={handleZoomIn}
               disabled={zoom >= 2.5}
               className="cursor-pointer rounded-md p-1 transition-all hover:bg-white/[0.08] hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
-              title="Zoom In"
+              title={t("lightbox.zoomIn")}
             >
               <ZoomIn className="h-3.5 w-3.5" />
             </button>
@@ -110,7 +110,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
             target="_blank"
             rel="noreferrer"
             className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] p-2 text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-95"
-            title="Download asset"
+            title={t("lightbox.download")}
           >
             <Download className="h-4 w-4" />
           </a>
@@ -119,7 +119,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
             type="button"
             onClick={onClose}
             className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] p-2 text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-95"
-            title="Close (Esc)"
+            title={t("lightbox.close")}
           >
             <X className="h-4 w-4" />
           </button>

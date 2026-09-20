@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import { StringStatus, type LocStringDTO, type GlossaryTermDTO } from "@capsloc/types";
 import { api } from "../../services/api";
+import { useTranslation } from "../../i18n";
 import { StringStatusBadge } from "../ui/StringStatusBadge";
 
 const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const hasLongNotes = Boolean(term.notes && term.notes.length > 50);
 
@@ -27,7 +29,7 @@ const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
         </span>
       </div>
       <div className="font-sans text-[11px] text-gray-400">
-        Source: <span className="font-medium text-gray-200">{term.sourceJa}</span>
+        {t("inspector.source")} <span className="font-medium text-gray-200">{term.sourceJa}</span>
       </div>
       {term.notes && (
         <div className="pt-1">
@@ -47,7 +49,7 @@ const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
               onClick={() => setIsExpanded(!isExpanded)}
               className="mt-1 flex cursor-pointer items-center space-x-1 font-mono text-[10px] text-accent-gold/80 transition-colors hover:text-accent-gold"
             >
-              <span>{isExpanded ? "Show less" : "Show guidelines & notes"}</span>
+              <span>{isExpanded ? t("inspector.showLess") : t("inspector.showGuidelines")}</span>
               <ChevronDown
                 className={`h-3 w-3 transition-transform duration-200 ${
                   isExpanded ? "rotate-180" : ""
@@ -80,6 +82,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   isTagHighlightActive = false,
   onToggleTagHighlight,
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<InspectorTab>("INSPECTOR");
   const [stringData, setStringData] = useState<LocStringDTO | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -91,7 +94,6 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   const [glossaryResults, setGlossaryResults] = useState<GlossaryTermDTO[]>([]);
   const [isSearchingGlossary, setIsSearchingGlossary] = useState<boolean>(false);
 
-  // Reset loc-string metadata and switch to INSPECTOR tab during render when stringKey changes:
   const [prevStringKey, setPrevStringKey] = useState(stringKey);
   if (stringKey !== prevStringKey) {
     setPrevStringKey(stringKey);
@@ -101,7 +103,6 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
     }
   }
 
-  // Load initial glossary catalog
   useEffect(() => {
     let isMounted = true;
     const fetchInitialGlossary = async () => {
@@ -118,7 +119,6 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
     };
   }, []);
 
-  // 1. Fetch string metadata on key selection
   useEffect(() => {
     if (!stringKey) {
       return;
@@ -149,11 +149,9 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
     };
   }, [stringKey]);
 
-  // 2. Debounced Glossary Search
   useEffect(() => {
     const trimmed = glossaryQuery.trim();
     if (!trimmed) {
-      // Reload full glossary when search query is cleared
       api
         .get<GlossaryTermDTO[]>("/glossary")
         .then(({ data }) => setGlossaryResults(data))
@@ -178,7 +176,6 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
     return () => clearTimeout(timer);
   }, [glossaryQuery]);
 
-  // 3. Status Mutation Handler
   const handleStatusChange = async (newStatus: StringStatus) => {
     if (!stringData || stringData.status === newStatus || isMutatingStatus) return;
 
@@ -204,7 +201,6 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Character Limit Gauge Calculation
   const charLimit = stringData?.charLimit ?? null;
   const currentLength = stringData?.targetText?.length ?? 0;
   const isOverflow = charLimit ? currentLength > charLimit : false;
@@ -225,10 +221,10 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
         <div className="flex items-center space-x-2">
           <BookOpen className="h-4 w-4 text-accent-gold" />
           <span className="font-sans text-xs font-bold tracking-tight text-white">
-            Studio Codex
+            {t("inspector.title")}
           </span>
           <span className="py-0.2 rounded-md border border-border-subtle bg-surface-card px-1.5 font-mono text-[9px] text-slate-400">
-            LQA Tools
+            {t("inspector.badge")}
           </span>
         </div>
         <button
@@ -254,7 +250,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             }`}
           >
             <Languages className="h-3.5 w-3.5 text-accent-gold" />
-            <span>String Inspector</span>
+            <span>{t("inspector.tabInspector")}</span>
           </button>
           <button
             type="button"
@@ -266,7 +262,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             }`}
           >
             <BookOpen className="h-3.5 w-3.5 text-accent-gold" />
-            <span>Glossary Codex</span>
+            <span>{t("inspector.tabGlossary")}</span>
           </button>
         </div>
       </div>
@@ -276,22 +272,26 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
         !stringKey ? (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center text-slate-500">
             <Languages className="mb-2 h-8 w-8 text-slate-600" />
-            <span className="text-xs font-medium text-slate-400">No String Selected</span>
+            <span className="text-xs font-medium text-slate-400">
+              {t("inspector.noStringSelected")}
+            </span>
             <span className="mt-1 max-w-xs text-[11px] leading-relaxed text-slate-500">
-              Click any <code className="font-mono font-bold text-emerald-400">#LOC-XXXX</code> or{" "}
-              <code className="font-mono font-bold text-emerald-400">$STR_XXXX</code> tag in chat to
-              inspect its Japanese source, character limit gauge, and workflow review status.
+              {t("inspector.noStringHelp")}
             </span>
           </div>
         ) : isLoading ? (
           <div className="flex flex-1 flex-col items-center justify-center space-y-2 font-mono text-xs text-slate-500">
             <Loader2 className="h-5 w-5 animate-spin text-accent-gold" />
-            <span>INSPECTING #{stringKey}...</span>
+            <span>
+              {t("inspector.inspecting")} #{stringKey}...
+            </span>
           </div>
         ) : !stringData ? (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center font-mono text-xs text-slate-500">
             <AlertTriangle className="mb-2 h-6 w-6 text-status-flagged" />
-            <span>RECORD NOT FOUND FOR #{stringKey}</span>
+            <span>
+              {t("inspector.notFound")} #{stringKey}
+            </span>
           </div>
         ) : (
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -300,7 +300,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="block font-mono text-[10px] tracking-wider text-slate-500 uppercase">
-                    String Identifier
+                    {t("inspector.stringIdentifier")}
                   </span>
                   <span className="font-mono text-sm font-bold text-accent-gold">
                     #{stringData.stringKey}
@@ -310,14 +310,18 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
               </div>
 
               <div className="flex items-center justify-between border-t border-border-subtle/50 pt-2 font-mono text-[11px] text-slate-400">
-                <span>PROJECT: {stringData.projectTag}</span>
-                <span>LOCALE: {stringData.targetLocale}</span>
+                <span>
+                  {t("inspector.project")} {stringData.projectTag}
+                </span>
+                <span>
+                  {t("inspector.locale")} {stringData.targetLocale}
+                </span>
               </div>
 
               {/* Status Mutation Dropdown */}
               <div className="pt-2">
                 <label className="mb-1 block font-mono text-[10px] tracking-wider text-slate-500 uppercase">
-                  Review Workflow Status
+                  {t("inspector.workflowStatus")}
                 </label>
                 <div className="relative">
                   <select
@@ -326,10 +330,12 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                     disabled={isMutatingStatus}
                     className="w-full cursor-pointer appearance-none rounded-lg border border-border-subtle bg-surface-panel py-1.5 pr-8 pl-2.5 font-mono text-xs text-slate-200 transition-colors focus:border-accent-gold/60 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value={StringStatus.DRAFT}>DRAFT</option>
-                    <option value={StringStatus.IN_REVIEW}>IN_REVIEW</option>
-                    <option value={StringStatus.LQA_FLAGGED}>LQA_FLAGGED</option>
-                    <option value={StringStatus.APPROVED}>APPROVED</option>
+                    <option value={StringStatus.DRAFT}>{t("StringStatus.DRAFT")}</option>
+                    <option value={StringStatus.IN_REVIEW}>{t("StringStatus.IN_REVIEW")}</option>
+                    <option value={StringStatus.LQA_FLAGGED}>
+                      {t("StringStatus.LQA_FLAGGED")}
+                    </option>
+                    <option value={StringStatus.APPROVED}>{t("StringStatus.APPROVED")}</option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 </div>
@@ -340,7 +346,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-slate-400 uppercase">
-                  <Languages className="h-3.5 w-3.5 text-accent-gold" /> Japanese Source
+                  <Languages className="h-3.5 w-3.5 text-accent-gold" /> {t("inspector.sourceText")}
                 </span>
                 <button
                   type="button"
@@ -349,11 +355,11 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                 >
                   {copied ? (
                     <>
-                      <Check className="h-3 w-3 text-emerald-400" /> Copied
+                      <Check className="h-3 w-3 text-emerald-400" /> {t("inspector.copied")}
                     </>
                   ) : (
                     <>
-                      <Copy className="h-3 w-3" /> Copy
+                      <Copy className="h-3 w-3" /> {t("inspector.copy")}
                     </>
                   )}
                 </button>
@@ -367,7 +373,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-[11px] font-semibold text-slate-400 uppercase">
-                  Target Translation ({stringData.targetLocale})
+                  {t("inspector.targetTranslation")} ({stringData.targetLocale})
                 </span>
                 {charLimit && (
                   <span
@@ -375,14 +381,14 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                       isOverflow ? "text-rose-400" : "text-slate-400"
                     }`}
                   >
-                    {currentLength} / {charLimit} CHARS
+                    {currentLength} / {charLimit} {t("inspector.chars")}
                   </span>
                 )}
               </div>
 
               <div className="rounded-xl border border-border-subtle bg-surface-card/60 p-3 font-sans text-xs leading-relaxed break-words whitespace-pre-wrap text-slate-200 shadow-xs select-text">
                 {stringData.targetText || (
-                  <span className="text-slate-500 italic">Translation pending...</span>
+                  <span className="text-slate-500 italic">{t("inspector.translationPending")}</span>
                 )}
               </div>
 
@@ -400,7 +406,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                   {isOverflow && (
                     <p className="flex items-center gap-1 font-mono text-[10px] text-rose-400">
                       <AlertTriangle className="h-3 w-3 shrink-0" />
-                      Overflow: +{currentLength - charLimit} chars beyond UI box limit!
+                      {t("inspector.overflowWarning", { count: currentLength - charLimit })}
                     </p>
                   )}
                 </div>
@@ -411,7 +417,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             {stringData.contextNotes && (
               <div className="space-y-1.5">
                 <span className="font-mono text-[11px] font-semibold text-slate-400 uppercase">
-                  Context & Scene Notes
+                  {t("inspector.contextNotes")}
                 </span>
                 <div className="rounded-xl border border-border-subtle bg-surface-card/40 p-2.5 font-mono text-[11px] leading-relaxed break-words whitespace-pre-wrap text-slate-300 select-text">
                   {stringData.contextNotes}
@@ -423,10 +429,11 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             <div className="space-y-1.5 border-t border-border-subtle/50 pt-3">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-slate-400 uppercase">
-                  <Search className="h-3.5 w-3.5 text-accent-gold" /> Channel Mentions
+                  <Search className="h-3.5 w-3.5 text-accent-gold" />{" "}
+                  {t("inspector.channelMentions")}
                 </span>
                 <span className="font-mono text-[10px] text-slate-500">
-                  {mentionsCountInCurrentChat ?? 0} in this channel
+                  {t("inspector.inChannelCount", { count: mentionsCountInCurrentChat ?? 0 })}
                 </span>
               </div>
 
@@ -436,7 +443,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                 onClick={() => onToggleTagHighlight?.(stringData.stringKey)}
                 title={
                   (mentionsCountInCurrentChat ?? 0) === 0
-                    ? "No mentions found in this channel"
+                    ? t("inspector.noMatches")
                     : isTagHighlightActive
                       ? "Untoggle in-chat highlight"
                       : "Highlight mentions in chat stream"
@@ -451,10 +458,10 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
               >
                 <span className="text-[11px]">
                   {(mentionsCountInCurrentChat ?? 0) > 0
-                    ? `${mentionsCountInCurrentChat} ${
-                        mentionsCountInCurrentChat === 1 ? "Match" : "Matches"
-                      } in Channel`
-                    : "No Matches in Channel"}
+                    ? mentionsCountInCurrentChat === 1
+                      ? t("inspector.matchInChannel")
+                      : t("inspector.matchesInChannel", { count: mentionsCountInCurrentChat })
+                    : t("inspector.noMatches")}
                 </span>
                 <span
                   className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
@@ -465,7 +472,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                         : "border border-accent-gold/30 bg-brand-navy text-accent-gold"
                   }`}
                 >
-                  {isTagHighlightActive ? "Highlighted" : "Highlight"}
+                  {isTagHighlightActive ? t("inspector.highlighted") : t("inspector.highlight")}
                 </span>
               </button>
             </div>
@@ -480,7 +487,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
               type="text"
               value={glossaryQuery}
               onChange={(e) => setGlossaryQuery(e.target.value)}
-              placeholder="Search terms (e.g. Demondrug, Lockpick)..."
+              placeholder={t("inspector.glossarySearchPlaceholder")}
               className="w-full rounded-lg border border-border-subtle bg-surface-card py-2 pr-8 pl-8.5 font-sans text-xs text-slate-200 placeholder-slate-500 transition-all focus:border-accent-gold/50 focus:bg-surface-card focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
             {isSearchingGlossary ? (
@@ -503,11 +510,13 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             {glossaryResults.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500">
                 <BookOpen className="mb-2 h-7 w-7 text-slate-600" />
-                <span className="text-xs font-medium text-slate-400">No Canonical Terms Found</span>
+                <span className="text-xs font-medium text-slate-400">
+                  {t("inspector.noTermsFound")}
+                </span>
                 <span className="mt-1 text-[11px] text-slate-500">
                   {glossaryQuery
-                    ? `No entries match "${glossaryQuery}"`
-                    : "No glossary records loaded"}
+                    ? t("inspector.noEntriesMatch", { query: glossaryQuery })
+                    : t("inspector.noRecords")}
                 </span>
               </div>
             ) : (

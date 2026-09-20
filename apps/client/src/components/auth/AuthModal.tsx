@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Terminal, Lock, Mail, User, Globe, AlertCircle, Loader2, ChevronDown } from "lucide-react";
 import { LocRole } from "@capsloc/types";
 import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "../../i18n";
 
 export const AuthModal: React.FC = () => {
   const { login, register } = useAuth();
-  const [isRegister, setIsRegister] = useState(false); // flag to indicate Registration submission
+  const { t } = useTranslation();
+  const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -20,7 +22,7 @@ export const AuthModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setIsSubmitting(true); // Indicates form is being submitted
+    setIsSubmitting(true);
 
     try {
       if (isRegister) {
@@ -45,7 +47,6 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleQuickLogin = (quickEmail: string) => {
-    // for quick demo role logins (e.g Dante[Translator], etc)
     setEmail(quickEmail);
     setPassword("Password123!");
   };
@@ -60,11 +61,9 @@ export const AuthModal: React.FC = () => {
           </div>
           <div>
             <h1 className="font-mono text-sm font-bold tracking-wider text-accent-gold">
-              CapsLoc Studio
+              {t("auth.terminalAuth")}
             </h1>
-            <p className="font-mono text-[11px] text-slate-400">
-              Internal Game Localization Operations
-            </p>
+            <p className="font-mono text-[11px] text-slate-400">{t("auth.tagline")}</p>
           </div>
         </div>
 
@@ -82,7 +81,7 @@ export const AuthModal: React.FC = () => {
               setError(null);
             }}
           >
-            SIGN IN
+            {t("auth.signIn")}
           </button>
           <button
             type="button"
@@ -96,7 +95,7 @@ export const AuthModal: React.FC = () => {
               setError(null);
             }}
           >
-            REGISTER NEW MEMBER
+            {t("auth.register")}
           </button>
         </div>
 
@@ -114,7 +113,7 @@ export const AuthModal: React.FC = () => {
             <>
               <div>
                 <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-                  Username
+                  {t("auth.username")}
                 </label>
                 <div className="relative">
                   <User className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -130,7 +129,7 @@ export const AuthModal: React.FC = () => {
               </div>
               <div>
                 <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-                  Display Name
+                  {t("auth.displayName")}
                 </label>
                 <input
                   type="text"
@@ -144,7 +143,7 @@ export const AuthModal: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-                    Loc Role
+                    {t("auth.locRole")}
                   </label>
                   <div className="relative">
                     <select
@@ -152,19 +151,21 @@ export const AuthModal: React.FC = () => {
                       onChange={(e) => setLocRole(e.target.value as LocRole)}
                       className="focus:bg-surface-elevated w-full cursor-pointer appearance-none rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-8 pl-2.5 text-white transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
                     >
-                      <option value={LocRole.TRANSLATOR}>Translator</option>
-                      <option value={LocRole.LQA_TESTER}>LQA Tester</option>
-                      <option value={LocRole.SOLUTIONS_DEV}>Solutions Dev</option>
-                      <option value={LocRole.LOC_PM}>Loc PM</option>
-                      <option value={LocRole.AUDIO_SPECIALIST}>Audio Specialist</option>
-                      <option value={LocRole.GENERAL_USER}>General User</option>
+                      <option value={LocRole.TRANSLATOR}>{t("LocRole.TRANSLATOR")}</option>
+                      <option value={LocRole.LQA_TESTER}>{t("LocRole.LQA_TESTER")}</option>
+                      <option value={LocRole.SOLUTIONS_DEV}>{t("LocRole.SOLUTIONS_DEV")}</option>
+                      <option value={LocRole.LOC_PM}>{t("LocRole.LOC_PM")}</option>
+                      <option value={LocRole.AUDIO_SPECIALIST}>
+                        {t("LocRole.AUDIO_SPECIALIST")}
+                      </option>
+                      <option value={LocRole.GENERAL_USER}>{t("LocRole.GENERAL_USER")}</option>
                     </select>
                     <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   </div>
                 </div>
                 <div>
                   <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-                    Primary Locale
+                    {t("auth.primaryLocale")}
                   </label>
                   <div className="relative">
                     <Globe className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -183,7 +184,7 @@ export const AuthModal: React.FC = () => {
 
           <div>
             <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-              Workstation Email
+              {t("auth.workstationEmail")}
             </label>
             <div className="relative">
               <Mail className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -200,7 +201,7 @@ export const AuthModal: React.FC = () => {
 
           <div>
             <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-              Password
+              {t("auth.securityPassword")}
             </label>
             <div className="relative">
               <Lock className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -223,7 +224,7 @@ export const AuthModal: React.FC = () => {
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <span>{isRegister ? "REGISTER & ENTER" : "SIGN IN"}</span>
+              <span>{isRegister ? t("auth.btnRegister") : t("auth.btnSignIn")}</span>
             )}
           </button>
         </form>
@@ -232,7 +233,7 @@ export const AuthModal: React.FC = () => {
         {!isRegister && (
           <div className="mt-6 border-t border-white/[0.08] pt-4">
             <span className="block font-mono text-[10px] tracking-wider text-slate-400 uppercase">
-              Demo User Quick-Select (Seeded User Roles)
+              {t("auth.quickSelect")}
             </span>
             <div className="mt-2.5 grid grid-cols-3 gap-2 font-mono text-[11px]">
               <button

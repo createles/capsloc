@@ -4,6 +4,7 @@ import { ChannelType, UserStatus, type ChannelDTO, type UserProfileDTO } from "@
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
+import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 import { UserProfileModal } from "../profile/UserProfileModal";
 import { CreateChannelModal } from "../channels/CreateChannelModal";
@@ -15,19 +16,29 @@ export interface ChannelSidebarProps {
   onSelectChannel: (channel: ChannelDTO) => void;
 }
 
+const STATUS_PRESETS = [
+  { emoji: "☕", key: "status.onBreak" },
+  { emoji: "🎮", key: "status.lqaTesting" },
+  { emoji: "💬", key: "status.focusMode" },
+  { emoji: "🍕", key: "status.lunchBreak" },
+  { emoji: "⛔", key: "status.away" },
+  { emoji: "💼", key: "status.inMeeting" },
+] as const;
+
 export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   activeChannelId,
   onSelectChannel,
 }) => {
-  const { user, updateProfile } = useAuth(); // use AuthContext for access to user and accessToken, updateProfile to update user status
-  const { socket, onlineUsers, unreadCounts, mentionCounts, clearUnread } = useSocket(); // grab from SocketContext
+  const { user, updateProfile } = useAuth();
+  const { socket, onlineUsers, unreadCounts, mentionCounts, clearUnread } = useSocket();
+  const { t } = useTranslation();
   const [channels, setChannels] = useState<ChannelDTO[]>([]);
-  const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false); // Modal Visibility
-  const [isDirectMessageModalOpen, setIsDirectMessageModalOpen] = useState(false); // ^^
+  const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
+  const [isDirectMessageModalOpen, setIsDirectMessageModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [showQuickStatus, setShowQuickStatus] = useState(false); // Quick-status modal
-  const [customStatusInput, setCustomStatusInput] = useState(""); // Custom status form input
+  const [showQuickStatus, setShowQuickStatus] = useState(false);
+  const [customStatusInput, setCustomStatusInput] = useState("");
   const [isWritingCustom, setIsWritingCustom] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
@@ -66,7 +77,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
     };
 
     fetchChannels();
-  }, []); // Safe empty dependency array: all dynamic values read through stable refs
+  }, []);
 
   // Ensure active channel (e.g. newly created DM from chat hover) is loaded in sidebar
   useEffect(() => {
@@ -109,16 +120,11 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   };
 
   const projectChannels = channels.filter(
-    // segregate channel rooms from DM rooms
     (c) => c.type === ChannelType.PUBLIC_PROJECT || c.type === ChannelType.PRIVATE_LOCALE,
   );
 
-  const directMessages = channels.filter(
-    // returns DM rooms
-    (c) => c.type === ChannelType.DIRECT_MESSAGE,
-  );
+  const directMessages = channels.filter((c) => c.type === ChannelType.DIRECT_MESSAGE);
 
-  // Helper: for DMs, returns other participant's user object
   const getDmRecipient = (channel: ChannelDTO) => {
     return channel.members?.find((m) => m.userId !== user?.id)?.user;
   };
@@ -144,9 +150,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
     );
   });
 
-  /**
-   * Handlers for Channel / Direct Message creation
-   */
   const handleChannelCreated = (newChannel: ChannelDTO) => {
     setChannels((prev) => {
       if (prev.some((c) => c.id === newChannel.id)) return prev;
@@ -162,19 +165,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
     });
     onSelectChannel(dmChannel);
   };
-
-  /**
-   * Handlers for status update pop-up
-   */
-
-  const STATUS_PRESETS = [
-    { emoji: "☕", text: "On Break" },
-    { emoji: "🎮", text: "LQA Testing" },
-    { emoji: "💬", text: "Focus Mode" },
-    { emoji: "🍕", text: "Lunch Break" },
-    { emoji: "⛔", text: "Away" },
-    { emoji: "💼", text: "In a Meeting" },
-  ];
 
   const handleMouseEnter = () => {
     if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
@@ -230,7 +220,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Filter channels & people..."
+            placeholder={t("sidebar.filterPlaceholder")}
             className="w-full rounded-lg border border-border-subtle bg-surface-canvas/60 py-1.5 pr-7 pl-8 font-sans text-xs text-slate-200 placeholder-slate-500 transition-all focus:border-accent-gold/50 focus:bg-surface-card focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
           />
           {searchQuery && (
@@ -263,7 +253,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                 }`}
               />
               <span className="font-mono text-[10px] font-semibold tracking-wider uppercase">
-                Project Channels
+                {t("sidebar.projectChannels")}
               </span>
               <span className="rounded-full border border-border-subtle bg-surface-card px-1.5 py-0.5 font-mono text-[9px] leading-none font-medium text-slate-400">
                 {filteredProjects.length}
@@ -275,7 +265,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
               type="button"
               onClick={() => setIsCreateChannelModalOpen(true)}
               className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
-              title="Create Channel"
+              title={t("sidebar.createChannel")}
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -285,11 +275,11 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
             (isLoading ? (
               <div className="flex items-center space-x-2 px-2 py-2 font-mono text-xs text-gray-500">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>Loading channels...</span>
+                <span>{t("sidebar.loadingChannels")}</span>
               </div>
             ) : filteredProjects.length === 0 ? (
               <div className="px-2 py-2 font-sans text-xs text-slate-500 italic">
-                {searchQuery ? "No channels match filter" : "No project channels"}
+                {searchQuery ? t("sidebar.noChannelsMatch") : t("sidebar.noProjectChannels")}
               </div>
             ) : (
               <div className="space-y-0.5">
@@ -362,7 +352,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                 }`}
               />
               <span className="font-mono text-[10px] font-semibold tracking-wider uppercase">
-                Direct Messages
+                {t("sidebar.directMessages")}
               </span>
               <span className="rounded-full border border-border-subtle bg-surface-card px-1.5 py-0.5 font-mono text-[9px] leading-none font-medium text-slate-400">
                 {filteredDms.length}
@@ -374,7 +364,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
               type="button"
               onClick={() => setIsDirectMessageModalOpen(true)}
               className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
-              title="Start Direct Message"
+              title={t("sidebar.startDm")}
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -383,7 +373,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           {isDmsOpen &&
             (filteredDms.length === 0 ? (
               <div className="px-2 py-2 font-sans text-xs text-slate-500 italic">
-                {searchQuery ? "No colleagues match filter" : "No direct messages"}
+                {searchQuery ? t("sidebar.noDmsMatch") : t("sidebar.noDms")}
               </div>
             ) : (
               <div className="space-y-0.5">
@@ -480,7 +470,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                               </span>
                             ) : (
                               <span className={isOnline ? "text-emerald-400" : "text-slate-500"}>
-                                {isOnline ? "Online" : "Offline"}
+                                {isOnline ? t("sidebar.online") : t("sidebar.offline")}
                               </span>
                             )}
                           </div>
@@ -510,7 +500,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
               <div className="flex items-center justify-between text-[11px]">
                 <span className="flex items-center gap-1.5 font-semibold text-gray-300">
                   <Smile className="h-3.5 w-3.5 text-accent-gold" />
-                  Quick Status
+                  {t("sidebar.quickStatus")}
                 </span>
                 {user.customStatus && (
                   <button
@@ -518,7 +508,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                     onClick={handleClearStatus}
                     className="cursor-pointer text-[10px] text-gray-500 transition-colors hover:text-rose-400"
                   >
-                    Clear
+                    {t("sidebar.clear")}
                   </button>
                 )}
               </div>
@@ -527,13 +517,13 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
               <div className="grid grid-cols-2 gap-1.5">
                 {STATUS_PRESETS.map((preset) => (
                   <button
-                    key={preset.text}
+                    key={preset.key}
                     type="button"
-                    onClick={() => handleSelectPreset(`${preset.emoji} ${preset.text}`)}
+                    onClick={() => handleSelectPreset(`${preset.emoji} ${t(preset.key)}`)}
                     className="flex cursor-pointer items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card p-1.5 text-left text-[11px] text-gray-200 transition-all hover:border-accent-gold/40 hover:bg-surface-hover"
                   >
                     <span>{preset.emoji}</span>
-                    <span className="truncate">{preset.text}</span>
+                    <span className="truncate">{t(preset.key)}</span>
                   </button>
                 ))}
               </div>
@@ -549,7 +539,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                     autoFocus
                     value={customStatusInput}
                     onChange={(e) => setCustomStatusInput(e.target.value)}
-                    placeholder="Type your status..."
+                    placeholder={t("sidebar.typeStatus")}
                     maxLength={100}
                     className="flex-1 rounded-md border border-border-subtle bg-surface-card px-2 py-1 text-[11px] text-white placeholder-gray-500 focus:border-accent-gold/50 focus:outline-none"
                   />
@@ -576,7 +566,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                   onClick={() => setIsWritingCustom(true)}
                   className="block w-full cursor-pointer py-0.5 text-center text-[11px] text-accent-gold hover:underline"
                 >
-                  + Write your own...
+                  {t("sidebar.writeCustom")}
                 </button>
               )}
             </div>
@@ -586,7 +576,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           <div
             onClick={() => setIsProfileModalOpen(true)}
             className="group flex cursor-pointer items-center space-x-2.5 rounded-lg p-2 transition-colors hover:bg-surface-hover/60"
-            title="Click to edit full profile"
+            title={t("sidebar.editFullProfile")}
           >
             {/* Avatar Initials */}
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-accent-gold/20 bg-brand-navy font-mono text-xs font-bold text-accent-gold">

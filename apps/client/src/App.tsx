@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./hooks/useAuth";
 import { SocketProvider } from "./context/SocketProvider";
 import { useSocket } from "./hooks/useSocket";
+import { I18nProvider, useTranslation } from "./i18n";
 import { AuthModal } from "./components/auth/AuthModal";
 import { Header } from "./components/layout/Header";
 import { ChannelSidebar } from "./components/layout/ChannelSidebar";
@@ -28,6 +29,7 @@ const getInitialInspectorOpen = (): boolean => {
 
 const LocTerminal: React.FC = () => {
   const { user, logout, isLoading, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const {
     socket,
     isConnected,
@@ -203,7 +205,7 @@ const LocTerminal: React.FC = () => {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-surface-canvas font-sans text-xs text-slate-400">
         <Loader2 className="mb-3 h-6 w-6 animate-spin text-accent-gold" />
-        <span>Connecting to CapsLoc...</span>
+        <span>{t("app.connecting")}</span>
       </div>
     );
   }
@@ -294,11 +296,13 @@ const LocTerminal: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <LocTerminal />
-      </SocketProvider>
-    </AuthProvider>
+    <I18nProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <LocTerminal />
+        </SocketProvider>
+      </AuthProvider>
+    </I18nProvider>
   );
 };
 
