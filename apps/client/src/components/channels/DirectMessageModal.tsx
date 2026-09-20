@@ -52,7 +52,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
     if (!socket) return;
     const handleUserUpdated = (updatedUser: UserProfileDTO) => {
       setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+        prevUsers.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u)),
       );
     };
 
@@ -90,60 +90,60 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 select-none"
+      className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-border-subtle bg-surface-panel shadow-2xl overflow-hidden font-sans flex flex-col
-  max-h-[80vh]"
+        className="animate-in zoom-in-95 flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel font-sans shadow-2xl shadow-black/80 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4 bg-surface-card/40 shrink-0">
-          <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-accent-gold" />
-            <span className="font-semibold text-sm text-white">Direct Messages</span>
+        <div className="flex shrink-0 items-center justify-between border-b border-white/[0.08] bg-surface-card/50 px-6 py-4">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
+              <Users className="h-4 w-4 text-accent-gold" />
+            </div>
+            <span className="text-sm font-semibold text-white">Direct Messages</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Search Input */}
-        <div className="p-4 border-b border-border-subtle/60 shrink-0">
+        <div className="shrink-0 border-b border-white/[0.08] p-4">
           <div className="relative flex items-center">
-            <Search className="absolute left-3 h-3.5 w-3.5 text-gray-500" />
+            <Search className="absolute left-3 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
               autoFocus
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Find a teammate by name or @username..."
-              className="w-full rounded-md border border-border-subtle bg-surface-card pl-8 pr-3 py-2 text-xs text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none"
+              className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-3 pl-9 text-xs text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
           </div>
         </div>
 
         {error && (
-          <div className="m-4 rounded-md border border-rose-500/30 bg-rose-500/10 p-2.5 text-rose-400 text-[11px] shrink-0">
+          <div className="m-4 shrink-0 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-400">
             {error}
           </div>
         )}
 
         {/* Teammates Directory List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 space-y-1 overflow-y-auto p-3">
           {isLoading ? (
-            <div className="flex items-center justify-center py-10 space-x-2 text-xs text-gray-500">
+            <div className="flex items-center justify-center space-x-2 py-10 text-xs text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
               <span>Loading team directory...</span>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-10 text-xs text-gray-500">
+            <div className="py-10 text-center text-xs text-slate-500">
               No teammates found matching "{searchQuery}"
             </div>
           ) : (
@@ -157,45 +157,41 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleSelectTeammate(teammate)}
-                  className="w-full flex items-center space-x-3 rounded-lg p-2.5 text-left hover:bg-surface-hover/60 transition-colors
-  cursor-pointer group disabled:opacity-50"
+                  className="group flex w-full cursor-pointer items-center space-x-3 rounded-xl border border-transparent p-2.5 text-left transition-all hover:border-white/[0.08] hover:bg-surface-card/80 active:scale-[0.99] disabled:opacity-50"
                 >
                   {/* Avatar & Online Dot */}
                   <div className="relative shrink-0">
-                    <div
-                      className="h-9 w-9 rounded-lg bg-brand-navy flex items-center justify-center font-mono font-bold text-accent-gold
-  text-xs border border-accent-gold/20"
-                    >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent-gold/30 bg-brand-navy font-mono text-xs font-bold text-accent-gold shadow-inner">
                       {initials}
                     </div>
                     <span
-                      className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-surface-panel ${
-                        isOnline ? "bg-emerald-400" : "bg-gray-600"
+                      className={`absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface-panel ${
+                        isOnline ? "bg-emerald-400 shadow-sm shadow-emerald-400/50" : "bg-slate-600"
                       }`}
                     />
                   </div>
 
                   {/* Teammate Info */}
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center space-x-2">
-                      <span className="font-semibold text-xs text-white group-hover:text-accent-gold transition-colors truncate">
+                      <span className="truncate text-xs font-semibold text-white transition-colors group-hover:text-accent-gold">
                         {teammate.displayName}
                       </span>
                       <LocRoleBadge role={teammate.locRole} />
                     </div>
-                    <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
-                      <span className="font-mono text-gray-500 truncate mr-2">
+                    <div className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-400">
+                      <span className="mr-2 truncate font-mono text-slate-500">
                         @{teammate.username}
                       </span>
                       {teammate.customStatus && (
-                        <span className="truncate italic text-gray-400 max-w-60">
+                        <span className="max-w-60 truncate text-slate-400 italic">
                           "{teammate.customStatus}"
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <MessageSquare className="h-4 w-4 text-gray-600 group-hover:text-accent-gold transition-colors shrink-0 opacity-0 group-hover:opacity-100" />
+                  <MessageSquare className="h-4 w-4 shrink-0 text-slate-600 opacity-0 transition-all group-hover:text-accent-gold group-hover:opacity-100" />
                 </button>
               );
             })

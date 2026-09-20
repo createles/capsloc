@@ -8,6 +8,9 @@ import {
   ChevronUp,
   ChevronDown,
   X,
+  Copy,
+  Check,
+  FileCode,
 } from "lucide-react";
 import { UserStatus, type MessageDTO, type PaginatedMessagesDTO } from "@capsloc/types";
 import { api } from "../../services/api";
@@ -41,7 +44,7 @@ export const SmartMessageContent: React.FC<{
   const parts = content.split(regex);
 
   return (
-    <span className="whitespace-pre-wrap leading-relaxed text-gray-200 font-sans">
+    <span className="font-sans leading-relaxed whitespace-pre-wrap text-gray-200">
       {parts.map((part, index) => {
         if (!part) return null;
 
@@ -54,7 +57,7 @@ export const SmartMessageContent: React.FC<{
               key={index}
               type="button"
               onClick={() => onSelectStringKey(cleanKey)}
-              className="inline-flex items-center rounded bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-900/70 hover:border-emerald-300 hover:text-emerald-200 transition-colors cursor-pointer px-2 py-0.5 font-mono text-[11px] font-bold tracking-tight mx-0.5 align-baseline shadow-xs"
+              className="mx-0.5 inline-flex cursor-pointer items-center rounded border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 align-baseline font-mono text-[11px] font-bold tracking-tight text-emerald-400 shadow-xs transition-colors hover:border-emerald-300 hover:bg-emerald-900/70 hover:text-emerald-200"
             >
               {displayLabel}
             </button>
@@ -67,7 +70,7 @@ export const SmartMessageContent: React.FC<{
           return (
             <span
               key={index}
-              className={`font-bold transition-colors mx-0.5 text-accent-gold decoration-accent-gold/70 hover:decoration-accent-gold`}
+              className={`mx-0.5 font-bold text-accent-gold decoration-accent-gold/70 transition-colors hover:decoration-accent-gold`}
             >
               @{cleanUsername}
             </span>
@@ -81,14 +84,64 @@ export const SmartMessageContent: React.FC<{
 };
 
 /**
+ * Floating hover toolbar for individual messages
+ */
+const MessageHoverBar: React.FC<{
+  content: string;
+  onSelectStringKey?: (key: string) => void;
+}> = ({ content, onSelectStringKey }) => {
+  const [copied, setCopied] = useState(false);
+  const tagMatch = content.match(/(#LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+)/i);
+  const matchedKey = tagMatch ? tagMatch[0].replace(/^[#$]/, "") : null;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (e) {
+      console.error("Failed to copy text:", e);
+    }
+  };
+
+  return (
+    <div className="absolute -top-3.5 right-3 z-10 hidden items-center space-x-0.5 rounded-lg border border-border-subtle bg-surface-card/95 px-1 py-0.5 shadow-md backdrop-blur-md group-hover:flex">
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="cursor-pointer rounded p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
+        title="Copy message text"
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5 text-emerald-400" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </button>
+
+      {matchedKey && onSelectStringKey && (
+        <button
+          type="button"
+          onClick={() => onSelectStringKey(matchedKey)}
+          className="cursor-pointer rounded p-1 text-emerald-400 transition-colors hover:bg-emerald-950/50 hover:text-emerald-300"
+          title={`Inspect ${tagMatch?.[0]}`}
+        >
+          <FileCode className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+/**
  * Message skeleton placeholder for chat transitions
  */
 const MessageSkeleton: React.FC = () => (
-  <div className="flex-1 overflow-hidden px-4 py-3 space-y-4 animate-pulse select-none">
+  <div className="flex-1 animate-pulse space-y-4 overflow-hidden px-4 py-3 select-none">
     {[1, 2, 3, 4, 5, 6].map((i) => (
       <div key={i} className="flex items-start space-x-3">
         {/* Avatar skeleton */}
-        <div className="h-8 w-8 rounded-lg bg-surface-card/60 border border-border-subtle/50 shrink-0 mt-0.5" />
+        <div className="mt-0.5 h-8 w-8 shrink-0 rounded-lg border border-border-subtle/50 bg-surface-card/60" />
         {/* Body skeleton */}
         <div className="flex-1 space-y-2 py-1">
           <div className="flex items-center space-x-2">
@@ -378,21 +431,21 @@ export const MessageList: React.FC<MessageListProps> = ({
   }
 
   return (
-    <div className="relative flex-1 flex flex-col min-h-0">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       {/* Floating Jump Controller for In-Chat Tag Mentions */}
       {highlightedTagKey && matchingMessageIds.length > 0 && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-2.5 rounded-full bg-surface-panel/95 backdrop-blur-md border border-accent-gold/40 shadow-2xl px-3.5 py-1.5 font-sans text-xs select-none animate-in fade-in slide-in-from-top-2">
-          <span className="font-mono font-bold text-accent-gold text-[11px]">
+        <div className="animate-in fade-in slide-in-from-top-2 absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center space-x-2.5 rounded-full border border-accent-gold/40 bg-surface-panel/95 px-3.5 py-1.5 font-sans text-xs shadow-2xl backdrop-blur-md select-none">
+          <span className="font-mono text-[11px] font-bold text-accent-gold">
             #{highlightedTagKey.replace(/^#/, "")}
           </span>
-          <span className="text-gray-300 font-mono text-[11px]">
+          <span className="font-mono text-[11px] text-gray-300">
             {currentMatchIndex + 1} of {matchingMessageIds.length} mentions
           </span>
           <div className="flex items-center space-x-1 border-l border-border-subtle pl-2">
             <button
               type="button"
               onClick={handlePrevMatch}
-              className="p-1 rounded hover:bg-surface-hover text-gray-300 hover:text-white transition-colors cursor-pointer"
+              className="cursor-pointer rounded p-1 text-gray-300 transition-colors hover:bg-surface-hover hover:text-white"
               title="Previous mention (Up)"
             >
               <ChevronUp className="h-3.5 w-3.5" />
@@ -400,7 +453,7 @@ export const MessageList: React.FC<MessageListProps> = ({
             <button
               type="button"
               onClick={handleNextMatch}
-              className="p-1 rounded hover:bg-surface-hover text-gray-300 hover:text-white transition-colors cursor-pointer"
+              className="cursor-pointer rounded p-1 text-gray-300 transition-colors hover:bg-surface-hover hover:text-white"
               title="Next mention (Down)"
             >
               <ChevronDown className="h-3.5 w-3.5" />
@@ -410,7 +463,7 @@ export const MessageList: React.FC<MessageListProps> = ({
             <button
               type="button"
               onClick={onDismissTagHighlight}
-              className="p-1 rounded text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer ml-1 border-l border-border-subtle pl-2"
+              className="ml-1 cursor-pointer rounded border-l border-border-subtle p-1 pl-2 text-gray-400 transition-colors hover:bg-surface-hover hover:text-white"
               title="Close jump bar"
             >
               <X className="h-3.5 w-3.5" />
@@ -423,7 +476,7 @@ export const MessageList: React.FC<MessageListProps> = ({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-3 space-y-1 select-text"
+        className="flex-1 space-y-1 overflow-y-auto px-4 py-3 select-text"
       >
         {/* Load Earlier Messages Button */}
         {hasMore && (
@@ -432,7 +485,7 @@ export const MessageList: React.FC<MessageListProps> = ({
               type="button"
               onClick={loadEarlierMessages}
               disabled={isLoadingMore}
-              className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-3 py-1 font-sans text-xs text-gray-400 hover:border-accent-gold/40 hover:text-accent-gold transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex cursor-pointer items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-3 py-1 font-sans text-xs text-gray-400 transition-colors hover:border-accent-gold/40 hover:text-accent-gold disabled:opacity-50"
             >
               {isLoadingMore ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-accent-gold" />
@@ -446,9 +499,9 @@ export const MessageList: React.FC<MessageListProps> = ({
 
         {/* Empty State */}
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center text-gray-500 font-sans text-xs py-16">
-            <span className="font-medium text-gray-400 text-sm">No messages yet</span>
-            <span className="text-[11px] text-gray-500 mt-1">
+          <div className="flex h-full flex-col items-center justify-center py-16 text-center font-sans text-xs text-gray-500">
+            <span className="text-sm font-medium text-gray-400">No messages yet</span>
+            <span className="mt-1 text-[11px] text-gray-500">
               Messages with #LOC-XXXX or $STR_XXXX tags are automatically linked for inspection.
             </span>
           </div>
@@ -483,9 +536,9 @@ export const MessageList: React.FC<MessageListProps> = ({
               <React.Fragment key={message.id}>
                 {/* Calendar Day Date Divider */}
                 {showDateDivider && (
-                  <div className="flex items-center my-4 select-none">
+                  <div className="my-4 flex items-center select-none">
                     <div className="flex-1 border-t border-border-subtle" />
-                    <span className="mx-3 rounded-full bg-surface-card border border-border-subtle px-3 py-0.5 text-[11px] font-sans font-medium text-gray-400">
+                    <span className="mx-3 rounded-full border border-border-subtle bg-surface-panel/80 px-3 py-0.5 font-mono text-[10px] font-medium text-slate-400 shadow-xs">
                       {formatDateDivider(message.createdAt)}
                     </span>
                     <div className="flex-1 border-t border-border-subtle" />
@@ -497,22 +550,28 @@ export const MessageList: React.FC<MessageListProps> = ({
                   ref={(el) => {
                     messageRefs.current[message.id] = el;
                   }}
-                  className={`flex items-start space-x-3 group hover:bg-surface-panel/40 -mx-4 px-4 rounded transition-all ${
+                  className={`group relative -mx-4 flex items-start space-x-3 rounded-lg px-4 transition-all hover:bg-white/[0.03] ${
                     isClustered ? "py-1" : "pt-2.5 pb-1"
                   } ${
                     isCurrentMatch
-                      ? "bg-accent-gold/20 ring-2 ring-accent-gold rounded-lg shadow-md -mx-2 px-2"
+                      ? "-mx-2 rounded-lg bg-accent-gold/20 px-2 shadow-md ring-2 ring-accent-gold"
                       : isMatch
-                        ? "bg-accent-gold/[0.08] ring-1 ring-accent-gold/40 rounded-lg -mx-2 px-2"
+                        ? "-mx-2 rounded-lg bg-accent-gold/[0.08] px-2 ring-1 ring-accent-gold/40"
                         : isMentioned
-                          ? "bg-accent-gold/[0.04] border-l-2 border-accent-gold pl-3.5"
+                          ? "border-l-2 border-accent-gold bg-accent-gold/[0.04] pl-3.5"
                           : ""
                   }`}
                 >
+                  {/* Floating Action Bar on Hover */}
+                  <MessageHoverBar
+                    content={message.content}
+                    onSelectStringKey={onSelectStringKey}
+                  />
+
                   {isClustered ? (
                     // Grouped follow-up: compact single-line timestamp on hover (never wraps)
-                    <div className="w-8 shrink-0 text-right flex items-center justify-end select-none h-5">
-                      <span className="text-[9px] font-mono tabular-nums text-gray-500 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity leading-none">
+                    <div className="flex h-5 w-8 shrink-0 items-center justify-end text-right select-none">
+                      <span className="font-mono text-[9px] leading-none whitespace-nowrap text-slate-500 tabular-nums opacity-0 transition-opacity group-hover:opacity-100">
                         {formatTimestamp(message.createdAt)}
                       </span>
                     </div>
@@ -525,28 +584,28 @@ export const MessageList: React.FC<MessageListProps> = ({
                       onSendDm={onOpenDm ? () => onOpenDm(message.sender.id) : undefined}
                       side="bottom"
                     >
-                      <div className="h-8 w-8 rounded-lg bg-brand-navy border border-accent-gold/20 flex items-center justify-center font-mono font-bold text-accent-gold text-xs shrink-0 mt-0.5 cursor-pointer hover:border-accent-gold transition-colors">
+                      <div className="mt-0.5 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-accent-gold/20 bg-brand-navy font-mono text-xs font-bold text-accent-gold shadow-xs transition-all hover:border-accent-gold hover:shadow-sm">
                         {initials}
                       </div>
                     </UserProfileHoverCard>
                   )}
 
                   {/* Body */}
-                  <div className="flex-1 overflow-hidden space-y-0.5 min-w-0">
+                  <div className="min-w-0 flex-1 space-y-0.5 overflow-hidden">
                     {!isClustered && (
                       <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-xs text-white">
+                        <span className="text-xs font-semibold text-white">
                           {message.sender.displayName}
                         </span>
                         <LocRoleBadge role={message.sender.locRole} />
-                        <span className="text-[10px] font-mono text-gray-500">
+                        <span className="font-mono text-[10px] text-slate-500">
                           {formatTimestamp(message.createdAt)}
                         </span>
                       </div>
                     )}
 
                     {/* Content */}
-                    <div className="text-xs text-gray-300">
+                    <div className="text-sm leading-relaxed text-slate-200 select-text">
                       <SmartMessageContent
                         content={message.content}
                         currentUsername={user?.username}
@@ -564,24 +623,21 @@ export const MessageList: React.FC<MessageListProps> = ({
                           return (
                             <div
                               key={att.id}
-                              className="w-fit min-w-55 max-w-md rounded-lg border border-border-subtle bg-surface-card p-2 text-xs"
+                              className="w-fit max-w-md min-w-55 rounded-lg border border-border-subtle bg-surface-card p-2 text-xs"
                             >
                               {/* Attachment Header */}
-                              <div className="flex items-center space-x-2 mb-1.5 text-gray-300 font-sans text-xs">
+                              <div className="mb-1.5 flex items-center space-x-2 font-sans text-xs text-gray-300">
                                 {isImage ? (
-                                  <ImageIcon className="h-3.5 w-3.5 text-accent-gold shrink-0" />
+                                  <ImageIcon className="h-3.5 w-3.5 shrink-0 text-accent-gold" />
                                 ) : (
-                                  <FileText className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                                  <FileText className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                                 )}
                                 <span className="truncate">{att.fileName}</span>
-                                <span className="text-gray-500 text-[10px] font-mono shrink-0">
+                                <span className="shrink-0 font-mono text-[10px] text-gray-500">
                                   ({(att.fileSize / 1024).toFixed(1)} KB)
                                 </span>
                                 {att.localeTag && (
-                                  <span
-                                    className="ml-auto rounded bg-brand-navy px-1.5 py-0.2 text-[9px] font-mono text-accent-gold border border-accent-gold/30
-  uppercase shrink-0"
-                                  >
+                                  <span className="py-0.2 ml-auto shrink-0 rounded border border-accent-gold/30 bg-brand-navy px-1.5 font-mono text-[9px] text-accent-gold uppercase">
                                     {att.localeTag}
                                   </span>
                                 )}
@@ -589,7 +645,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 
                               {/* Centered Image Thumbnail with Snug Wrapper */}
                               {isImage && (
-                                <div className="rounded-md overflow-hidden border border-border-subtle bg-black/30 flex items-center justify-center">
+                                <div className="flex items-center justify-center overflow-hidden rounded-md border border-border-subtle bg-black/30">
                                   <img
                                     src={att.fileUrl}
                                     alt={att.fileName}
@@ -599,7 +655,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                                         scrollToBottom("instant");
                                       }
                                     }}
-                                    className="max-h-60 w-auto object-contain cursor-pointer hover:opacity-95 transition-opacity rounded"
+                                    className="max-h-60 w-auto cursor-pointer rounded object-contain transition-opacity hover:opacity-95"
                                     onClick={() =>
                                       setActiveLightbox({
                                         attachment: att,
@@ -626,15 +682,14 @@ export const MessageList: React.FC<MessageListProps> = ({
 
       {/* Floating Unread Counter Action Banner */}
       {unreadCount > 0 && (
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+        <div className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2">
           <button
             type="button"
             onClick={() => {
               scrollToBottom("smooth");
               setUnreadCount(0);
             }}
-            className="flex items-center space-x-2 rounded-full bg-brand-navy border border-accent-gold/40 shadow-xl px-4 py-1.5 text-xs
-  font-sans font-medium text-accent-gold hover:bg-brand-navy-light hover:border-accent-gold transition-all animate-bounce cursor-pointer"
+            className="flex animate-bounce cursor-pointer items-center space-x-2 rounded-full border border-accent-gold/40 bg-brand-navy px-4 py-1.5 font-sans text-xs font-medium text-accent-gold shadow-xl transition-all hover:border-accent-gold hover:bg-brand-navy-light"
           >
             <span>
               {unreadCount} {unreadCount === 1 ? "New Message" : "New Messages"}

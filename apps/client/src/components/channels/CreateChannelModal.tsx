@@ -60,40 +60,44 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 select-none"
+      className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-border-subtle bg-surface-panel shadow-2xl overflow-hidden font-sans"
+        className="animate-in zoom-in-95 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4 bg-surface-card/40">
-          <div className="flex items-center space-x-2">
-            <Hash className="h-4 w-4 text-accent-gold" />
-            <span className="font-semibold text-sm text-white">Create Channel</span>
+        <div className="flex items-center justify-between border-b border-white/[0.08] bg-surface-card/50 px-6 py-4">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
+              <Hash className="h-4 w-4 text-accent-gold" />
+            </div>
+            <span className="text-sm font-semibold text-white">Create Channel</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4.5 p-6 text-xs">
           {error && (
-            <div className="rounded-md border border-rose-500/30 bg-rose-500/10 p-2.5 text-rose-400 text-[11px]">
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-400">
               {error}
             </div>
           )}
 
           {/* Channel Name */}
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">Channel Name</label>
+          <div>
+            <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
+              Channel Name
+            </label>
             <div className="relative flex items-center">
-              <span className="absolute left-3 text-gray-500 font-mono">#</span>
+              <span className="absolute left-3 font-mono text-slate-500">#</span>
               <input
                 type="text"
                 autoFocus
@@ -101,108 +105,107 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. loc-dialogue-review"
                 required
-                className="w-full rounded-md border border-border-subtle bg-surface-card pl-7 pr-3 py-2 text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none font-mono text-xs"
+                className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-3 pl-7 font-mono text-xs text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Project Tag & Locale Tag Grid */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-medium text-gray-300">Project Tag</label>
+            <div>
+              <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
+                Project Tag
+              </label>
               <input
                 type="text"
                 value={projectTag}
                 onChange={(e) => setProjectTag(e.target.value)}
                 placeholder="e.g. MH-WILDS"
-                className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none font-mono text-xs uppercase"
+                className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 font-mono text-xs text-white uppercase placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="block text-[11px] font-medium text-gray-300">Locale Tag</label>
+            <div>
+              <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
+                Locale Tag
+              </label>
               <input
                 type="text"
                 value={localeTag}
                 onChange={(e) => setLocaleTag(e.target.value)}
                 placeholder="e.g. JA->EN"
-                className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none font-mono text-xs uppercase"
+                className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 font-mono text-xs text-white uppercase placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Description */}
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">
-              Description <span className="text-gray-500">(Optional)</span>
+          <div>
+            <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
+              Description <span className="text-slate-500 lowercase">(optional)</span>
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What is this channel for?"
-              className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none text-xs"
+              className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-xs text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
           </div>
 
           {/* Visibility Type Selector */}
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-gray-300">
+          <div>
+            <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
               Channel Visibility
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
                 onClick={() => setType(ChannelType.PUBLIC_PROJECT)}
-                className={`flex items-center space-x-2 rounded-lg border p-2.5 text-left transition-all cursor-pointer ${
+                className={`flex cursor-pointer items-center space-x-2.5 rounded-xl border p-3 text-left transition-all ${
                   type === ChannelType.PUBLIC_PROJECT
-                    ? "border-accent-gold/50 bg-brand-navy/60 text-white"
-                    : "border-border-subtle bg-surface-card text-gray-400 hover:text-gray-200"
+                    ? "border-accent-gold/50 bg-brand-navy/80 text-white shadow-sm ring-1 ring-accent-gold/20"
+                    : "border-white/[0.08] bg-surface-card/60 text-slate-400 hover:border-white/[0.12] hover:bg-surface-card hover:text-slate-200"
                 }`}
               >
-                <Globe className="h-4 w-4 text-accent-gold shrink-0" />
+                <Globe className="h-4 w-4 shrink-0 text-accent-gold" />
                 <div>
-                  <div className="font-semibold text-xs text-white">Public</div>
-                  <div className="text-[10px] text-gray-400">Open to all team members</div>
+                  <div className="text-xs font-semibold text-white">Public</div>
+                  <div className="text-[10px] text-slate-400">Open to all team members</div>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setType(ChannelType.PRIVATE_LOCALE)}
-                className={`flex items-center space-x-2 rounded-lg border p-2.5 text-left transition-all cursor-pointer ${
+                className={`flex cursor-pointer items-center space-x-2.5 rounded-xl border p-3 text-left transition-all ${
                   type === ChannelType.PRIVATE_LOCALE
-                    ? "border-accent-gold/50 bg-brand-navy/60 text-white"
-                    : "border-border-subtle bg-surface-card text-gray-400 hover:text-gray-200"
+                    ? "border-accent-gold/50 bg-brand-navy/80 text-white shadow-sm ring-1 ring-accent-gold/20"
+                    : "border-white/[0.08] bg-surface-card/60 text-slate-400 hover:border-white/[0.12] hover:bg-surface-card hover:text-slate-200"
                 }`}
               >
-                <Lock className="h-4 w-4 text-accent-gold shrink-0" />
+                <Lock className="h-4 w-4 shrink-0 text-accent-gold" />
                 <div>
-                  <div className="font-semibold text-xs text-white">Private</div>
-                  <div className="text-[10px] text-gray-400">Restricted locale team</div>
+                  <div className="text-xs font-semibold text-white">Private</div>
+                  <div className="text-[10px] text-slate-400">Restricted locale team</div>
                 </div>
               </button>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end space-x-2 pt-3 border-t border-border-subtle">
+          <div className="flex items-center justify-end space-x-2.5 border-t border-white/[0.08] pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-xs font-medium text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !name.trim()}
-              className="flex items-center space-x-1.5 rounded-md bg-brand-navy hover:bg-brand-navy-light px-4 py-1.5 text-xs font-semibold
-  text-accent-gold border border-accent-gold/40 transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/50 bg-accent-gold/10 px-4 py-2 font-mono text-xs font-bold tracking-wider text-accent-gold uppercase shadow-sm shadow-accent-gold/10 transition-all duration-150 hover:bg-accent-gold hover:text-surface-canvas active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               <span>Create Channel</span>

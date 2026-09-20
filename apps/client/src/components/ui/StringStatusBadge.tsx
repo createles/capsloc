@@ -42,7 +42,7 @@ export const StringStatusBadge: React.FC<StringStatusBadgeProps> = ({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider font-semibold",
+        "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider uppercase",
         meta.badgeStyle,
         className,
       )}

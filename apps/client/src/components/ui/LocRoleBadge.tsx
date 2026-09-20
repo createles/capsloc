@@ -40,7 +40,7 @@ export const LocRoleBadge: React.FC<LocRoleBadgeProps> = ({ role, className }) =
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider font-semibold whitespace-nowrap shrink-0",
+        "inline-flex shrink-0 items-center rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider whitespace-nowrap uppercase",
         meta.style,
         className,
       )}

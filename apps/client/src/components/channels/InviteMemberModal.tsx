@@ -74,54 +74,52 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 select-none">
-      <div
-        className="relative w-full max-w-md rounded-xl border border-border-subtle bg-surface-panel p-6 shadow-2xl space-y-4
-  font-sans"
-      >
+    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none">
+      <div className="animate-in zoom-in-95 relative w-full max-w-md space-y-4 rounded-2xl border border-white/[0.08] bg-surface-panel p-6 font-sans shadow-2xl shadow-black/80 duration-150">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-          <div className="flex items-center space-x-2">
-            <UserPlus className="h-4 w-4 text-accent-gold" />
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
+              <UserPlus className="h-4 w-4 text-accent-gold" />
+            </div>
             <h2 className="text-sm font-semibold text-white">Invite to #{channel.name}</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {error && (
-          <div className="rounded-md bg-rose-500/10 border border-rose-500/20 p-2.5 text-xs text-rose-400">
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-400">
             {error}
           </div>
         )}
 
         {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
+          <Search className="absolute top-2.5 left-3 h-3.5 w-3.5 text-slate-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search colleagues by name or role..."
-            className="w-full rounded-md border border-border-subtle bg-surface-card pl-9 pr-3 py-2 text-xs text-white
-  placeholder-gray-500 focus:outline-none focus:border-accent-gold/50"
+            className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-3 pl-9 text-xs text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
           />
         </div>
 
         {/* User List */}
-        <div className="max-h-60 overflow-y-auto space-y-1 pr-1">
+        <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
           {isLoading ? (
-            <div className="flex items-center justify-center py-8 text-xs text-gray-500 space-x-2">
+            <div className="flex items-center justify-center space-x-2 py-8 text-xs text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
               <span>Scanning directory...</span>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-8 text-xs text-gray-500">
+            <div className="py-8 text-center text-xs text-slate-500">
               {searchQuery
                 ? "No colleagues match your search."
                 : "All workspace colleagues are already enrolled."}
@@ -135,24 +133,20 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
               return (
                 <div
                   key={u.id}
-                  className="flex items-center justify-between p-2 rounded-lg bg-surface-card/40 border border-border-subtle/50
-  hover:bg-surface-hover/60 transition-colors"
+                  className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-surface-card/50 p-2.5 transition-all hover:border-white/[0.1] hover:bg-surface-card/80"
                 >
-                  <div className="flex items-center space-x-2.5 min-w-0">
-                    <div
-                      className="h-7 w-7 rounded bg-brand-navy border border-accent-gold/20 flex items-center justify-center
-  font-mono text-[10px] font-bold text-accent-gold shrink-0"
-                    >
+                  <div className="flex min-w-0 items-center space-x-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-accent-gold/30 bg-brand-navy font-mono text-[11px] font-bold text-accent-gold shadow-inner">
                       {initials}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center space-x-1.5">
-                        <span className="text-xs font-semibold text-gray-200 truncate">
+                        <span className="truncate text-xs font-semibold text-slate-100">
                           {u.displayName}
                         </span>
                         <LocRoleBadge role={u.locRole} />
                       </div>
-                      <span className="text-[10px] font-mono text-gray-500 truncate block">
+                      <span className="block truncate font-mono text-[10px] text-slate-400">
                         @{u.username} • {u.primaryLocale}
                       </span>
                     </div>
@@ -162,18 +156,17 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                     type="button"
                     disabled={isInvited || isInviting}
                     onClick={() => handleInvite(u)}
-                    className={`shrink-0 ml-2 flex items-center space-x-1 rounded px-2.5 py-1 text-[11px] font-medium
-  transition-colors cursor-pointer ${
-    isInvited
-      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-      : "bg-brand-navy hover:bg-brand-navy-light text-accent-gold border border-accent-gold/30 disabled:opacity-50"
-  }`}
+                    className={`ml-2 flex shrink-0 cursor-pointer items-center space-x-1.5 rounded-lg px-3 py-1.5 font-mono text-xs font-semibold transition-all duration-150 active:scale-[0.98] ${
+                      isInvited
+                        ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                        : "border border-accent-gold/40 bg-accent-gold/10 text-accent-gold hover:bg-accent-gold hover:text-surface-canvas disabled:opacity-50"
+                    }`}
                   >
                     {isInviting ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : isInvited ? (
                       <>
-                        <Check className="h-3 w-3" />
+                        <Check className="h-3.5 w-3.5" />
                         <span>Enrolled</span>
                       </>
                     ) : (

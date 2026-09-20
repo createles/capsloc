@@ -61,92 +61,91 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 select-none"
+      className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-border-subtle bg-surface-panel shadow-2xl overflow-hidden font-sans"
+        className="animate-in zoom-in-95 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4 bg-surface-card/40">
+        <div className="flex items-center justify-between border-b border-white/[0.08] bg-surface-card/50 px-6 py-4">
           <div className="flex items-center space-x-2">
             <User className="h-4 w-4 text-accent-gold" />
-            <span className="font-semibold text-sm text-white">Edit Profile</span>
+            <span className="text-sm font-semibold text-white">Edit Profile</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4.5 p-6 text-xs">
           {error && (
-            <div className="rounded-md border border-rose-500/30 bg-rose-500/10 p-2.5 text-rose-400 text-[11px]">
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-400">
               {error}
             </div>
           )}
 
           {/* User Avatar Card Preview */}
           {user && (
-            <div className="flex items-center space-x-3 rounded-lg border border-border-subtle bg-surface-card p-3">
-              <div
-                className="h-10 w-10 rounded-lg bg-brand-navy border border-accent-gold/30 flex items-center justify-center font-mono
-  font-bold text-accent-gold text-sm shrink-0"
-              >
+            <div className="flex items-center space-x-3 rounded-xl border border-white/[0.08] bg-surface-card/70 p-3.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy font-mono text-sm font-bold text-accent-gold shadow-inner">
                 {user.displayName.substring(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 {/* Name and Role Badge on same line */}
                 <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-white truncate">{user.displayName}</span>
+                  <span className="truncate font-semibold text-white">{user.displayName}</span>
                   <LocRoleBadge role={user.locRole} />
                 </div>
                 {/* Username directly below */}
-                <div className="text-[11px] font-mono text-gray-400 mt-0.5">@{user.username}</div>
+                <div className="mt-0.5 font-mono text-[11px] text-slate-400">@{user.username}</div>
               </div>
             </div>
           )}
 
           {/* Display Name */}
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">Display Name</label>
+          <div>
+            <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
+              Display Name
+            </label>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               maxLength={50}
               required
-              className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none"
+              className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
           </div>
 
           {/* Custom Status with Presets */}
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-gray-300 flex items-center justify-between">
+          <div>
+            <label className="mb-1.5 flex items-center justify-between font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
               <span>Custom Status</span>
-              <span className="text-[10px] font-mono text-gray-500">{customStatus.length}/100</span>
+              <span className="font-mono text-[10px] text-slate-500">
+                {customStatus.length}/100
+              </span>
             </label>
             <div className="relative">
-              <Smile className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-500" />
+              <Smile className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
               <input
                 type="text"
                 value={customStatus}
                 onChange={(e) => setCustomStatus(e.target.value)}
                 placeholder="What are you working on? (e.g. Updating Resident Evil Requiem UI strings)"
                 maxLength={100}
-                className="w-full rounded-md border border-border-subtle bg-surface-card pl-8 pr-8 py-2 text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none"
+                className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-8 pl-8 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
               />
               {customStatus && (
                 <button
                   type="button"
                   onClick={() => setCustomStatus("")}
-                  className="absolute right-2.5 top-2.5 text-gray-400 hover:text-white"
+                  className="absolute top-2.5 right-2.5 text-slate-400 hover:text-white"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -154,13 +153,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
             </div>
 
             {/* Preset Quick Chips */}
-            <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="flex flex-wrap gap-1.5 pt-2">
               {STATUS_PRESETS.map((preset) => (
                 <button
                   key={preset.text}
                   type="button"
                   onClick={() => setCustomStatus(`${preset.emoji} ${preset.text}`)}
-                  className="inline-flex items-center space-x-1 rounded-full border border-border-subtle bg-surface-card/80 hover:bg-surface-hover px-2.5 py-1 text-[11px] text-gray-300 transition-colors cursor-pointer"
+                  className="inline-flex cursor-pointer items-center space-x-1.5 rounded-full border border-white/[0.08] bg-surface-card/90 px-2.5 py-1 text-[11px] text-slate-300 transition-all hover:border-accent-gold/40 hover:bg-white/[0.06] hover:text-white active:scale-95"
                 >
                   <span>{preset.emoji}</span>
                   <span>{preset.text}</span>
@@ -170,8 +169,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
           </div>
 
           {/* Bio */}
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">
+          <div>
+            <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
               Bio / Specialization
             </label>
             <textarea
@@ -180,19 +179,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
               placeholder="e.g. Lead Japanese to English translator on Monster Hunter series."
               maxLength={250}
               rows={2}
-              className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-gray-500
-  focus:border-accent-gold/50 focus:outline-none resize-none"
+              className="focus:bg-surface-elevated w-full resize-none rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
           </div>
 
           {/* Primary Locale */}
-          <div className="space-y-1">
-            <label className="block text-[11px] font-medium text-gray-300">Primary Locale</label>
+          <div>
+            <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
+              Primary Locale
+            </label>
             <div className="relative">
               <select
                 value={primaryLocale}
                 onChange={(e) => setPrimaryLocale(e.target.value)}
-                className="w-full appearance-none rounded-md border border-border-subtle bg-surface-card pl-3 pr-10 py-2 text-white focus:border-accent-gold/50 focus:outline-none cursor-pointer"
+                className="focus:bg-surface-elevated w-full cursor-pointer appearance-none rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-10 pl-3 text-white transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
               >
                 <option value="en-US">English (en-US)</option>
                 <option value="ja-JP">Japanese (ja-JP)</option>
@@ -201,24 +201,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
                 <option value="es-ES">Spanish (es-ES)</option>
                 <option value="it-IT">Italian (it-IT)</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end space-x-2 pt-3 border-t border-border-subtle">
+          <div className="flex items-center justify-end space-x-2.5 border-t border-white/[0.08] pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-xs font-medium text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center space-x-1.5 rounded-md bg-brand-navy hover:bg-brand-navy-light px-4 py-1.5 text-xs font-semibold
-  text-accent-gold border border-accent-gold/40 transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/50 bg-accent-gold/10 px-4 py-2 font-mono text-xs font-bold tracking-wider text-accent-gold uppercase shadow-sm shadow-accent-gold/10 transition-all duration-150 hover:bg-accent-gold hover:text-surface-canvas active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               <span>Save Changes</span>

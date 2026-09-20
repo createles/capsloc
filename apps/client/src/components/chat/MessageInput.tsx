@@ -40,9 +40,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
       try {
         const { data } = await api.get<ChannelMemberDTO[]>(`/channels/${channelId}/members`);
         if (isMounted) {
-          const roomUsers = data
-            .map((m) => m.user)
-            .filter((u): u is UserProfileDTO => Boolean(u));
+          const roomUsers = data.map((m) => m.user).filter((u): u is UserProfileDTO => Boolean(u));
           setDirectoryUsers(roomUsers);
         }
       } catch (err) {
@@ -73,6 +71,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
       stopTypingRef.current(channelId);
     };
   }, [channelId]); // Runs strictly on channel switch or component unmount
+
+  // Auto-resize textarea dynamically based on content scrollHeight (capped at 192px / 8 lines)
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 192)}px`;
+    }
+  }, [content]);
 
   const filteredMentionUsers = directoryUsers
     .filter((u) => u.id !== user?.id)
@@ -306,7 +312,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
   };
 
   return (
-    <div className="p-3 bg-surface-panel border-t border-border-subtle shrink-0">
+    <div className="shrink-0 border-t border-border-subtle bg-surface-panel p-3">
       {/* Hidden File Input */}
       <input
         ref={fileInputRef}
@@ -318,22 +324,21 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
 
       {/* Staged Attachments Strip */}
       {(stagedAttachments.length > 0 || isUploading) && (
-        <div className="mb-2 flex flex-wrap gap-2 items-center">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
           {stagedAttachments.map((att) => (
             <div
               key={att.id}
-              className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 text-xs font-sans
-  text-gray-200"
+              className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 font-sans text-xs text-gray-200"
             >
-              <ImageIcon className="h-3.5 w-3.5 text-accent-gold shrink-0" />
-              <span className="truncate max-w-xs">{att.fileName}</span>
-              <span className="text-[10px] text-gray-500 font-mono">
+              <ImageIcon className="h-3.5 w-3.5 shrink-0 text-accent-gold" />
+              <span className="max-w-xs truncate">{att.fileName}</span>
+              <span className="font-mono text-[10px] text-gray-500">
                 ({(att.fileSize / 1024).toFixed(1)} KB)
               </span>
               <button
                 type="button"
                 onClick={() => removeAttachment(att.id)}
-                className="ml-1 text-gray-400 hover:text-status-flagged transition-colors cursor-pointer"
+                className="ml-1 cursor-pointer text-gray-400 transition-colors hover:text-status-flagged"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -341,7 +346,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           ))}
 
           {isUploading && (
-            <div className="flex items-center space-x-1.5 rounded-md border border-accent-gold/30 bg-brand-navy/60 px-2.5 py-1 text-xs font-sans text-accent-gold">
+            <div className="flex items-center space-x-1.5 rounded-md border border-accent-gold/30 bg-brand-navy/60 px-2.5 py-1 font-sans text-xs text-accent-gold">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-accent-gold" />
               <span>Uploading attachment...</span>
             </div>
@@ -360,17 +365,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           setIsDragging(false);
         }}
         onDrop={handleDrop}
-        className={`relative rounded-lg border transition-all p-2 flex flex-col justify-between ${
+        className={`relative flex flex-col justify-between rounded-xl border p-2.5 shadow-xs transition-all ${
           isDragging
             ? "border-dashed border-accent-gold bg-accent-gold/5"
-            : "border-border-subtle bg-surface-card focus-within:border-accent-gold/50"
+            : "border-border-subtle bg-surface-card/80 focus-within:border-accent-gold/40 focus-within:ring-1 focus-within:ring-accent-gold/20"
         }`}
       >
         {isDragging && (
-          <div
-            className="absolute inset-0 z-10 flex items-center justify-center bg-surface-card/90 rounded-lg pointer-events-none space-x-2
-  text-accent-gold font-sans text-xs font-semibold"
-          >
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center space-x-2 rounded-xl bg-surface-card/90 font-sans text-xs font-semibold text-accent-gold">
             <UploadCloud className="h-5 w-5 animate-pulse" />
             <span>Drop file to attach</span>
           </div>
@@ -378,8 +380,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
 
         {/* @Mention Autocomplete Popover */}
         {showMentionPicker && filteredMentionUsers.length > 0 && (
-          <div className="absolute bottom-full mb-2 left-0 w-80 max-h-56 overflow-y-auto rounded-lg border border-border-subtle bg-surface-panel shadow-2xl z-40 p-1 font-sans animate-in fade-in slide-in-from-bottom-2 duration-150">
-            <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-gray-400 border-b border-border-subtle/50 flex items-center justify-between">
+          <div className="animate-in fade-in slide-in-from-bottom-2 absolute bottom-full left-0 z-40 mb-2 max-h-56 w-80 overflow-y-auto rounded-xl border border-border-subtle bg-surface-panel p-1.5 font-sans shadow-2xl duration-150">
+            <div className="flex items-center justify-between border-b border-border-subtle/50 px-2.5 py-1 font-mono text-[10px] tracking-wider text-slate-400 uppercase">
               <span>Mention Colleague</span>
               <span className="text-accent-gold">@{mentionQuery || "..."}</span>
             </div>
@@ -398,24 +400,24 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
                       insertMention(targetUser);
                     }}
                     onMouseEnter={() => setSelectedMentionIndex(idx)}
-                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-left transition-colors cursor-pointer ${
+                    className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-left transition-colors ${
                       isSelected
-                        ? "bg-brand-navy text-accent-gold border border-accent-gold/30"
-                        : "hover:bg-surface-hover text-gray-200 border border-transparent"
+                        ? "border border-accent-gold/30 bg-brand-navy text-accent-gold"
+                        : "border border-transparent text-slate-200 hover:bg-surface-hover"
                     }`}
                   >
-                    <div className="flex items-center space-x-2 min-w-0">
-                      <div className="h-6 w-6 rounded bg-brand-navy border border-accent-gold/20 flex items-center justify-center font-mono text-[9px] font-bold text-accent-gold shrink-0">
+                    <div className="flex min-w-0 items-center space-x-2">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-accent-gold/20 bg-brand-navy font-mono text-[9px] font-bold text-accent-gold">
                         {initials}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center space-x-1.5">
-                          <span className="text-xs font-semibold truncate">
+                          <span className="truncate text-xs font-semibold">
                             {targetUser.displayName}
                           </span>
                           <LocRoleBadge role={targetUser.locRole} />
                         </div>
-                        <span className="text-[10px] font-mono text-gray-400 truncate block">
+                        <span className="block truncate font-mono text-[10px] text-slate-400">
                           @{targetUser.username}
                         </span>
                       </div>
@@ -433,24 +435,24 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
-          rows={2}
+          rows={1}
           placeholder={
             isDm
-              ? `Message @${channelName || "teammate"}... (Shift+Enter for newline, type @name to tag or #LOC-XXXX)`
-              : `Message #${channelName || "channel"}... (Shift+Enter for newline, type @name to tag or #LOC-XXXX)`
+              ? `Message @${channelName || "teammate"}... (Shift+Enter for newline, type @name or #LOC-XXXX)`
+              : `Message #${channelName || "channel"}... (Shift+Enter for newline, type @name or #LOC-XXXX)`
           }
-          className="w-full bg-transparent text-xs text-gray-100 placeholder-gray-500 focus:outline-none resize-none font-sans"
+          className="w-full resize-none bg-transparent font-sans text-sm leading-relaxed text-slate-100 placeholder-slate-500 focus:outline-none"
         />
 
         {/* Action Toolbar */}
-        <div className="flex items-center justify-between pt-1 border-t border-border-subtle/50 mt-1">
-          <div className="flex items-center space-x-1.5">
+        <div className="mt-1.5 flex items-center justify-between border-t border-border-subtle/50 pt-1.5">
+          <div className="flex items-center space-x-1">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               title="Attach screenshot or document"
-              className="p-1 rounded text-gray-400 hover:text-accent-gold hover:bg-surface-hover transition-colors disabled:opacity-50 cursor-pointer"
+              className="cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-accent-gold disabled:opacity-50"
             >
               <Paperclip className="h-4 w-4" />
             </button>
@@ -459,12 +461,25 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
               type="button"
               onClick={handleTriggerMention}
               title="Tag colleague (@)"
-              className="p-1 rounded text-gray-400 hover:text-accent-gold hover:bg-surface-hover transition-colors cursor-pointer"
+              className="cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-accent-gold"
             >
               <AtSign className="h-4 w-4" />
             </button>
 
-            <span className="text-[10px] font-sans text-gray-500 hidden sm:inline">
+            {/* Quick #LOC Tag Insertion Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                setContent((prev) => `${prev}#LOC-`);
+                textareaRef.current?.focus();
+              }}
+              title="Insert #LOC Key Shortcut"
+              className="cursor-pointer rounded border border-emerald-500/30 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 hover:text-emerald-300"
+            >
+              #LOC
+            </button>
+
+            <span className="ml-1 hidden font-sans text-[10px] text-slate-500 sm:inline">
               Max 10MB &bull; Paste or drop screenshots
             </span>
           </div>
@@ -473,7 +488,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
             type="button"
             onClick={handleSend}
             disabled={(!content.trim() && stagedAttachments.length === 0) || isSending}
-            className="flex items-center space-x-1.5 rounded-md bg-brand-navy hover:bg-brand-navy-light px-3 py-1.5 text-xs font-sans font-semibold text-accent-gold border border-accent-gold/40 transition-colors disabled:opacity-40 disabled:hover:bg-brand-navy cursor-pointer"
+            className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/40 bg-brand-navy px-3 py-1.5 font-sans text-xs font-semibold text-accent-gold shadow-xs transition-all hover:bg-brand-navy-light active:scale-[0.98] disabled:opacity-40 disabled:hover:bg-brand-navy"
           >
             <span>Send</span>
             <Send className="h-3 w-3" />

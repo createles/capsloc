@@ -62,73 +62,73 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-      <div className="w-full max-w-md rounded-xl border border-border-subtle bg-surface-panel shadow-2xl overflow-hidden">
+    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none">
+      <div className="animate-in zoom-in-95 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80 duration-150">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-subtle bg-surface-card/60 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-white/[0.08] bg-surface-card/50 px-6 py-4">
           <div className="flex items-center space-x-2.5">
-            <div className="h-7 w-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-amber-500/40 bg-amber-500/10 shadow-inner">
               <Pin className="h-4 w-4 text-accent-gold" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white">Edit Channel Sprint Status</h3>
-              <p className="text-[11px] font-mono text-gray-400">#{channel.name || "channel"}</p>
+              <p className="font-mono text-[11px] text-slate-400">#{channel.name || "channel"}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-all hover:bg-white/[0.06] hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4.5 p-6 text-xs">
           {error && (
-            <div className="rounded-md border border-rose-500/30 bg-rose-500/10 p-2.5 text-rose-400 text-[11px]">
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-400">
               {error}
             </div>
           )}
 
           {/* Sprint Status Input */}
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-medium text-gray-300 flex items-center justify-between">
+          <div>
+            <label className="mb-1.5 flex items-center justify-between font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
               <span>Sprint Status / Pinned Milestone</span>
-              <span className="text-[10px] font-mono text-gray-500">{status.length}/100</span>
+              <span className="font-mono text-[10px] text-slate-500">{status.length}/100</span>
             </label>
             <div className="relative">
-              <Pin className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-accent-gold" />
+              <Pin className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-accent-gold" />
               <input
                 type="text"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
                 placeholder="e.g. Last 2 weeks until 9/20/26 deadline"
                 maxLength={100}
-                className="w-full rounded-md border border-border-subtle bg-surface-card pl-8 pr-8 py-2 text-white placeholder-gray-500 focus:border-accent-gold/50 focus:outline-none"
+                className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-8 pl-8 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
               />
               {status && (
                 <button
                   type="button"
                   onClick={() => setStatus("")}
-                  className="absolute right-2.5 top-2.5 text-gray-400 hover:text-white"
+                  className="absolute top-2.5 right-2.5 text-slate-400 hover:text-white"
                   title="Clear field"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-gray-400 font-mono">
+            <p className="mt-1.5 font-mono text-[10px] text-slate-400">
               Displayed as a pinned rectangular banner across the top of the chat stream.
             </p>
           </div>
 
           {/* Description Input */}
-          <div className="space-y-1.5 pt-1">
-            <label className="block text-[11px] font-medium text-gray-300 flex items-center justify-between">
+          <div>
+            <label className="mb-1.5 flex items-center justify-between font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
               <span>Channel Description</span>
-              <span className="text-[10px] font-mono text-gray-500">{description.length}/250</span>
+              <span className="font-mono text-[10px] text-slate-500">{description.length}/250</span>
             </label>
             <textarea
               value={description}
@@ -136,18 +136,18 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
               placeholder="Channel purpose and localization scope..."
               maxLength={250}
               rows={2}
-              className="w-full rounded-md border border-border-subtle bg-surface-card px-3 py-2 text-white placeholder-gray-500 focus:border-accent-gold/50 focus:outline-none resize-none"
+              className="focus:bg-surface-elevated w-full resize-none rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
+          <div className="flex items-center justify-between border-t border-white/[0.08] pt-4">
             {channel.status ? (
               <button
                 type="button"
                 onClick={handleClearStatus}
                 disabled={isSubmitting}
-                className="flex items-center space-x-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-2 py-1.5 rounded transition-colors cursor-pointer disabled:opacity-50"
+                className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-medium text-rose-400 transition-all hover:bg-rose-500/20 hover:text-rose-300 active:scale-[0.98] disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 <span>Clear Status</span>
@@ -156,18 +156,18 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
               <div />
             )}
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2.5">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+                className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-xs font-medium text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center space-x-1.5 rounded-md bg-brand-navy hover:bg-brand-navy-light px-4 py-1.5 text-xs font-semibold text-accent-gold border border-accent-gold/40 transition-colors disabled:opacity-50 cursor-pointer"
+                className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/50 bg-accent-gold/10 px-4 py-2 font-mono text-xs font-bold tracking-wider text-accent-gold uppercase shadow-sm shadow-accent-gold/10 transition-all duration-150 hover:bg-accent-gold hover:text-surface-canvas active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
               >
                 {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 <span>Save Status</span>
