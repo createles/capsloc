@@ -4,6 +4,8 @@
   "useTabs": false,
   "semi": true,
   "singleQuote": false,
+  "plugins": ["prettier-plugin-tailwindcss"],
+  "tailwindStylesheet": "./apps/client/src/index.css",
   "trailingComma": "all",
   "arrowParens": "always",
   "bracketSpacing": true,

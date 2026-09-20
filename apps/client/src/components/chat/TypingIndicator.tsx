@@ -45,13 +45,13 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({ channelId }) =
   }, [socket, channelId, user?.id]);
 
   if (typingUsers.size === 0) {
-    return <div className="h-5 px-4 shrink-0" />; // Fixed height avoids layout shift
+    return <div className="h-5 shrink-0 px-4" />; // Fixed height avoids layout shift
   }
 
   const names = Array.from(typingUsers.values()).join(", ");
 
   return (
-    <div className="h-5 px-4 flex items-center space-x-2 font-mono text-[11px] text-accent-gold animate-pulse shrink-0">
+    <div className="flex h-5 shrink-0 animate-pulse items-center space-x-2 px-4 font-mono text-[11px] text-accent-gold">
       <span className="h-1.5 w-1.5 rounded-full bg-accent-gold" />
       <span>
         {names} {typingUsers.size === 1 ? "is" : "are"} typing...

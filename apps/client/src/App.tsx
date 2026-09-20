@@ -116,9 +116,7 @@ const LocTerminal: React.FC = () => {
         return {
           ...prev,
           members: prev.members.map((m) =>
-            m.userId === updatedUser.id
-              ? { ...m, user: { ...m.user, ...updatedUser } }
-              : m
+            m.userId === updatedUser.id ? { ...m, user: { ...m.user, ...updatedUser } } : m,
           ),
         };
       });
@@ -203,8 +201,8 @@ const LocTerminal: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-surface-canvas text-gray-400 font-sans text-xs">
-        <Loader2 className="h-6 w-6 animate-spin text-accent-gold mb-3" />
+      <div className="flex h-screen w-screen flex-col items-center justify-center bg-surface-canvas font-sans text-xs text-slate-400">
+        <Loader2 className="mb-3 h-6 w-6 animate-spin text-accent-gold" />
         <span>Connecting to CapsLoc...</span>
       </div>
     );
@@ -215,7 +213,7 @@ const LocTerminal: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-surface-canvas text-gray-200">
+    <div className="flex h-screen w-screen flex-col bg-surface-canvas text-slate-200">
       {/* 1. Top Header */}
       <Header isConnected={isConnected} onLogout={logout} />
 

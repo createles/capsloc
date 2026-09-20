@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Hash, Loader2, Smile, Check, X, Plus } from "lucide-react";
+import { Hash, Loader2, Smile, Check, X, Plus, Search, ChevronDown } from "lucide-react";
 import { ChannelType, UserStatus, type ChannelDTO, type UserProfileDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
@@ -29,6 +29,9 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   const [showQuickStatus, setShowQuickStatus] = useState(false); // Quick-status modal
   const [customStatusInput, setCustomStatusInput] = useState(""); // Custom status form input
   const [isWritingCustom, setIsWritingCustom] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isProjectsOpen, setIsProjectsOpen] = useState(true);
+  const [isDmsOpen, setIsDmsOpen] = useState(true);
   const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Ref bridges for mount-only defaults:
@@ -86,12 +89,10 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           return {
             ...channel,
             members: channel.members.map((m) =>
-              m.userId === updatedUser.id
-                ? { ...m, user: { ...m.user, ...updatedUser } }
-                : m
+              m.userId === updatedUser.id ? { ...m, user: { ...m.user, ...updatedUser } } : m,
             ),
           };
-        })
+        }),
       );
     };
 
@@ -121,6 +122,27 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   const getDmRecipient = (channel: ChannelDTO) => {
     return channel.members?.find((m) => m.userId !== user?.id)?.user;
   };
+
+  const normalizedQuery = searchQuery.toLowerCase().trim();
+
+  const filteredProjects = projectChannels.filter((c) => {
+    if (!normalizedQuery) return true;
+    return (
+      c.name?.toLowerCase().includes(normalizedQuery) ||
+      c.localeTag?.toLowerCase().includes(normalizedQuery) ||
+      c.description?.toLowerCase().includes(normalizedQuery)
+    );
+  });
+
+  const filteredDms = directMessages.filter((channel) => {
+    if (!normalizedQuery) return true;
+    const otherUser = getDmRecipient(channel);
+    return (
+      otherUser?.displayName?.toLowerCase().includes(normalizedQuery) ||
+      otherUser?.username?.toLowerCase().includes(normalizedQuery) ||
+      channel.name?.toLowerCase().includes(normalizedQuery)
+    );
+  });
 
   /**
    * Handlers for Channel / Direct Message creation
@@ -199,247 +221,294 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   };
 
   return (
-    <aside className="w-64 border-r border-border-subtle bg-surface-panel flex flex-col justify-between select-none">
+    <aside className="flex w-64 flex-col justify-between border-r border-border-subtle bg-surface-panel select-none">
+      {/* Quick Filter Search Input */}
+      <div className="border-b border-border-subtle/50 px-3 pt-3 pb-2.5">
+        <div className="relative">
+          <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Filter channels & people..."
+            className="w-full rounded-lg border border-border-subtle bg-surface-canvas/60 py-1.5 pr-7 pl-8 font-sans text-xs text-slate-200 placeholder-slate-500 transition-all focus:border-accent-gold/50 focus:bg-surface-card focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute top-2 right-2 cursor-pointer p-0.5 text-slate-500 hover:text-slate-200"
+              title="Clear filter"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Scrollable Channels Area */}
-      <div className="p-3 space-y-5 overflow-y-auto flex-1">
+      <div className="flex-1 space-y-4 overflow-y-auto p-3">
         {/* Project Channels */}
         <div>
-          <div className="flex items-center justify-between mb-1.5 px-2 select-none">
-            {/* Left: Section Title + Count Badge */}
-            <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-mono uppercase text-gray-400 font-semibold tracking-wider">
+          <div className="mb-1.5 flex items-center justify-between px-2 select-none">
+            {/* Left: Collapsible Section Accordion Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsProjectsOpen((prev) => !prev)}
+              className="flex cursor-pointer items-center space-x-1.5 text-slate-400 transition-colors hover:text-slate-200"
+            >
+              <ChevronDown
+                className={`h-3 w-3 transition-transform duration-150 ${
+                  isProjectsOpen ? "rotate-0 text-slate-400" : "-rotate-90 text-slate-500"
+                }`}
+              />
+              <span className="font-mono text-[10px] font-semibold tracking-wider uppercase">
                 Project Channels
               </span>
-              <span
-                className="rounded-full bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[9px] font-mono text-gray-400
-  font-medium leading-none"
-              >
-                {projectChannels.length}
+              <span className="rounded-full border border-border-subtle bg-surface-card px-1.5 py-0.5 font-mono text-[9px] leading-none font-medium text-slate-400">
+                {filteredProjects.length}
               </span>
-            </div>
+            </button>
 
             {/* Right: Plus Action Button */}
             <button
               type="button"
               onClick={() => setIsCreateChannelModalOpen(true)}
-              className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+              className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
               title="Create Channel"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          {isLoading ? (
-            <div className="flex items-center space-x-2 px-2 py-2 text-xs text-gray-500 font-mono">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>Loading channels...</span>
-            </div>
-          ) : (
-            <div className="space-y-0.5">
-              {projectChannels.map((channel) => {
-                const isActive = activeChannelId === channel.id;
-                const unreadCount = !isActive ? unreadCounts[channel.id] || 0 : 0;
-                const mentionCount = !isActive ? mentionCounts[channel.id] || 0 : 0;
-                const hasUnread = unreadCount > 0 || mentionCount > 0;
+          {isProjectsOpen &&
+            (isLoading ? (
+              <div className="flex items-center space-x-2 px-2 py-2 font-mono text-xs text-gray-500">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Loading channels...</span>
+              </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="px-2 py-2 font-sans text-xs text-slate-500 italic">
+                {searchQuery ? "No channels match filter" : "No project channels"}
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                {filteredProjects.map((channel) => {
+                  const isActive = activeChannelId === channel.id;
+                  const unreadCount = !isActive ? unreadCounts[channel.id] || 0 : 0;
+                  const mentionCount = !isActive ? mentionCounts[channel.id] || 0 : 0;
+                  const hasUnread = unreadCount > 0 || mentionCount > 0;
 
-                return (
-                  <button
-                    key={channel.id}
-                    type="button"
-                    onClick={() => handleChannelClick(channel)}
-                    className={`w-full flex items-center space-x-2 rounded px-2.5 py-1.5 text-xs font-medium transition-colors text-left ${
-                      isActive
-                        ? "bg-brand-navy text-white shadow-sm border border-accent-gold/20"
-                        : hasUnread
-                          ? "text-white bg-surface-card/40 hover:bg-surface-hover hover:text-white"
-                          : "text-gray-400 hover:bg-surface-hover hover:text-gray-200"
-                    }`}
-                  >
-                    <Hash
-                      className={`h-3.5 w-3.5 shrink-0 ${
+                  return (
+                    <button
+                      key={channel.id}
+                      type="button"
+                      onClick={() => handleChannelClick(channel)}
+                      className={`group relative flex w-full cursor-pointer items-center space-x-2 rounded-lg border px-2.5 py-1.5 text-left text-xs font-medium transition-colors duration-150 ${
                         isActive
-                          ? "text-accent-gold"
-                          : mentionCount > 0
-                            ? "text-accent-gold"
-                            : hasUnread
-                              ? "text-white"
-                              : "text-gray-500"
+                          ? "border-accent-gold/30 bg-brand-navy/90 text-white shadow-xs"
+                          : hasUnread
+                            ? "border-transparent bg-surface-card/40 text-white hover:bg-surface-hover hover:text-white"
+                            : "border-transparent text-slate-400 hover:bg-surface-hover/70 hover:text-slate-200"
                       }`}
-                    />
-                    <span className={`truncate ${hasUnread ? "font-bold text-white" : ""}`}>
-                      {channel.name}
-                    </span>
+                    >
+                      <Hash
+                        className={`h-3.5 w-3.5 shrink-0 transition-colors ${
+                          isActive
+                            ? "text-accent-gold"
+                            : mentionCount > 0
+                              ? "text-accent-gold"
+                              : hasUnread
+                                ? "text-white"
+                                : "text-slate-500 group-hover:text-slate-400"
+                        }`}
+                      />
+                      <span className={`truncate ${hasUnread ? "font-bold text-white" : ""}`}>
+                        {channel.name}
+                      </span>
 
-                    {mentionCount > 0 ? (
-                      <span className="ml-auto rounded-full bg-accent-gold text-brand-navy font-mono font-bold text-[10px] px-1.5 py-0.2 shadow-sm shrink-0">
-                        @{mentionCount}
-                      </span>
-                    ) : unreadCount > 0 ? (
-                      <span className="ml-auto rounded-full bg-surface-card border border-border-subtle text-gray-200 font-mono text-[10px] px-1.5 py-0.2 shrink-0">
-                        {unreadCount}
-                      </span>
-                    ) : channel.projectTag ? (
-                      <span className="ml-auto text-[9px] font-mono text-gray-500 uppercase shrink-0">
-                        {channel.projectTag}
-                      </span>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                      {mentionCount > 0 ? (
+                        <span className="ml-auto shrink-0 rounded-full bg-accent-gold px-1.5 py-0.5 font-mono text-[10px] font-bold text-brand-navy shadow-xs">
+                          @{mentionCount}
+                        </span>
+                      ) : unreadCount > 0 ? (
+                        <span className="ml-auto shrink-0 rounded-full border border-border-subtle bg-surface-card px-1.5 py-0.5 font-mono text-[10px] text-slate-200">
+                          {unreadCount}
+                        </span>
+                      ) : channel.projectTag ? (
+                        <span className="ml-auto shrink-0 font-mono text-[9px] text-slate-500 uppercase">
+                          {channel.projectTag}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
         </div>
 
         {/* Direct Messages */}
         <div>
-          <div className="flex items-center justify-between mb-1.5 px-2 select-none">
-            {/* Left: Section Title + Count Badge */}
-            <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-mono uppercase text-gray-400 font-semibold tracking-wider">
+          <div className="mb-1.5 flex items-center justify-between px-2 select-none">
+            {/* Left: Collapsible Section Accordion Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsDmsOpen((prev) => !prev)}
+              className="flex cursor-pointer items-center space-x-1.5 text-slate-400 transition-colors hover:text-slate-200"
+            >
+              <ChevronDown
+                className={`h-3 w-3 transition-transform duration-150 ${
+                  isDmsOpen ? "rotate-0 text-slate-400" : "-rotate-90 text-slate-500"
+                }`}
+              />
+              <span className="font-mono text-[10px] font-semibold tracking-wider uppercase">
                 Direct Messages
               </span>
-              <span
-                className="rounded-full bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[9px] font-mono text-gray-400
-  font-medium leading-none"
-              >
-                {directMessages.length}
+              <span className="rounded-full border border-border-subtle bg-surface-card px-1.5 py-0.5 font-mono text-[9px] leading-none font-medium text-slate-400">
+                {filteredDms.length}
               </span>
-            </div>
+            </button>
 
             {/* Right: Plus Action Button */}
             <button
               type="button"
               onClick={() => setIsDirectMessageModalOpen(true)}
-              className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+              className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
               title="Start Direct Message"
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
 
-          <div className="space-y-0.5">
-            {directMessages.map((channel) => {
-              const isActive = activeChannelId === channel.id;
-              const unreadCount = !isActive ? unreadCounts[channel.id] || 0 : 0;
-              const mentionCount = !isActive ? mentionCounts[channel.id] || 0 : 0;
-              const hasUnread = unreadCount > 0 || mentionCount > 0;
+          {isDmsOpen &&
+            (filteredDms.length === 0 ? (
+              <div className="px-2 py-2 font-sans text-xs text-slate-500 italic">
+                {searchQuery ? "No colleagues match filter" : "No direct messages"}
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                {filteredDms.map((channel) => {
+                  const isActive = activeChannelId === channel.id;
+                  const unreadCount = !isActive ? unreadCounts[channel.id] || 0 : 0;
+                  const mentionCount = !isActive ? mentionCounts[channel.id] || 0 : 0;
+                  const hasUnread = unreadCount > 0 || mentionCount > 0;
 
-              const recipient = getDmRecipient(channel);
-              const recipientName = recipient?.displayName || channel.name || "Direct Message";
-              const isOnline = recipient?.id
-                ? onlineUsers[recipient.id] === UserStatus.ONLINE
-                : false;
-              const initials = (recipientName || "DM").substring(0, 2).toUpperCase();
+                  const recipient = getDmRecipient(channel);
+                  const recipientName = recipient?.displayName || channel.name || "Direct Message";
+                  const isOnline = recipient?.id
+                    ? onlineUsers[recipient.id] === UserStatus.ONLINE
+                    : false;
+                  const initials = (recipientName || "DM").substring(0, 2).toUpperCase();
 
-              const cardUser = recipient || {
-                id: channel.id,
-                displayName: recipientName,
-                username: recipientName.toLowerCase().replace(/\s+/g, ""),
-                locRole: null,
-                customStatus: null,
-                primaryLocale: null,
-                targetLocales: null,
-                status: isOnline ? "online" : "offline",
-              };
+                  const cardUser = recipient || {
+                    id: channel.id,
+                    displayName: recipientName,
+                    username: recipientName.toLowerCase().replace(/\s+/g, ""),
+                    locRole: null,
+                    customStatus: null,
+                    primaryLocale: null,
+                    targetLocales: null,
+                    status: isOnline ? "online" : "offline",
+                  };
 
-              return (
-                <UserProfileHoverCard
-                  key={channel.id}
-                  user={cardUser}
-                  isOnline={isOnline}
-                  isSelf={false}
-                  className="w-full block"
-                  side="right"
-                >
-                  <button
-                    type="button"
-                    onClick={() => handleChannelClick(channel)}
-                    className={`w-full flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 text-xs transition-all text-left ${
-                      isActive
-                        ? "bg-brand-navy text-white shadow-sm border border-accent-gold/30"
-                        : hasUnread
-                          ? "text-white bg-surface-card/40 hover:bg-surface-hover hover:text-white"
-                          : "text-gray-400 hover:bg-surface-hover hover:text-gray-200"
-                    }`}
-                  >
-                    {/* Left: Avatar Initials + Status Dot */}
-                    <div className="relative shrink-0">
-                      <div
-                        className={`h-7 w-7 rounded-md border flex items-center justify-center font-mono text-[10px] font-bold ${
+                  return (
+                    <UserProfileHoverCard
+                      key={channel.id}
+                      user={cardUser}
+                      isOnline={isOnline}
+                      isSelf={false}
+                      className="block w-full"
+                      side="right"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleChannelClick(channel)}
+                        className={`flex w-full cursor-pointer items-center space-x-2.5 rounded-lg border px-2.5 py-1.5 text-left text-xs transition-colors duration-150 ${
                           isActive
-                            ? "bg-brand-navy-light text-accent-gold border-accent-gold/40"
-                            : mentionCount > 0
-                              ? "bg-brand-navy text-accent-gold border-accent-gold/30"
-                              : "bg-surface-card text-gray-300 border-border-subtle"
+                            ? "border-accent-gold/30 bg-brand-navy/90 text-white shadow-xs"
+                            : hasUnread
+                              ? "border-transparent bg-surface-card/40 text-white hover:bg-surface-hover hover:text-white"
+                              : "border-transparent text-slate-400 hover:bg-surface-hover/70 hover:text-slate-200"
                         }`}
                       >
-                        {initials}
-                      </div>
-                      <span
-                        className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-surface-panel ${
-                          isOnline ? "bg-emerald-400" : "bg-gray-600"
-                        }`}
-                      />
-                    </div>
-
-                    {/* Right: Name + Status Subtitle */}
-                    <div className="flex-1 min-w-0 overflow-hidden">
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`truncate font-medium text-xs ${hasUnread ? "font-bold text-white" : "text-gray-200"}`}
-                        >
-                          {recipientName}
-                        </span>
-                        {mentionCount > 0 ? (
-                          <span className="ml-1.5 rounded-full bg-accent-gold text-brand-navy font-mono font-bold text-[9px] px-1.5 py-0.2 shrink-0">
-                            @{mentionCount}
-                          </span>
-                        ) : unreadCount > 0 ? (
-                          <span className="ml-1.5 rounded-full bg-surface-card border border-border-subtle text-gray-200 font-mono text-[9px] px-1.5 py-0.2 shrink-0">
-                            {unreadCount}
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="h-3.5 text-[10px] truncate leading-tight mt-0.5">
-                        {recipient?.customStatus ? (
-                          <span className="italic text-gray-400 truncate block">
-                            {recipient.customStatus}
-                          </span>
-                        ) : (
-                          <span
-                            className={`font-mono text-[9px] ${
-                              isOnline ? "text-emerald-400/90" : "text-gray-500"
+                        {/* Left: Avatar Initials + Status Dot */}
+                        <div className="relative shrink-0">
+                          <div
+                            className={`flex h-7 w-7 items-center justify-center rounded-md border font-mono text-[10px] font-bold ${
+                              isActive
+                                ? "border-accent-gold/40 bg-brand-navy-light text-accent-gold"
+                                : mentionCount > 0
+                                  ? "border-accent-gold/30 bg-brand-navy text-accent-gold"
+                                  : "border-border-subtle bg-surface-card text-slate-300"
                             }`}
                           >
-                            {isOnline ? "Online" : "Offline"}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                </UserProfileHoverCard>
-              );
-            })}
-          </div>
+                            {initials}
+                          </div>
+                          <span
+                            className={`absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border border-surface-panel ${
+                              isOnline ? "bg-emerald-400" : "bg-slate-600"
+                            }`}
+                          />
+                        </div>
+
+                        {/* Right: Name + Status Subtitle */}
+                        <div className="min-w-0 flex-1 overflow-hidden">
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={`truncate text-xs font-medium ${
+                                hasUnread ? "font-bold text-white" : "text-slate-200"
+                              }`}
+                            >
+                              {recipientName}
+                            </span>
+                            {mentionCount > 0 ? (
+                              <span className="py-0.2 ml-1.5 shrink-0 rounded-full bg-accent-gold px-1.5 font-mono text-[9px] font-bold text-brand-navy">
+                                @{mentionCount}
+                              </span>
+                            ) : unreadCount > 0 ? (
+                              <span className="py-0.2 ml-1.5 shrink-0 rounded-full border border-border-subtle bg-surface-card px-1.5 font-mono text-[9px] text-slate-200">
+                                {unreadCount}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {/* 2nd line: custom status subtitle or presence status */}
+                          <div className="mt-0.5 truncate text-[10px]">
+                            {recipient?.customStatus ? (
+                              <span className="truncate text-slate-400 italic">
+                                {recipient.customStatus}
+                              </span>
+                            ) : (
+                              <span className={isOnline ? "text-emerald-400" : "text-slate-500"}>
+                                {isOnline ? "Online" : "Offline"}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    </UserProfileHoverCard>
+                  );
+                })}
+              </div>
+            ))}
         </div>
       </div>
 
       {/* Authenticated User Status Footer */}
       {user && (
         <div
-          className="relative p-2 border-t border-border-subtle bg-surface-card/40 select-none"
+          className="relative border-t border-border-subtle bg-surface-card/40 p-2.5 backdrop-blur-xs select-none"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
           {/* Quick Status Hover Popover */}
           {showQuickStatus && (
             <div
-              className="absolute bottom-full mb-2 left-2 right-2 z-40 rounded-xl border border-border-subtle bg-surface-panel p-3
-  shadow-2xl space-y-2.5 font-sans"
+              className="absolute right-2 bottom-full left-2 z-40 mb-2 space-y-2.5 rounded-xl border border-border-subtle bg-surface-panel p-3 font-sans shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between text-[11px]">
-                <span className="font-semibold text-gray-300 flex items-center gap-1.5">
+                <span className="flex items-center gap-1.5 font-semibold text-gray-300">
                   <Smile className="h-3.5 w-3.5 text-accent-gold" />
                   Quick Status
                 </span>
@@ -447,7 +516,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                   <button
                     type="button"
                     onClick={handleClearStatus}
-                    className="text-[10px] text-gray-500 hover:text-rose-400 transition-colors cursor-pointer"
+                    className="cursor-pointer text-[10px] text-gray-500 transition-colors hover:text-rose-400"
                   >
                     Clear
                   </button>
@@ -461,7 +530,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                     key={preset.text}
                     type="button"
                     onClick={() => handleSelectPreset(`${preset.emoji} ${preset.text}`)}
-                    className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card hover:bg-surface-hover hover:border-accent-gold/40 p-1.5 text-left text-[11px] text-gray-200 transition-all cursor-pointer"
+                    className="flex cursor-pointer items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card p-1.5 text-left text-[11px] text-gray-200 transition-all hover:border-accent-gold/40 hover:bg-surface-hover"
                   >
                     <span>{preset.emoji}</span>
                     <span className="truncate">{preset.text}</span>
@@ -482,14 +551,12 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                     onChange={(e) => setCustomStatusInput(e.target.value)}
                     placeholder="Type your status..."
                     maxLength={100}
-                    className="flex-1 rounded-md border border-border-subtle bg-surface-card px-2 py-1 text-[11px] text-white
-  placeholder-gray-500 focus:outline-none focus:border-accent-gold/50"
+                    className="flex-1 rounded-md border border-border-subtle bg-surface-card px-2 py-1 text-[11px] text-white placeholder-gray-500 focus:border-accent-gold/50 focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={!customStatusInput.trim()}
-                    className="p-1 rounded-md bg-brand-navy hover:bg-brand-navy-light text-accent-gold border border-accent-gold/30
-  disabled:opacity-40 cursor-pointer"
+                    className="cursor-pointer rounded-md border border-accent-gold/30 bg-brand-navy p-1 text-accent-gold hover:bg-brand-navy-light disabled:opacity-40"
                     title="Save Status"
                   >
                     <Check className="h-3.5 w-3.5" />
@@ -497,7 +564,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsWritingCustom(false)}
-                    className="p-1 rounded-md text-gray-400 hover:text-white cursor-pointer"
+                    className="cursor-pointer rounded-md p-1 text-gray-400 hover:text-white"
                     title="Cancel"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -507,7 +574,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsWritingCustom(true)}
-                  className="w-full text-center text-[11px] text-accent-gold hover:underline py-0.5 cursor-pointer block"
+                  className="block w-full cursor-pointer py-0.5 text-center text-[11px] text-accent-gold hover:underline"
                 >
                   + Write your own...
                 </button>
@@ -518,39 +585,36 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           {/* Profile Trigger Card */}
           <div
             onClick={() => setIsProfileModalOpen(true)}
-            className="p-2 rounded-lg hover:bg-surface-hover/60 cursor-pointer transition-colors flex items-center space-x-2.5 group"
+            className="group flex cursor-pointer items-center space-x-2.5 rounded-lg p-2 transition-colors hover:bg-surface-hover/60"
             title="Click to edit full profile"
           >
             {/* Avatar Initials */}
-            <div
-              className="h-8 w-8 rounded-lg bg-brand-navy flex items-center justify-center font-mono font-bold text-accent-gold text-xs
-  border border-accent-gold/20 shrink-0"
-            >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-accent-gold/20 bg-brand-navy font-mono text-xs font-bold text-accent-gold">
               {user.displayName.substring(0, 2).toUpperCase()}
             </div>
 
             {/* User Details (Locked Height) */}
-            <div className="overflow-hidden flex-1 min-w-0">
+            <div className="min-w-0 flex-1 overflow-hidden">
               {/* Line 1: Name and Role Badge with breathing room */}
-              <div className="flex items-center justify-between space-x-1.5 min-w-0">
-                <span className="text-xs font-semibold text-white group-hover:text-accent-gold transition-colors truncate">
+              <div className="flex min-w-0 items-center justify-between space-x-1.5">
+                <span className="truncate text-xs font-semibold text-white transition-colors group-hover:text-accent-gold">
                   {user.displayName}
                 </span>
                 <LocRoleBadge role={user.locRole} />
               </div>
 
               {/* Line 2: Status / Username on Left, Locale Tag on Right */}
-              <div className="h-4 flex items-center justify-between text-[11px] mt-0.5 overflow-hidden">
-                <div className="truncate mr-1.5 min-w-0">
+              <div className="mt-0.5 flex h-4 items-center justify-between overflow-hidden text-[11px]">
+                <div className="mr-1.5 min-w-0 truncate">
                   {user.customStatus ? (
-                    <span className="truncate italic text-gray-300">{user.customStatus}</span>
+                    <span className="truncate text-gray-300 italic">{user.customStatus}</span>
                   ) : (
-                    <span className="font-mono text-gray-500 truncate">@{user.username}</span>
+                    <span className="truncate font-mono text-gray-500">@{user.username}</span>
                   )}
                 </div>
 
                 {/* Locale Tag pinned on the right */}
-                <span className="text-[9px] font-mono text-gray-400 bg-surface-panel px-1.5 py-0.2 rounded border border-border-subtle shrink-0 whitespace-nowrap">
+                <span className="py-0.2 shrink-0 rounded border border-border-subtle bg-surface-panel px-1.5 font-mono text-[9px] whitespace-nowrap text-gray-400">
                   {user.primaryLocale}
                 </span>
               </div>

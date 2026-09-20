@@ -18,13 +18,13 @@ export const MentionToast: React.FC<MentionToastProps> = ({
   return (
     <aside
       aria-label="Direct mention notification"
-      className="fixed top-14 right-4 z-50 w-84 rounded-xl border border-accent-gold/40 bg-surface-panel/95 backdrop-blur-md p-3.5 shadow-2xl shadow-accent-gold/10 font-sans animate-in slide-in-from-top-3 duration-200 select-none"
+      className="animate-in slide-in-from-top-3 fixed top-14 right-4 z-50 w-84 rounded-2xl border border-accent-gold/40 bg-surface-panel/95 p-4 font-sans shadow-2xl shadow-accent-gold/10 backdrop-blur-xl duration-200 select-none"
     >
       {/* Top Banner */}
-      <div className="flex items-center justify-between pb-2 border-b border-border-subtle/70">
-        <div className="flex items-center space-x-1.5 text-accent-gold">
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-accent-gold/15 border border-accent-gold/30">
-            <AtSign className="h-3 w-3" />
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
+        <div className="flex items-center space-x-2 text-accent-gold">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-accent-gold/30 bg-accent-gold/15 shadow-inner">
+            <AtSign className="h-3.5 w-3.5" />
           </div>
           <span className="font-mono text-[11px] font-bold tracking-wide uppercase">
             Tagged in #{toast.channelName || "channel"}
@@ -33,7 +33,7 @@ export const MentionToast: React.FC<MentionToastProps> = ({
         <button
           type="button"
           onClick={onDismiss}
-          className="rounded p-1 text-gray-400 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+          className="cursor-pointer rounded-lg p-1 text-slate-400 transition-all hover:bg-white/[0.08] hover:text-white"
           title="Dismiss Alert"
         >
           <X className="h-3.5 w-3.5" />
@@ -41,12 +41,12 @@ export const MentionToast: React.FC<MentionToastProps> = ({
       </div>
 
       {/* Message Info */}
-      <div className="py-2.5 space-y-1">
+      <div className="space-y-1.5 py-3">
         <div className="flex items-center space-x-1.5">
           <span className="text-xs font-semibold text-white">{toast.senderName}</span>
-          <span className="text-[10px] font-mono text-gray-400">mentioned you</span>
+          <span className="font-mono text-[10px] text-slate-400">mentioned you</span>
         </div>
-        <p className="text-xs text-gray-300 line-clamp-2 italic font-mono bg-surface-card/60 p-2 rounded border border-border-subtle/50">
+        <p className="line-clamp-2 rounded-xl border border-white/[0.06] bg-surface-card/80 p-2.5 font-mono text-xs text-slate-300 italic">
           "{toast.message.content}"
         </p>
       </div>
@@ -59,10 +59,10 @@ export const MentionToast: React.FC<MentionToastProps> = ({
             onJumpToChannel(toast.channelId);
             onDismiss();
           }}
-          className="flex items-center space-x-1.5 rounded-md bg-accent-gold hover:bg-accent-gold/90 text-brand-navy px-2.5 py-1 text-xs font-bold transition-all shadow-sm cursor-pointer"
+          className="hover:bg-accent-gold-light flex cursor-pointer items-center space-x-1.5 rounded-lg bg-accent-gold px-3 py-1.5 font-mono text-xs font-bold tracking-wider text-surface-canvas uppercase shadow-sm shadow-accent-gold/20 transition-all duration-150 active:scale-[0.98]"
         >
           <span>View Mention</span>
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>
     </aside>

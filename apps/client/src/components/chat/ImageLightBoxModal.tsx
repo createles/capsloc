@@ -49,30 +49,29 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-black/85 backdrop-blur-sm select-none"
+      className="animate-in fade-in fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-md duration-150 select-none"
       onClick={onClose}
     >
       {/* Lightbox Header Bar */}
       <div
-        className="flex h-12 items-center justify-between px-4 bg-surface-panel/90 border-b border-border-subtle shrink-0 text-xs"
+        className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.08] bg-surface-panel/90 px-5 text-xs backdrop-blur-md"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center space-x-3 text-gray-300 font-sans">
-          <ImageIcon className="h-4 w-4 text-accent-gold shrink-0" />
-          <span className="font-semibold text-white truncate max-w-sm">{attachment.fileName}</span>
-          <span className="text-gray-500 font-mono text-[11px] shrink-0">
+        <div className="flex items-center space-x-3 font-sans text-slate-300">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
+            <ImageIcon className="h-4 w-4 text-accent-gold" />
+          </div>
+          <span className="max-w-sm truncate font-semibold text-white">{attachment.fileName}</span>
+          <span className="shrink-0 font-mono text-[11px] text-slate-400">
             ({(attachment.fileSize / 1024).toFixed(1)} KB)
           </span>
           {uploaderName && (
-            <span className="text-gray-400 text-[11px] hidden sm:inline truncate">
-              Uploaded by <strong className="text-gray-200">{uploaderName}</strong>
+            <span className="hidden truncate text-[11px] text-slate-400 sm:inline">
+              Uploaded by <strong className="text-slate-200">{uploaderName}</strong>
             </span>
           )}
           {attachment.localeTag && (
-            <span
-              className="rounded bg-brand-navy px-2 py-0.5 text-[10px] font-mono text-accent-gold border border-accent-gold/30 uppercase
-  shrink-0"
-            >
+            <span className="shrink-0 rounded-md border border-accent-gold/40 bg-accent-gold/10 px-2 py-0.5 font-mono text-[10px] text-accent-gold uppercase">
               {attachment.localeTag}
             </span>
           )}
@@ -81,27 +80,24 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
         {/* Action Controls */}
         <div className="flex items-center space-x-2">
           {/* Paired Zoom Buttons */}
-          <div
-            className="flex items-center space-x-1 rounded-md bg-surface-card border border-border-subtle px-1.5 py-0.5 font-mono text-xs
-  text-gray-300"
-          >
+          <div className="flex items-center space-x-1 rounded-lg border border-white/[0.08] bg-surface-card/90 px-2 py-1 font-mono text-xs text-slate-300">
             <button
               type="button"
               onClick={handleZoomOut}
               disabled={zoom <= 1}
-              className="p-1 rounded hover:text-white hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              className="cursor-pointer rounded-md p-1 transition-all hover:bg-white/[0.08] hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
               title="Zoom Out"
             >
               <ZoomOut className="h-3.5 w-3.5" />
             </button>
-            <span className="text-[11px] font-bold text-accent-gold w-11 text-center select-none">
+            <span className="w-12 text-center text-[11px] font-bold text-accent-gold select-none">
               {Math.round(zoom * 100)}%
             </span>
             <button
               type="button"
               onClick={handleZoomIn}
               disabled={zoom >= 2.5}
-              className="p-1 rounded hover:text-white hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+              className="cursor-pointer rounded-md p-1 transition-all hover:bg-white/[0.08] hover:text-white disabled:opacity-30 disabled:hover:bg-transparent"
               title="Zoom In"
             >
               <ZoomIn className="h-3.5 w-3.5" />
@@ -113,7 +109,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
             download={attachment.fileName}
             target="_blank"
             rel="noreferrer"
-            className="p-1.5 rounded-md text-gray-300 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] p-2 text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-95"
             title="Download asset"
           >
             <Download className="h-4 w-4" />
@@ -122,7 +118,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-md text-gray-300 hover:text-white hover:bg-surface-hover transition-colors cursor-pointer"
+            className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] p-2 text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-95"
             title="Close (Esc)"
           >
             <X className="h-4 w-4" />
@@ -132,7 +128,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
 
       {/* Image Inspection Canvas */}
       <div
-        className={`flex-1 overflow-auto flex items-center justify-center p-6 ${
+        className={`flex flex-1 items-center justify-center overflow-auto p-6 ${
           zoom === 1 ? "cursor-zoom-in" : "cursor-zoom-out"
         }`}
         onClick={handleCanvasClick}
@@ -144,7 +140,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
             transform: `scale(${zoom})`,
             transformOrigin: "center center",
           }}
-          className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl transition-transform duration-200 ease-out"
+          className="max-h-[85vh] max-w-[90vw] rounded-2xl border border-white/[0.08] object-contain shadow-2xl shadow-black/90 transition-transform duration-200 ease-out"
         />
       </div>
     </div>

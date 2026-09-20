@@ -126,7 +126,7 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
               top: `${coords.top}px`,
               left: `${coords.left}px`,
             }}
-            className="z-[99999] w-72 rounded-xl border border-border-subtle bg-surface-panel/98 backdrop-blur-md p-3.5 shadow-2xl space-y-3 font-sans animate-in fade-in zoom-in-95 duration-150 select-none text-left"
+            className="animate-in fade-in zoom-in-95 z-[99999] w-72 space-y-3.5 rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-4 text-left font-sans shadow-2xl shadow-black/80 backdrop-blur-xl duration-150 select-none"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={(e) => e.stopPropagation()}
@@ -134,32 +134,32 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
             {/* Header: Avatar, Names, Presence */}
             <div className="flex items-start space-x-3">
               <div className="relative shrink-0">
-                <div className="h-10 w-10 rounded-lg bg-brand-navy border border-accent-gold/30 flex items-center justify-center font-mono font-bold text-accent-gold text-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy font-mono text-sm font-bold text-accent-gold shadow-inner">
                   {initials}
                 </div>
                 <span
-                  className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface-panel ${
-                    isOnline ? "bg-emerald-400" : "bg-gray-600"
+                  className={`absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-surface-panel ${
+                    isOnline ? "bg-emerald-400 shadow-sm shadow-emerald-400/50" : "bg-slate-600"
                   }`}
                   title={isOnline ? "Online" : "Offline"}
                 />
               </div>
 
-              <div className="flex-1 min-w-0 space-y-0.5">
+              <div className="min-w-0 flex-1 space-y-0.5">
                 <div className="flex items-center space-x-1.5">
-                  <span className="font-bold text-sm text-white truncate">{user.displayName}</span>
+                  <span className="truncate text-sm font-bold text-white">{user.displayName}</span>
                   {isSelf && (
-                    <span className="rounded bg-accent-gold/15 text-accent-gold font-mono font-bold text-[9px] px-1.5 py-0.2">
+                    <span className="rounded-md border border-accent-gold/30 bg-accent-gold/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-accent-gold">
                       YOU
                     </span>
                   )}
                 </div>
-                <div className="flex items-center space-x-1.5 text-xs text-gray-400">
-                  <span className="font-mono text-gray-400">@{user.username}</span>
+                <div className="flex items-center space-x-1.5 text-xs text-slate-400">
+                  <span className="font-mono text-slate-400">@{user.username}</span>
                   <span>•</span>
                   <span
                     className={`font-mono text-[10px] ${
-                      isOnline ? "text-emerald-400" : "text-gray-500"
+                      isOnline ? "text-emerald-400" : "text-slate-500"
                     }`}
                   >
                     {isOnline ? "Online" : "Offline"}
@@ -169,15 +169,15 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
             </div>
 
             {/* Role & Locale Badges */}
-            <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border-subtle/50">
+            <div className="flex flex-wrap items-center gap-1.5 border-t border-white/[0.08] pt-2">
               {user.locRole && <LocRoleBadge role={user.locRole as LocRole} />}
               {user.primaryLocale && (
-                <span className="rounded bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[10px] font-mono text-accent-gold">
+                <span className="rounded-md border border-white/[0.08] bg-surface-card/80 px-1.5 py-0.5 font-mono text-[10px] text-accent-gold">
                   {user.primaryLocale}
                 </span>
               )}
               {user.targetLocales && user.targetLocales.length > 0 && (
-                <span className="rounded bg-surface-card border border-border-subtle px-1.5 py-0.5 text-[10px] font-mono text-gray-400">
+                <span className="rounded-md border border-white/[0.08] bg-surface-card/80 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">
                   &rarr; {user.targetLocales.join(", ")}
                 </span>
               )}
@@ -185,11 +185,11 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
 
             {/* Custom Status Note */}
             {user.customStatus && (
-              <div className="rounded-lg bg-surface-card/60 border border-border-subtle/60 p-2 text-xs">
-                <span className="text-[10px] font-mono uppercase text-gray-500 block mb-0.5">
+              <div className="rounded-xl border border-white/[0.06] bg-surface-card/70 p-2.5 text-xs">
+                <span className="mb-0.5 block font-mono text-[10px] text-slate-400 uppercase">
                   Status
                 </span>
-                <p className="italic text-gray-200 break-words font-sans">"{user.customStatus}"</p>
+                <p className="font-sans break-words text-slate-200 italic">"{user.customStatus}"</p>
               </div>
             )}
 
@@ -201,14 +201,14 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
                   setIsOpen(false);
                   onSendDm();
                 }}
-                className="w-full flex items-center justify-center space-x-1.5 rounded-lg bg-brand-navy hover:bg-brand-navy-light text-accent-gold border border-accent-gold/40 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm hover:border-accent-gold"
+                className="flex w-full cursor-pointer items-center justify-center space-x-1.5 rounded-lg border border-accent-gold/50 bg-accent-gold/10 px-3 py-2 font-mono text-xs font-semibold text-accent-gold shadow-sm shadow-accent-gold/10 transition-all duration-150 hover:bg-accent-gold hover:text-surface-canvas active:scale-[0.98]"
               >
                 <MessageSquare className="h-3.5 w-3.5" />
                 <span>Send Direct Message</span>
               </button>
             ) : isSelf ? (
-              <div className="flex items-center justify-center space-x-1 text-[11px] text-gray-400 py-0.5">
-                <UserCheck className="h-3 w-3 text-accent-gold" />
+              <div className="flex items-center justify-center space-x-1 py-0.5 text-[11px] text-slate-400">
+                <UserCheck className="h-3.5 w-3.5 text-accent-gold" />
                 <span>Your profile</span>
               </div>
             ) : null}
