@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, Hash, Loader2, Lock, Globe } from "lucide-react";
 import { ChannelType, type ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
+import { useTranslation } from "../../i18n";
 
 export interface CreateChannelModalProps {
   onClose: () => void;
@@ -12,6 +13,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
   onClose,
   onChannelCreated,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [projectTag, setProjectTag] = useState("MH-WILDS");
   const [localeTag, setLocaleTag] = useState("JA->EN");
@@ -73,7 +75,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
             <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
               <Hash className="h-4 w-4 text-accent-gold" />
             </div>
-            <span className="text-sm font-semibold text-white">Create Channel</span>
+            <span className="text-sm font-semibold text-white">{t("createChannel.title")}</span>
           </div>
           <button
             type="button"
@@ -94,7 +96,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           {/* Channel Name */}
           <div>
             <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              Channel Name
+              {t("createChannel.channelName")}
             </label>
             <div className="relative flex items-center">
               <span className="absolute left-3 font-mono text-slate-500">#</span>
@@ -114,7 +116,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-                Project Tag
+                {t("createChannel.projectTag")}
               </label>
               <input
                 type="text"
@@ -127,7 +129,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
 
             <div>
               <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-                Locale Tag
+                {t("createChannel.localeTag")}
               </label>
               <input
                 type="text"
@@ -142,13 +144,13 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           {/* Description */}
           <div>
             <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              Description <span className="text-slate-500 lowercase">(optional)</span>
+              {t("createChannel.description")}
             </label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What is this channel for?"
+              placeholder={t("createChannel.descriptionPlaceholder")}
               className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-xs text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
           </div>
@@ -156,7 +158,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           {/* Visibility Type Selector */}
           <div>
             <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              Channel Visibility
+              {t("createChannel.visibility")}
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               <button
@@ -170,8 +172,10 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               >
                 <Globe className="h-4 w-4 shrink-0 text-accent-gold" />
                 <div>
-                  <div className="text-xs font-semibold text-white">Public</div>
-                  <div className="text-[10px] text-slate-400">Open to all team members</div>
+                  <div className="text-xs font-semibold text-white">
+                    {t("createChannel.public")}
+                  </div>
+                  <div className="text-[10px] text-slate-400">{t("createChannel.publicHelp")}</div>
                 </div>
               </button>
 
@@ -186,8 +190,10 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               >
                 <Lock className="h-4 w-4 shrink-0 text-accent-gold" />
                 <div>
-                  <div className="text-xs font-semibold text-white">Private</div>
-                  <div className="text-[10px] text-slate-400">Restricted locale team</div>
+                  <div className="text-xs font-semibold text-white">
+                    {t("createChannel.private")}
+                  </div>
+                  <div className="text-[10px] text-slate-400">{t("createChannel.privateHelp")}</div>
                 </div>
               </button>
             </div>
@@ -200,7 +206,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               onClick={onClose}
               className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-xs font-medium text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
             >
-              Cancel
+              {t("createChannel.cancel")}
             </button>
             <button
               type="submit"
@@ -208,7 +214,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/50 bg-accent-gold/10 px-4 py-2 font-mono text-xs font-bold tracking-wider text-accent-gold uppercase shadow-sm shadow-accent-gold/10 transition-all duration-150 hover:bg-accent-gold hover:text-surface-canvas active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              <span>Create Channel</span>
+              <span>{t("createChannel.submit")}</span>
             </button>
           </div>
         </form>

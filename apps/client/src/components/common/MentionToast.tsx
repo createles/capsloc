@@ -1,6 +1,7 @@
 import React from "react";
 import { AtSign, X, ArrowRight } from "lucide-react";
 import type { UserMentionedPayload } from "@capsloc/types";
+import { useTranslation } from "../../i18n";
 
 export interface MentionToastProps {
   toast: UserMentionedPayload | null;
@@ -13,6 +14,7 @@ export const MentionToast: React.FC<MentionToastProps> = ({
   onDismiss,
   onJumpToChannel,
 }) => {
+  const { t } = useTranslation();
   if (!toast) return null;
 
   return (
@@ -27,7 +29,7 @@ export const MentionToast: React.FC<MentionToastProps> = ({
             <AtSign className="h-3.5 w-3.5" />
           </div>
           <span className="font-mono text-[11px] font-bold tracking-wide uppercase">
-            Tagged in #{toast.channelName || "channel"}
+            {t("toast.taggedIn", { channel: toast.channelName || "channel" })}
           </span>
         </div>
         <button
@@ -44,7 +46,7 @@ export const MentionToast: React.FC<MentionToastProps> = ({
       <div className="space-y-1.5 py-3">
         <div className="flex items-center space-x-1.5">
           <span className="text-xs font-semibold text-white">{toast.senderName}</span>
-          <span className="font-mono text-[10px] text-slate-400">mentioned you</span>
+          <span className="font-mono text-[10px] text-slate-400">{t("toast.mentionedYou")}</span>
         </div>
         <p className="line-clamp-2 rounded-xl border border-white/[0.06] bg-surface-card/80 p-2.5 font-mono text-xs text-slate-300 italic">
           "{toast.message.content}"
@@ -61,7 +63,7 @@ export const MentionToast: React.FC<MentionToastProps> = ({
           }}
           className="hover:bg-accent-gold-light flex cursor-pointer items-center space-x-1.5 rounded-lg bg-accent-gold px-3 py-1.5 font-mono text-xs font-bold tracking-wider text-surface-canvas uppercase shadow-sm shadow-accent-gold/20 transition-all duration-150 active:scale-[0.98]"
         >
-          <span>View Mention</span>
+          <span>{t("toast.viewMention")}</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>

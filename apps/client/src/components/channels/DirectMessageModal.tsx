@@ -4,6 +4,7 @@ import { UserStatus, type UserProfileDTO, type ChannelDTO } from "@capsloc/types
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
+import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 
 export interface DirectMessageModalProps {
@@ -17,6 +18,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
 }) => {
   const { user: currentUser } = useAuth();
   const { socket, onlineUsers } = useSocket();
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserProfileDTO[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,6 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
     const fetchUsers = async () => {
       try {
         const { data } = await api.get<UserProfileDTO[]>("/users");
-        // Exclude current user from directory
         setUsers(data.filter((u) => u.id !== currentUser?.id));
       } catch (err) {
         console.error("Failed to load users directory:", err);
@@ -68,7 +69,6 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
     setError(null);
 
     try {
-      // POST /channels/dm is idempotent on backend
       const { data } = await api.post<ChannelDTO>("/channels/dm", {
         recipientId: targetUser.id,
       });
@@ -103,7 +103,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
             <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
               <Users className="h-4 w-4 text-accent-gold" />
             </div>
-            <span className="text-sm font-semibold text-white">Direct Messages</span>
+            <span className="text-sm font-semibold text-white">{t("dm.title")}</span>
           </div>
           <button
             type="button"
@@ -123,7 +123,7 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
               autoFocus
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Find a teammate by name or @username..."
+              placeholder={t("dm.searchPlaceholder")}
               className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-3 pl-9 text-xs text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
             />
           </div>
@@ -140,11 +140,11 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
           {isLoading ? (
             <div className="flex items-center justify-center space-x-2 py-10 text-xs text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
-              <span>Loading team directory...</span>
+              <span>{t("dm.loading")}</span>
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="py-10 text-center text-xs text-slate-500">
-              No teammates found matching "{searchQuery}"
+              {t("dm.noMatches", { query: searchQuery })}
             </div>
           ) : (
             filteredUsers.map((teammate) => {
@@ -183,9 +183,13 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
                       <span className="mr-2 truncate font-mono text-slate-500">
                         @{teammate.username}
                       </span>
-                      {teammate.customStatus && (
+                      {teammate.customStatus ? (
                         <span className="max-w-60 truncate text-slate-400 italic">
                           "{teammate.customStatus}"
+                        </span>
+                      ) : (
+                        <span className={isOnline ? "text-emerald-400" : "text-slate-500"}>
+                          {isOnline ? t("sidebar.online") : t("sidebar.offline")}
                         </span>
                       )}
                     </div>

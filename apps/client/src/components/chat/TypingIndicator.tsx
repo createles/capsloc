@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "../../i18n";
 import type { TypingIndicatorPayload } from "@capsloc/types";
 
 export interface TypingIndicatorProps {
@@ -10,6 +11,7 @@ export interface TypingIndicatorProps {
 export const TypingIndicator: React.FC<TypingIndicatorProps> = ({ channelId }) => {
   const { socket } = useSocket();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({ channelId }) =
     <div className="flex h-5 shrink-0 animate-pulse items-center space-x-2 px-4 font-mono text-[11px] text-accent-gold">
       <span className="h-1.5 w-1.5 rounded-full bg-accent-gold" />
       <span>
-        {names} {typingUsers.size === 1 ? "is" : "are"} typing...
+        {names} {t(typingUsers.size === 1 ? "typing.isTyping" : "typing.areTyping")}
       </span>
     </div>
   );

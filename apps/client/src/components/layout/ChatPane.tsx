@@ -7,6 +7,7 @@ import {
   type UserProfileDTO,
   LocRole,
 } from "@capsloc/types";
+import { useTranslation } from "../../i18n";
 import { MessageList } from "../chat/MessageList";
 import { TypingIndicator } from "../chat/TypingIndicator";
 import { MessageInput } from "../chat/MessageInput";
@@ -54,6 +55,8 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
   onDismissBanner,
   onRestoreBanner,
 }) => {
+  const { t } = useTranslation();
+
   // Derived Direct Message & Admin Resolution
   const isDm = activeChannel?.type === ChannelType.DIRECT_MESSAGE;
   const dmRecipient = isDm
@@ -131,7 +134,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                   title="View Channel Members"
                 >
                   <Users className="h-3 w-3 text-accent-gold" />
-                  <span>Members</span>
+                  <span>{t("chat.members")}</span>
                 </button>
               )}
 
@@ -144,7 +147,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                   title="Restore pinned sprint status banner"
                 >
                   <Pin className="h-2.5 w-2.5 text-accent-gold" />
-                  <span>Sprint Status</span>
+                  <span>{t("chat.sprintStatus")}</span>
                 </button>
               )}
 
@@ -157,7 +160,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                   title="Set sprint status for this channel"
                 >
                   <Pin className="h-2.5 w-2.5" />
-                  <span>Pin Sprint Status</span>
+                  <span>{t("chat.pinSprintStatus")}</span>
                 </button>
               )}
 
@@ -170,7 +173,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                   title="Invite Teammates to Private Channel"
                 >
                   <UserPlus className="h-3 w-3" />
-                  <span>Invite</span>
+                  <span>{t("chat.invite")}</span>
                 </button>
               )}
             </>
@@ -190,7 +193,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
             title={isInspectorOpen ? "Collapse String Inspector" : "Open String Inspector"}
           >
             <BookOpen className="h-3.5 w-3.5" />
-            <span>Inspector</span>
+            <span>{t("chat.inspector")}</span>
             {selectedStringKey && (
               <span className="py-0.2 rounded bg-black/30 px-1.5 font-mono text-[10px] text-accent-gold/90">
                 #{selectedStringKey}
@@ -212,7 +215,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                 </div>
                 <div className="flex min-w-0 items-baseline space-x-2">
                   <span className="shrink-0 font-mono text-[10px] font-bold tracking-wider text-accent-gold uppercase">
-                    Sprint Status:
+                    {t("chat.sprintStatusLabel")}
                   </span>
                   <span className="truncate font-mono text-[11px] text-amber-200 select-text">
                     {activeChannel.status}
@@ -228,7 +231,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                     title="Edit sprint status"
                   >
                     <Pencil className="h-2.5 w-2.5 text-accent-gold" />
-                    <span>Edit</span>
+                    <span>{t("chat.edit")}</span>
                   </button>
                 )}
                 <button
@@ -263,7 +266,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center space-y-2 font-sans text-xs text-gray-500">
           <Terminal className="mb-2 h-8 w-8 text-gray-600" />
-          <span>Select a channel to start messaging</span>
+          <span>{t("chat.selectChannelPrompt")}</span>
         </div>
       )}
     </main>

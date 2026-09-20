@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, User, Loader2, Smile, ChevronDown } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 
 export interface UserProfileModalProps {
@@ -8,16 +9,17 @@ export interface UserProfileModalProps {
 }
 
 const STATUS_PRESETS = [
-  { emoji: "☕", text: "On Break" },
-  { emoji: "🎮", text: "LQA Testing" },
-  { emoji: "💬", text: "Focus Mode" },
-  { emoji: "🍕", text: "Lunch Break" },
-  { emoji: "⛔", text: "Away" },
-  { emoji: "💼", text: "In a Meeting" },
-];
+  { emoji: "☕", key: "status.onBreak" },
+  { emoji: "🎮", key: "status.lqaTesting" },
+  { emoji: "💬", key: "status.focusMode" },
+  { emoji: "🍕", key: "status.lunchBreak" },
+  { emoji: "⛔", key: "status.away" },
+  { emoji: "💼", key: "status.inMeeting" },
+] as const;
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) => {
   const { user, updateProfile } = useAuth();
+  const { t } = useTranslation();
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [customStatus, setCustomStatus] = useState(user?.customStatus || "");
   const [bio, setBio] = useState(user?.bio || "");
@@ -72,7 +74,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
         <div className="flex items-center justify-between border-b border-white/[0.08] bg-surface-card/50 px-6 py-4">
           <div className="flex items-center space-x-2">
             <User className="h-4 w-4 text-accent-gold" />
-            <span className="text-sm font-semibold text-white">Edit Profile</span>
+            <span className="text-sm font-semibold text-white">{t("profile.editProfile")}</span>
           </div>
           <button
             type="button"
@@ -97,12 +99,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
                 {user.displayName.substring(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                {/* Name and Role Badge on same line */}
                 <div className="flex items-center space-x-2">
                   <span className="truncate font-semibold text-white">{user.displayName}</span>
                   <LocRoleBadge role={user.locRole} />
                 </div>
-                {/* Username directly below */}
                 <div className="mt-0.5 font-mono text-[11px] text-slate-400">@{user.username}</div>
               </div>
             </div>
@@ -111,7 +111,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
           {/* Display Name */}
           <div>
             <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              Display Name
+              {t("profile.displayName")}
             </label>
             <input
               type="text"
@@ -126,7 +126,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
           {/* Custom Status with Presets */}
           <div>
             <label className="mb-1.5 flex items-center justify-between font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              <span>Custom Status</span>
+              <span>{t("profile.customStatus")}</span>
               <span className="font-mono text-[10px] text-slate-500">
                 {customStatus.length}/100
               </span>
@@ -137,7 +137,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
                 type="text"
                 value={customStatus}
                 onChange={(e) => setCustomStatus(e.target.value)}
-                placeholder="What are you working on? (e.g. Updating Resident Evil Requiem UI strings)"
+                placeholder={t("profile.statusPlaceholder")}
                 maxLength={100}
                 className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-8 pl-8 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
               />
@@ -156,13 +156,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
             <div className="flex flex-wrap gap-1.5 pt-2">
               {STATUS_PRESETS.map((preset) => (
                 <button
-                  key={preset.text}
+                  key={preset.key}
                   type="button"
-                  onClick={() => setCustomStatus(`${preset.emoji} ${preset.text}`)}
+                  onClick={() => setCustomStatus(`${preset.emoji} ${t(preset.key)}`)}
                   className="inline-flex cursor-pointer items-center space-x-1.5 rounded-full border border-white/[0.08] bg-surface-card/90 px-2.5 py-1 text-[11px] text-slate-300 transition-all hover:border-accent-gold/40 hover:bg-white/[0.06] hover:text-white active:scale-95"
                 >
                   <span>{preset.emoji}</span>
-                  <span>{preset.text}</span>
+                  <span>{t(preset.key)}</span>
                 </button>
               ))}
             </div>
@@ -171,12 +171,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
           {/* Bio */}
           <div>
             <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              Bio / Specialization
+              {t("profile.bio")}
             </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="e.g. Lead Japanese to English translator on Monster Hunter series."
+              placeholder={t("profile.bioPlaceholder")}
               maxLength={250}
               rows={2}
               className="focus:bg-surface-elevated w-full resize-none rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
@@ -186,7 +186,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
           {/* Primary Locale */}
           <div>
             <label className="mb-1.5 block font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              Primary Locale
+              {t("profile.primaryLocale")}
             </label>
             <div className="relative">
               <select
@@ -212,7 +212,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
               onClick={onClose}
               className="cursor-pointer rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-xs font-medium text-slate-300 transition-all hover:bg-white/[0.08] hover:text-white active:scale-[0.98]"
             >
-              Cancel
+              {t("profile.cancel")}
             </button>
             <button
               type="submit"
@@ -220,7 +220,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
               className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/50 bg-accent-gold/10 px-4 py-2 font-mono text-xs font-bold tracking-wider text-accent-gold uppercase shadow-sm shadow-accent-gold/10 transition-all duration-150 hover:bg-accent-gold hover:text-surface-canvas active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              <span>Save Changes</span>
+              <span>{t("profile.saveChanges")}</span>
             </button>
           </div>
         </form>

@@ -4,17 +4,19 @@ import type { AttachmentDTO, ChannelMemberDTO, UserProfileDTO } from "@capsloc/t
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
+import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 
 export interface MessageInputProps {
   channelId: string;
   channelName?: string | null;
-  isDm?: boolean; // appropriately replaces #channel in placeholder to @recipient
+  isDm?: boolean;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelName, isDm }) => {
   const { user } = useAuth();
   const { sendMessage, startTyping, stopTyping } = useSocket();
+  const { t } = useTranslation();
   const [content, setContent] = useState("");
   const [stagedAttachments, setStagedAttachments] = useState<AttachmentDTO[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -32,7 +34,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Pre-load room members for @tag autocomplete
   useEffect(() => {
     let isMounted = true;
     const fetchRoomMembers = async () => {
@@ -56,13 +57,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     };
   }, [channelId]);
 
-  // Keep stopTypingRef pointing to the latest socket dispatcher:
   const stopTypingRef = useRef(stopTyping);
   useEffect(() => {
     stopTypingRef.current = stopTyping;
   });
 
-  // Stop typing and clean up timeouts when unmounting or switching channels:
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {
@@ -70,9 +69,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
       }
       stopTypingRef.current(channelId);
     };
-  }, [channelId]); // Runs strictly on channel switch or component unmount
+  }, [channelId]);
 
-  // Auto-resize textarea dynamically based on content scrollHeight (capped at 192px / 8 lines)
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -100,7 +98,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     setContent(newContent);
     setShowMentionPicker(false);
 
-    // Position cursor after inserted username
     setTimeout(() => {
       if (textareaRef.current) {
         const newCursorPos = beforeMention.length + targetUser.username.length + 2;
@@ -124,7 +121,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
       stopTyping(channelId);
     }, 1500);
 
-    // Detect @mention trigger
     const textBeforeCursor = text.slice(0, cursor);
     const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_.-]*)$/);
 
@@ -191,7 +187,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     }, 10);
   };
 
-  // 1. Direct Clipboard Paste (Win+Shift+S / Cmd+Shift+4)
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -223,7 +218,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     }
   };
 
-  // 2. Drag & Drop Upload
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
@@ -250,7 +244,6 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     }
   };
 
-  // 3. File Input Picker Upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -348,7 +341,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           {isUploading && (
             <div className="flex items-center space-x-1.5 rounded-md border border-accent-gold/30 bg-brand-navy/60 px-2.5 py-1 font-sans text-xs text-accent-gold">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-accent-gold" />
-              <span>Uploading attachment...</span>
+              <span>{t("composer.uploadingAttachment")}</span>
             </div>
           )}
         </div>
@@ -374,7 +367,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
         {isDragging && (
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center space-x-2 rounded-xl bg-surface-card/90 font-sans text-xs font-semibold text-accent-gold">
             <UploadCloud className="h-5 w-5 animate-pulse" />
-            <span>Drop file to attach</span>
+            <span>{t("composer.dropToAttach")}</span>
           </div>
         )}
 
@@ -382,7 +375,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
         {showMentionPicker && filteredMentionUsers.length > 0 && (
           <div className="animate-in fade-in slide-in-from-bottom-2 absolute bottom-full left-0 z-40 mb-2 max-h-56 w-80 overflow-y-auto rounded-xl border border-border-subtle bg-surface-panel p-1.5 font-sans shadow-2xl duration-150">
             <div className="flex items-center justify-between border-b border-border-subtle/50 px-2.5 py-1 font-mono text-[10px] tracking-wider text-slate-400 uppercase">
-              <span>Mention Colleague</span>
+              <span>{t("composer.mentionHeader")}</span>
               <span className="text-accent-gold">@{mentionQuery || "..."}</span>
             </div>
             <div className="mt-1 space-y-0.5">
@@ -438,8 +431,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           rows={1}
           placeholder={
             isDm
-              ? `Message @${channelName || "teammate"}... (Shift+Enter for newline, type @name or #LOC-XXXX)`
-              : `Message #${channelName || "channel"}... (Shift+Enter for newline, type @name or #LOC-XXXX)`
+              ? t("composer.placeholderDm", { recipient: channelName || "teammate" })
+              : t("composer.placeholderChannel", { channel: channelName || "channel" })
           }
           className="w-full resize-none bg-transparent font-sans text-sm leading-relaxed text-slate-100 placeholder-slate-500 focus:outline-none"
         />
@@ -451,7 +444,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              title="Attach screenshot or document"
+              title={t("composer.attachTooltip")}
               className="cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-accent-gold disabled:opacity-50"
             >
               <Paperclip className="h-4 w-4" />
@@ -460,7 +453,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
             <button
               type="button"
               onClick={handleTriggerMention}
-              title="Tag colleague (@)"
+              title={t("composer.mentionTooltip")}
               className="cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-accent-gold"
             >
               <AtSign className="h-4 w-4" />
@@ -473,14 +466,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
                 setContent((prev) => `${prev}#LOC-`);
                 textareaRef.current?.focus();
               }}
-              title="Insert #LOC Key Shortcut"
+              title={t("composer.locTagTooltip")}
               className="cursor-pointer rounded border border-emerald-500/30 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 hover:text-emerald-300"
             >
               #LOC
             </button>
 
             <span className="ml-1 hidden font-sans text-[10px] text-slate-500 sm:inline">
-              Max 10MB &bull; Paste or drop screenshots
+              {t("composer.uploadHint")}
             </span>
           </div>
 
@@ -490,7 +483,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
             disabled={(!content.trim() && stagedAttachments.length === 0) || isSending}
             className="flex cursor-pointer items-center space-x-1.5 rounded-lg border border-accent-gold/40 bg-brand-navy px-3 py-1.5 font-sans text-xs font-semibold text-accent-gold shadow-xs transition-all hover:bg-brand-navy-light active:scale-[0.98] disabled:opacity-40 disabled:hover:bg-brand-navy"
           >
-            <span>Send</span>
+            <span>{isSending ? t("composer.sending") : t("composer.send")}</span>
             <Send className="h-3 w-3" />
           </button>
         </div>
