@@ -118,19 +118,21 @@ export const en = {
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal
-  "auth.terminalAuth": "CAPSLOC // TERMINAL AUTH",
-  "auth.tagline": "Internal Game Localization Operations",
-  "auth.signIn": "SIGN IN",
-  "auth.register": "REGISTER NEW OPERATOR",
+  "auth.title": "CapsLoc Studio",
+  "auth.tagline": "Internal Game Localization Suite",
+  "auth.signIn": "Sign In",
+  "auth.register": "Create Account",
   "auth.username": "Username",
   "auth.displayName": "Display Name",
-  "auth.locRole": "Loc Role",
-  "auth.primaryLocale": "Primary Locale",
-  "auth.workstationEmail": "Workstation Email",
-  "auth.securityPassword": "Security Password",
-  "auth.btnRegister": "REGISTER & ENTER TERMINAL",
-  "auth.btnSignIn": "AUTHENTICATE SESSION",
-  "auth.quickSelect": "Demo Persona Quick-Select (Seeded DB)",
+  "auth.role": "Role",
+  "auth.primaryLanguage": "Primary Language",
+  "auth.email": "Email Address",
+  "auth.password": "Password",
+  "auth.confirmPassword": "Confirm Password",
+  "auth.passwordMismatch": "Passwords do not match",
+  "auth.btnRegister": "Create Account",
+  "auth.btnSignIn": "Sign In",
+  "auth.demoAccounts": "Demo Accounts",
 
   // 7.2 User Profile Modal
   "profile.editProfile": "Edit Profile",

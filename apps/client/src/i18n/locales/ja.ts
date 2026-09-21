@@ -120,19 +120,21 @@ export const ja: typeof en = {
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal
-  "auth.terminalAuth": "CAPSLOC // 端末認証",
-  "auth.tagline": "社内ゲームローカライゼーション業務",
-  "auth.signIn": "サインイン",
-  "auth.register": "新規オペレーター登録",
+  "auth.title": "CapsLoc スタジオ",
+  "auth.tagline": "ゲームローカライゼーション 統合スイート",
+  "auth.signIn": "ログイン",
+  "auth.register": "アカウント作成",
   "auth.username": "ユーザー名",
   "auth.displayName": "表示名",
-  "auth.locRole": "担当ロール",
-  "auth.primaryLocale": "主要ロケール",
-  "auth.workstationEmail": "ワークステーション メールアドレス",
-  "auth.securityPassword": "セキュリティパスワード",
-  "auth.btnRegister": "登録してターミナルを開始",
-  "auth.btnSignIn": "セッションを認証",
-  "auth.quickSelect": "デモ用ペルソナ即時選択 (シード済みDB)",
+  "auth.role": "担当ロール",
+  "auth.primaryLanguage": "主要言語",
+  "auth.email": "メールアドレス",
+  "auth.password": "パスワード",
+  "auth.confirmPassword": "パスワード（確認）",
+  "auth.passwordMismatch": "パスワードが一致しません",
+  "auth.btnRegister": "アカウントを作成",
+  "auth.btnSignIn": "ログイン",
+  "auth.demoAccounts": "デモアカウントで試す",
 
   // 7.2 User Profile Modal
   "profile.editProfile": "プロフィール編集",
