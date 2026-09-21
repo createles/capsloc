@@ -249,6 +249,8 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
           {/* Message Stream */}
           <MessageList
             channelId={activeChannel.id}
+            channelName={isDm ? dmRecipientName : activeChannel.name}
+            isDm={isDm}
             onSelectStringKey={onSelectStringKey}
             onOpenDm={onOpenDm}
             inspectedStringKey={selectedStringKey}

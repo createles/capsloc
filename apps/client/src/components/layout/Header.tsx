@@ -1,5 +1,5 @@
 import React from "react";
-import { Terminal, LogOut, Wifi, WifiOff } from "lucide-react";
+import { Terminal, LogOut } from "lucide-react";
 import { LanguageToggle } from "../ui/LanguageToggle";
 import { useTranslation } from "../../i18n";
 
@@ -27,30 +27,22 @@ export const Header: React.FC<HeaderProps> = ({ isConnected, onLogout }) => {
         </span>
       </div>
 
-      {/* Right: Language Toggle, Modern Telemetry Pill & Sign Out Button */}
-      <div className="flex items-center space-x-3 font-sans text-xs">
+      {/* Right: Language Toggle, Discrete Status Dot & Sign Out Button */}
+      <div className="flex items-center space-x-3.5 font-sans text-xs">
         <LanguageToggle />
 
+        {/* Discrete Connection Status Dot */}
         <div
-          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 transition-all ${
-            isConnected
-              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-xs"
-              : "border-amber-500/20 bg-amber-500/10 text-amber-400"
-          }`}
+          className="flex items-center"
+          title={isConnected ? t("header.connected") : t("header.reconnecting")}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              isConnected ? "animate-pulse bg-emerald-400" : "bg-amber-400"
+            className={`h-2 w-2 rounded-full transition-all duration-300 ${
+              isConnected
+                ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"
+                : "animate-pulse bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
             }`}
           />
-          {isConnected ? (
-            <Wifi className="h-3 w-3 text-emerald-400" />
-          ) : (
-            <WifiOff className="h-3 w-3 text-amber-400" />
-          )}
-          <span className="text-[11px] font-medium">
-            {isConnected ? t("header.connected") : t("header.reconnecting")}
-          </span>
         </div>
 
         <button
