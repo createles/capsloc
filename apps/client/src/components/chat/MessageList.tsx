@@ -11,6 +11,7 @@ import {
   Copy,
   Check,
   FileCode,
+  MessageSquare,
 } from "lucide-react";
 import { UserStatus, type MessageDTO, type PaginatedMessagesDTO } from "@capsloc/types";
 import { api } from "../../services/api";
@@ -24,6 +25,8 @@ import { type AttachmentDTO } from "@capsloc/types";
 
 export interface MessageListProps {
   channelId: string;
+  channelName?: string | null;
+  isDm?: boolean;
   onSelectStringKey: (stringKey: string) => void;
   onOpenDm?: (targetUserId: string) => void;
   inspectedStringKey?: string | null;
@@ -169,6 +172,8 @@ const MessageSkeleton: React.FC = () => (
 
 export const MessageList: React.FC<MessageListProps> = ({
   channelId,
+  channelName,
+  isDm = false,
   onSelectStringKey,
   onOpenDm,
   inspectedStringKey,
@@ -492,9 +497,20 @@ export const MessageList: React.FC<MessageListProps> = ({
 
         {/* Empty State */}
         {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center py-16 text-center font-sans text-xs text-gray-500">
-            <span className="text-sm font-medium text-gray-400">{t("message.noMessages")}</span>
-            <span className="mt-1 text-[11px] text-gray-500">{t("message.emptyGuide")}</span>
+          <div className="flex h-full flex-col items-center justify-center py-16 text-center font-sans select-none">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-surface-card text-accent-gold shadow-sm">
+              <MessageSquare className="h-6 w-6" />
+            </div>
+            <h3 className="text-sm font-semibold text-slate-200">
+              {isDm
+                ? t("message.welcomeDm", { name: channelName || "Colleague" })
+                : t("message.welcomeChannel", { channel: channelName || channelId })}
+            </h3>
+            <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-slate-400">
+              {isDm
+                ? t("message.emptyDmGuide", { name: channelName || "Colleague" })
+                : t("message.emptyGuideEnhanced", { channel: channelName || channelId })}
+            </p>
           </div>
         ) : (
           messages.map((message, index) => {

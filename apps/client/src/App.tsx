@@ -16,6 +16,8 @@ import { InviteMemberModal } from "./components/channels/InviteMemberModal";
 import { ChannelMembersModal } from "./components/channels/ChannelMembersModal";
 import { EditChannelStatusModal } from "./components/channels/EditChannelStatusModal";
 import { MentionToast } from "./components/common/MentionToast";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { ConnectionBanner } from "./components/common/ConnectionBanner";
 
 const INSPECTOR_STORAGE_KEY = "capsloc:inspector_open";
 
@@ -219,6 +221,9 @@ const LocTerminal: React.FC = () => {
       {/* 1. Top Header */}
       <Header isConnected={isConnected} onLogout={logout} />
 
+      {/* Connection Loss Alert Banner */}
+      <ConnectionBanner />
+
       {/* 2. Main Three-Pane Work Area (Left -> Right) */}
       <div className="flex flex-1 overflow-hidden">
         {/* [LEFT] Channel Sidebar */}
@@ -299,7 +304,9 @@ export const App: React.FC = () => {
     <I18nProvider>
       <AuthProvider>
         <SocketProvider>
-          <LocTerminal />
+          <ErrorBoundary>
+            <LocTerminal />
+          </ErrorBoundary>
         </SocketProvider>
       </AuthProvider>
     </I18nProvider>

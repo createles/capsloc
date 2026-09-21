@@ -1,0 +1,31 @@
+# Dependency caches & local builds
+**/node_modules
+**/dist
+**/.turbo
+**/.cache
+
+# Git & Tooling
+.git
+.gitignore
+.gitattributes
+.vscode
+.agents
+*.log
+
+# Environment & Credentials
+.env
+.env.*
+!.env.example
+
+# Test & Coverage
+**/coverage
+**/test
+**/tests
+**/__tests__
+**/*.spec.*
+**/*.test.*
+
+# Uploads & Temporary Runtime Storage
+uploads/
+apps/server/uploads/
+*.tsbuildinfo

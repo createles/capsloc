@@ -47,6 +47,11 @@ export const en = {
   "message.noMessages": "No messages yet",
   "message.emptyGuide":
     "Messages with #LOC-XXXX or $STR_XXXX tags are automatically linked for inspection.",
+  "message.welcomeChannel": "Welcome to #{channel}",
+  "message.welcomeDm": "Direct message with {name}",
+  "message.emptyGuideEnhanced":
+    "This is the start of #{channel}. Messages with #LOC-XXXX or $STR_XXXX tags will be automatically highlighted.",
+  "message.emptyDmGuide": "This is the start of your direct message history with {name}.",
   "message.copyText": "Copy message text",
   "message.copied": "Copied",
   "message.inspectTag": "Inspect",
@@ -224,4 +229,16 @@ export const en = {
   "StringStatus.IN_REVIEW": "In Review",
   "StringStatus.LQA_FLAGGED": "LQA Flagged",
   "StringStatus.APPROVED": "Approved",
+
+  // 10. Resilience & Connection
+  "error.title": "Something went wrong",
+  "error.subtitle": "An unexpected error occurred in the workspace.",
+  "error.details": "Error details:",
+  "error.viewStackTrace": "View technical details",
+  "error.copyDetails": "Copy Error Details",
+  "error.copied": "Copied",
+  "error.reload": "Reload Application",
+
+  "banner.offline": "Connection lost. Reconnecting to server...",
+  "banner.reconnectNow": "Reconnect Now",
 };
