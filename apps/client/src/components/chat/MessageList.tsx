@@ -13,7 +13,12 @@ import {
   FileCode,
   MessageSquare,
 } from "lucide-react";
-import { UserStatus, type MessageDTO, type PaginatedMessagesDTO } from "@capsloc/types";
+import {
+  UserStatus,
+  type MessageDTO,
+  type PaginatedMessagesDTO,
+  type UserProfileDTO,
+} from "@capsloc/types";
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
@@ -191,6 +196,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [activeLightbox, setActiveLightbox] = useState<{
     attachment: AttachmentDTO;
+    uploaderId?: string;
     uploaderName?: string;
   } | null>(null);
 
@@ -381,6 +387,31 @@ export const MessageList: React.FC<MessageListProps> = ({
       socket.off("new_message", handleNewMessage);
     };
   }, [socket, channelId, user?.id]);
+
+  // Real-time user profile reconciliation: update sender metadata in message stream & active lightbox
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.sender.id === updatedUser.id
+            ? { ...msg, sender: { ...msg.sender, ...updatedUser } }
+            : msg,
+        ),
+      );
+
+      setActiveLightbox((prev) => {
+        if (!prev || prev.uploaderId !== updatedUser.id) return prev;
+        return { ...prev, uploaderName: updatedUser.displayName };
+      });
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
 
   const loadEarlierMessages = async () => {
     if (!hasMore || !nextCursor || isLoadingMore) return;
@@ -662,6 +693,7 @@ export const MessageList: React.FC<MessageListProps> = ({
                                     onClick={() =>
                                       setActiveLightbox({
                                         attachment: att,
+                                        uploaderId: message.sender.id,
                                         uploaderName: message.sender.displayName,
                                       })
                                     }

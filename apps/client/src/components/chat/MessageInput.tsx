@@ -15,7 +15,7 @@ export interface MessageInputProps {
 
 export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelName, isDm }) => {
   const { user } = useAuth();
-  const { sendMessage, startTyping, stopTyping } = useSocket();
+  const { socket, sendMessage, startTyping, stopTyping } = useSocket();
   const { t } = useTranslation();
   const [content, setContent] = useState("");
   const [stagedAttachments, setStagedAttachments] = useState<AttachmentDTO[]>([]);
@@ -56,6 +56,21 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
       isMounted = false;
     };
   }, [channelId]);
+
+  // Synchronize directory users on real-time profile updates
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setDirectoryUsers((prev) =>
+        prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u)),
+      );
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
 
   const stopTypingRef = useRef(stopTyping);
   useEffect(() => {
