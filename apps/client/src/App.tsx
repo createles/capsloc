@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
-import { type ChannelDTO, type UserProfileDTO } from "@capsloc/types";
+import { type ChannelDTO, type UserProfileDTO, LocRole } from "@capsloc/types";
 import { api } from "./services/api";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./hooks/useAuth";
@@ -15,6 +15,7 @@ import { LocInspectorDrawer } from "./components/inspector/LocInspectorDrawer";
 import { InviteMemberModal } from "./components/channels/InviteMemberModal";
 import { ChannelMembersModal } from "./components/channels/ChannelMembersModal";
 import { EditChannelStatusModal } from "./components/channels/EditChannelStatusModal";
+import { ChannelDetailsModal } from "./components/channels/ChannelDetailsModal";
 import { MentionToast } from "./components/common/MentionToast";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { ConnectionBanner } from "./components/common/ConnectionBanner";
@@ -78,6 +79,7 @@ const LocTerminal: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isEditStatusModalOpen, setIsEditStatusModalOpen] = useState(false);
+  const [isChannelDetailsModalOpen, setIsChannelDetailsModalOpen] = useState(false);
 
   // Pinned sprint status banner state
   const [dismissedBannerChannelIds, setDismissedBannerChannelIds] = useState<
@@ -248,6 +250,7 @@ const LocTerminal: React.FC = () => {
           onOpenMembers={() => setIsMembersModalOpen(true)}
           onOpenInvite={() => setIsInviteModalOpen(true)}
           onOpenEditStatus={() => setIsEditStatusModalOpen(true)}
+          onOpenChannelDetails={() => setIsChannelDetailsModalOpen(true)}
           isBannerVisible={isBannerVisible}
           onDismissBanner={handleDismissBanner}
           onRestoreBanner={handleRestoreBanner}
@@ -266,6 +269,22 @@ const LocTerminal: React.FC = () => {
       </div>
 
       {/* 3. Global Overlays & Modals */}
+      {isChannelDetailsModalOpen && activeChannel && (
+        <ChannelDetailsModal
+          channel={activeChannel}
+          isChannelAdmin={
+            user?.locRole === LocRole.LOC_PM ||
+            activeChannel.createdById === user?.id ||
+            activeChannel.members?.some(
+              (m) => m.userId === user?.id && m.role?.toLowerCase() === "admin",
+            ) ||
+            false
+          }
+          onClose={() => setIsChannelDetailsModalOpen(false)}
+          onUpdated={(updated) => setActiveChannel(updated)}
+        />
+      )}
+
       {isEditStatusModalOpen && activeChannel && (
         <EditChannelStatusModal
           channel={activeChannel}

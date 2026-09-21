@@ -1,5 +1,5 @@
 import React from "react";
-import { Terminal, BookOpen, UserPlus, Users, Pin, Pencil, X } from "lucide-react";
+import { Terminal, BookOpen, UserPlus, Users, Pin, Pencil, X, Info } from "lucide-react";
 import {
   type ChannelDTO,
   ChannelType,
@@ -25,11 +25,12 @@ export interface ChatPaneProps {
   onSelectStringKey: (key: string) => void;
   onDismissTagHighlight: () => void;
   onReportMatchesCount: (count: number) => void;
-  // Modals & Navigation triggers
-  onOpenDm: (recipientId: string) => void;
+  // Modal Actions
+  onOpenDm?: (targetUserId: string) => void;
   onOpenMembers: () => void;
   onOpenInvite: () => void;
   onOpenEditStatus: () => void;
+  onOpenChannelDetails: () => void;
   // Pinned Banner
   isBannerVisible: boolean;
   onDismissBanner: (channelId: string) => void;
@@ -51,6 +52,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
   onOpenMembers,
   onOpenInvite,
   onOpenEditStatus,
+  onOpenChannelDetails,
   isBannerVisible,
   onDismissBanner,
   onRestoreBanner,
@@ -108,11 +110,17 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
             </>
           ) : (
             <>
-              <div className="flex min-w-0 items-center space-x-1.5">
-                <span className="truncate text-sm font-semibold text-white">
+              <button
+                type="button"
+                onClick={onOpenChannelDetails}
+                className="group flex min-w-0 cursor-pointer items-center space-x-1.5 rounded-lg px-1.5 py-0.5 transition-colors hover:bg-white/[0.06]"
+                title={t("channelDetails.title")}
+              >
+                <span className="truncate text-sm font-semibold text-white transition-colors group-hover:text-accent-gold">
                   #{activeChannel?.name || "select-channel"}
                 </span>
-              </div>
+                <Info className="h-3 w-3 text-slate-500 transition-colors group-hover:text-accent-gold" />
+              </button>
 
               {activeChannel?.localeTag && (
                 <span className="shrink-0 rounded-md border border-accent-gold/20 bg-brand-navy/60 px-2 py-0.5 font-mono text-[10px] text-accent-gold">
@@ -120,9 +128,14 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                 </span>
               )}
               {activeChannel?.description && (
-                <span className="ml-2 hidden max-w-md truncate text-xs text-gray-400 md:inline">
+                <button
+                  type="button"
+                  onClick={onOpenChannelDetails}
+                  className="ml-2 hidden max-w-md cursor-pointer truncate text-left text-xs text-gray-400 transition-colors hover:text-slate-200 md:inline"
+                  title={t("channelDetails.title")}
+                >
                   {activeChannel.description}
-                </span>
+                </button>
               )}
 
               {/* Channel Members List Button */}

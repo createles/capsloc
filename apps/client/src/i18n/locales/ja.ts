@@ -204,6 +204,26 @@ export const ja: typeof en = {
   "lightbox.download": "アセットをダウンロード",
   "lightbox.close": "閉じる (Esc)",
 
+  // 7.9 Channel Details Modal
+  "channelDetails.title": "チャンネル詳細",
+  "channelDetails.description": "説明",
+  "channelDetails.descPlaceholder":
+    "このチャンネルの目的やローカライズ範囲を入力...",
+  "channelDetails.noDescription": "チャンネルの説明はまだ設定されていません。",
+  "channelDetails.publicProject": "公開プロジェクト",
+  "channelDetails.privateLocale": "限定ロケール",
+  "channelDetails.membersCount": "メンバー {count} 名",
+  "channelDetails.editDescription": "編集",
+  "channelDetails.saveChanges": "保存",
+  "channelDetails.cancel": "キャンセル",
+  "channelDetails.close": "閉じる",
+  "channelDetails.projectTag": "プロジェクトタグ",
+  "channelDetails.localeTag": "ロケールタグ",
+  "channelDetails.createdBy": "作成者",
+  "channelDetails.createdOnLabel": "作成日",
+  "channelDetails.unknownUser": "不明なユーザー",
+  "channelDetails.system": "システム",
+
   // 8. Hover Cards & Toast Notifications
   // 8.1 User Profile Hover Card
   "hoverCard.status": "ステータス",

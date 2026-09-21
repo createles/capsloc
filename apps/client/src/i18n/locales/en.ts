@@ -204,6 +204,26 @@ export const en = {
   "lightbox.download": "Download asset",
   "lightbox.close": "Close (Esc)",
 
+  // 7.9 Channel Details Modal
+  "channelDetails.title": "Channel Details",
+  "channelDetails.description": "Description",
+  "channelDetails.descPlaceholder":
+    "Add a description to tell your team what this channel is for...",
+  "channelDetails.noDescription": "No description provided for this channel.",
+  "channelDetails.publicProject": "Public Project",
+  "channelDetails.privateLocale": "Private Locale",
+  "channelDetails.membersCount": "{count} members",
+  "channelDetails.editDescription": "Edit",
+  "channelDetails.saveChanges": "Save",
+  "channelDetails.cancel": "Cancel",
+  "channelDetails.close": "Close",
+  "channelDetails.projectTag": "Project Tag",
+  "channelDetails.localeTag": "Locale Tag",
+  "channelDetails.createdBy": "Created By",
+  "channelDetails.createdOnLabel": "Created On",
+  "channelDetails.unknownUser": "Unknown User",
+  "channelDetails.system": "System",
+
   // 8. Hover Cards & Toast Notifications
   // 8.1 User Profile Hover Card
   "hoverCard.status": "Status",
