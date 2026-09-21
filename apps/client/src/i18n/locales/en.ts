@@ -234,6 +234,9 @@ export const en = {
   "toast.taggedIn": "Tagged in #{channel}",
   "toast.mentionedYou": "mentioned you",
   "toast.viewMention": "View Mention",
+  "toast.directMessage": "Direct Message",
+  "toast.sentDirectMessage": "sent you a message",
+  "toast.openDm": "Open DM",
 
   // 9. Roles & Status Enums
   // 9.1 Localization Roles

@@ -107,9 +107,26 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
       );
     };
 
+    const handleChannelUpdated = (updatedChannel: ChannelDTO) => {
+      setChannels((prevChannels) =>
+        prevChannels.map((c) => (c.id === updatedChannel.id ? { ...c, ...updatedChannel } : c)),
+      );
+    };
+
+    const handleChannelCreated = (newChannel: ChannelDTO) => {
+      setChannels((prev) => {
+        if (prev.some((c) => c.id === newChannel.id)) return prev;
+        return [...prev, newChannel];
+      });
+    };
+
     socket.on("user_updated", handleUserUpdated);
+    socket.on("channel_updated", handleChannelUpdated);
+    socket.on("channel_created", handleChannelCreated);
     return () => {
       socket.off("user_updated", handleUserUpdated);
+      socket.off("channel_updated", handleChannelUpdated);
+      socket.off("channel_created", handleChannelCreated);
     };
   }, [socket]);
 

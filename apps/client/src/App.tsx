@@ -37,8 +37,8 @@ const LocTerminal: React.FC = () => {
     socket,
     isConnected,
     onlineUsers,
-    activeMentionToast,
-    dismissMentionToast,
+    activeNotificationToast,
+    dismissNotificationToast,
     setActiveChannelId,
   } = useSocket();
   const [activeChannel, setActiveChannel] = useState<ChannelDTO | null>(null);
@@ -309,9 +309,10 @@ const LocTerminal: React.FC = () => {
         />
       )}
 
+      {/* Real-time Toast Notification (Mentions & Direct Messages) */}
       <MentionToast
-        toast={activeMentionToast}
-        onDismiss={dismissMentionToast}
+        toast={activeNotificationToast}
+        onDismiss={dismissNotificationToast}
         onJumpToChannel={handleJumpToChannel}
       />
     </div>

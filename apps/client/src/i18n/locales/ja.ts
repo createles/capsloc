@@ -207,8 +207,7 @@ export const ja: typeof en = {
   // 7.9 Channel Details Modal
   "channelDetails.title": "チャンネル詳細",
   "channelDetails.description": "説明",
-  "channelDetails.descPlaceholder":
-    "このチャンネルの目的やローカライズ範囲を入力...",
+  "channelDetails.descPlaceholder": "このチャンネルの目的やローカライズ範囲を入力...",
   "channelDetails.noDescription": "チャンネルの説明はまだ設定されていません。",
   "channelDetails.publicProject": "公開プロジェクト",
   "channelDetails.privateLocale": "限定ロケール",
@@ -234,6 +233,9 @@ export const ja: typeof en = {
   "toast.taggedIn": "#{channel} でメンションされました",
   "toast.mentionedYou": "さんがあなたをメンションしました",
   "toast.viewMention": "メンションを確認",
+  "toast.directMessage": "ダイレクトメッセージ",
+  "toast.sentDirectMessage": "さんからメッセージが届きました",
+  "toast.openDm": "DMを開く",
 
   // 9. Roles & Status Enums
   // 9.1 Localization Roles

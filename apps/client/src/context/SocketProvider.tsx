@@ -4,11 +4,14 @@ import { type TypedSocket } from "./SocketContext";
 import {
   UserStatus,
   type UserMentionedPayload,
+  type DmReceivedPayload,
+  type NotificationToastPayload,
   type OnlineUsersPayload,
   type MessageDTO,
   type UnreadSummaryDTO,
   type JoinChannelPayload,
   type SendMessagePayload,
+  type ChannelDTO,
 } from "@capsloc/types";
 import { api, getAccessToken } from "../services/api";
 import { io } from "socket.io-client";
@@ -21,7 +24,8 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [onlineUsers, setOnlineUsers] = useState<Record<string, UserStatus>>({});
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [mentionCounts, setMentionCounts] = useState<Record<string, number>>({});
-  const [activeMentionToast, setActiveMentionToast] = useState<UserMentionedPayload | null>(null);
+  const [activeNotificationToast, setActiveNotificationToast] =
+    useState<NotificationToastPayload | null>(null);
 
   const activeChannelIdRef = useRef<string | null>(null);
   const userId = user?.id; // Extract userId
@@ -83,6 +87,11 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }));
     });
 
+    socketInstance.on("channel_created", (channel: ChannelDTO) => {
+      // Automatically subscribe to the newly created room on the socket
+      socketInstance.emit("join_channel", { channelId: channel.id });
+    });
+
     socketInstance.on("user_mentioned", (payload: UserMentionedPayload) => {
       // Exclude self-mention
       if (payload.message.senderId === userId) return;
@@ -94,7 +103,28 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         }));
       }
 
-      setActiveMentionToast(payload);
+      setActiveNotificationToast({
+        type: "mention",
+        message: payload.message,
+        channelId: payload.channelId,
+        channelName: payload.channelName,
+        senderName: payload.senderName,
+      });
+    });
+
+    socketInstance.on("dm_received", (payload: DmReceivedPayload) => {
+      // Exclude self-messages
+      if (payload.message.senderId === userId) return;
+
+      // Don't toast if user is currently looking at this DM
+      if (activeChannelIdRef.current === payload.channelId) return;
+
+      setActiveNotificationToast({
+        type: "dm",
+        message: payload.message,
+        channelId: payload.channelId,
+        senderName: payload.senderName,
+      });
     });
 
     socketInstance.on("error", (err) => {
@@ -119,14 +149,18 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
   }, [isAuthenticated, userId]); // Use userId as dependency so that status updates don't trigger context rerun
 
-  // Auto-dismiss mention toast after 7 seconds
+  // Auto-dismiss notification toast after 7 seconds
   useEffect(() => {
-    if (!activeMentionToast) return;
+    if (!activeNotificationToast) return;
     const timer = setTimeout(() => {
-      setActiveMentionToast(null);
+      setActiveNotificationToast(null);
     }, 7000);
     return () => clearTimeout(timer);
-  }, [activeMentionToast]);
+  }, [activeNotificationToast]);
+
+  const dismissNotificationToast = useCallback(() => {
+    setActiveNotificationToast(null);
+  }, []);
 
   const clearUnread = useCallback((channelId: string) => {
     setUnreadCounts((prev) => {
@@ -157,10 +191,6 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     },
     [clearUnread],
   );
-
-  const dismissMentionToast = useCallback(() => {
-    setActiveMentionToast(null);
-  }, []);
 
   const joinChannel = useCallback(
     (channelId: string) => {
@@ -217,10 +247,12 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         onlineUsers,
         unreadCounts,
         mentionCounts,
-        activeMentionToast,
+        activeNotificationToast,
+        activeMentionToast: activeNotificationToast as any,
         setActiveChannelId,
         clearUnread,
-        dismissMentionToast,
+        dismissNotificationToast,
+        dismissMentionToast: dismissNotificationToast,
         joinChannel,
         leaveChannel,
         sendMessage,

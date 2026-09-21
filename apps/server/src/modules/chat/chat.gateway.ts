@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { OnEvent } from '@nestjs/event-emitter';
 import { MessagesService } from '../messages/messages.service.js';
 import { ChannelsService } from '../channels/channels.service.js';
-import { ClientToServerEvents, ServerToClientEvents, UserStatus, type JoinChannelPayload, type SendMessagePayload, type ChannelDTO, type UserProfileDTO } from '@capsloc/types';
+import { ClientToServerEvents, ServerToClientEvents, UserStatus, ChannelType, type JoinChannelPayload, type SendMessagePayload, type ChannelDTO, type UserProfileDTO } from '@capsloc/types';
 
 // Extended Socket interface retaining authenticated user identity in memory
 export interface AuthenticatedSocket extends Socket<ClientToServerEvents, ServerToClientEvents> {
@@ -196,6 +196,39 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         attachmentIds,
         stringKeys,
       });
+
+      // Dynamic Lazy DM Realization & Room Enrollment
+      try {
+        const channel = await this.channelsService.findById(channelId, userId);
+        if (channel.type === ChannelType.DIRECT_MESSAGE && channel.members) {
+          for (const member of channel.members) {
+            if (member.userId !== userId) {
+              // Dynamically enroll recipient's active socket(s) into channel room
+              const recipientSockets = this.activeUserSockets.get(member.userId);
+              if (recipientSockets) {
+                for (const socketId of recipientSockets) {
+                  const targetSocket = this.server.sockets.sockets.get(socketId);
+                  if (targetSocket) {
+                    targetSocket.join(`channel:${channelId}`);
+                  }
+                }
+              }
+
+              // Realize channel in recipient's sidebar
+              this.server.to(`user:${member.userId}`).emit('channel_created', channel as any);
+
+              // Push dedicated live direct message notification alert
+              this.server.to(`user:${member.userId}`).emit('dm_received', {
+                message: savedMessage as any,
+                channelId,
+                senderName: client.data.user.displayName,
+              });
+            }
+          }
+        }
+      } catch (err: any) {
+        this.logger.warn(`Could not evaluate DM channel realization for ${channelId}: ${err.message}`);
+      }
 
       const roomName = `channel:${channelId}`;
       this.server.to(roomName).emit('new_message', savedMessage as any);
