@@ -204,10 +204,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           for (const member of channel.members) {
             if (member.userId !== userId) {
               // Dynamically enroll recipient's active socket(s) into channel room
+              this.server.in(`user:${member.userId}`).socketsJoin(`channel:${channelId}`);
               const recipientSockets = this.activeUserSockets.get(member.userId);
               if (recipientSockets) {
                 for (const socketId of recipientSockets) {
-                  const targetSocket = this.server.sockets.sockets.get(socketId);
+                  const socketsMap: any = (this.server as any).sockets?.sockets ?? (this.server as any).sockets;
+                  const targetSocket = socketsMap instanceof Map ? socketsMap.get(socketId) : null;
                   if (targetSocket) {
                     targetSocket.join(`channel:${channelId}`);
                   }
@@ -221,7 +223,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
               this.server.to(`user:${member.userId}`).emit('dm_received', {
                 message: savedMessage as any,
                 channelId,
-                senderName: client.data.user.displayName,
+                channelType: ChannelType.DIRECT_MESSAGE,
+                senderName: (savedMessage as any).sender?.displayName || client.data.user.displayName,
               });
             }
           }
@@ -245,7 +248,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           message: savedMessage as any,
           channelId,
           channelName: target.channelName,
-          senderName: client.data.user.displayName,
+          channelType: target.channelType,
+          senderName: (savedMessage as any).sender?.displayName || client.data.user.displayName,
         });
       }
     } catch (error: any) {

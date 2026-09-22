@@ -187,7 +187,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   onReportMatchesCount,
 }) => {
   const { user } = useAuth();
-  const { socket, isConnected, onlineUsers, joinChannel, leaveChannel } = useSocket();
+  const { socket, isConnected, onlineUsers, joinChannel } = useSocket();
   const { t } = useTranslation();
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -272,10 +272,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   useEffect(() => {
     if (!channelId || !isConnected) return;
     joinChannel(channelId);
-    return () => {
-      leaveChannel(channelId);
-    };
-  }, [channelId, isConnected, joinChannel, leaveChannel]);
+  }, [channelId, isConnected, joinChannel]);
 
   useEffect(() => {
     let isMounted = true;

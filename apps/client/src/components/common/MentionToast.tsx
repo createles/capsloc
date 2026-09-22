@@ -1,6 +1,6 @@
 import React from "react";
 import { AtSign, MessageSquare, X, ArrowRight } from "lucide-react";
-import type { NotificationToastPayload } from "@capsloc/types";
+import { ChannelType, type NotificationToastPayload } from "@capsloc/types";
 import { useTranslation } from "../../i18n";
 
 export interface MentionToastProps {
@@ -17,7 +17,10 @@ export const MentionToast: React.FC<MentionToastProps> = ({
   const { t } = useTranslation();
   if (!toast) return null;
 
-  const isDm = toast.type === "dm";
+  const isDm =
+    toast.type === "dm" || toast.channelType === ChannelType.DIRECT_MESSAGE || !toast.channelName;
+
+  const cleanChannelName = toast.channelName ? toast.channelName.replace(/^#/, "") : "channel";
 
   return (
     <aside
@@ -35,9 +38,7 @@ export const MentionToast: React.FC<MentionToastProps> = ({
             )}
           </div>
           <span className="font-mono text-[11px] font-bold tracking-wide uppercase">
-            {isDm
-              ? t("toast.directMessage")
-              : t("toast.taggedIn", { channel: toast.channelName || "channel" })}
+            {isDm ? t("toast.directMessage") : t("toast.taggedIn", { channel: cleanChannelName })}
           </span>
         </div>
         <button

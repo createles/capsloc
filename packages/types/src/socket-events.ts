@@ -1,7 +1,7 @@
 import { MessageDTO } from "./message.types.js";
 import { ChannelDTO } from "./channel.types.js";
 import { UserProfileDTO } from "./user.types.js";
-import { UserStatus } from "./enums.js";
+import { UserStatus, ChannelType } from "./enums.js";
 
 export interface JoinChannelPayload {
   channelId: string;
@@ -31,12 +31,14 @@ export interface UserMentionedPayload {
   message: MessageDTO;
   channelId: string;
   channelName?: string | null;
+  channelType?: ChannelType;
   senderName: string;
 }
 
 export interface DmReceivedPayload {
   message: MessageDTO;
   channelId: string;
+  channelType?: ChannelType;
   senderName: string;
 }
 
@@ -45,6 +47,7 @@ export interface NotificationToastPayload {
   message: MessageDTO;
   channelId: string;
   channelName?: string | null;
+  channelType?: ChannelType;
   senderName: string;
 }
 

@@ -3,6 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import { type TypedSocket } from "./SocketContext";
 import {
   UserStatus,
+  ChannelType,
   type UserMentionedPayload,
   type DmReceivedPayload,
   type NotificationToastPayload,
@@ -108,6 +109,7 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         message: payload.message,
         channelId: payload.channelId,
         channelName: payload.channelName,
+        channelType: payload.channelType,
         senderName: payload.senderName,
       });
     });
@@ -123,6 +125,7 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         type: "dm",
         message: payload.message,
         channelId: payload.channelId,
+        channelType: payload.channelType || ChannelType.DIRECT_MESSAGE,
         senderName: payload.senderName,
       });
     });
