@@ -206,6 +206,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const isAtBottomRef = useRef<boolean>(true);
   const isInitialLoadRef = useRef<boolean>(true);
+  const [isAtBottom, setIsAtBottom] = useState<boolean>(true);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   // In-chat tag highlight & jump navigation:
@@ -352,6 +353,7 @@ export const MessageList: React.FC<MessageListProps> = ({
     const atBottom = distanceFromBottom < 80;
 
     isAtBottomRef.current = atBottom;
+    setIsAtBottom(atBottom);
     if (atBottom) {
       setUnreadCount(0);
     }
@@ -711,6 +713,20 @@ export const MessageList: React.FC<MessageListProps> = ({
 
         <div ref={bottomRef} className="h-6 shrink-0" />
       </div>
+
+      {/* Floating Quick Scroll-to-Bottom Action Button (when scrolled away with 0 unread) */}
+      {!isAtBottom && unreadCount === 0 && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 absolute bottom-1 left-1/2 z-20 -translate-x-1/2 duration-150">
+          <button
+            type="button"
+            onClick={() => scrollToBottom("smooth")}
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-border-subtle bg-surface-card/90 text-slate-400 shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:border-slate-500 hover:bg-surface-hover hover:text-slate-100 active:scale-95"
+            title={t("message.scrollToLatest")}
+          >
+            <ArrowDown className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Floating Unread Counter Action Banner */}
       {unreadCount > 0 && (

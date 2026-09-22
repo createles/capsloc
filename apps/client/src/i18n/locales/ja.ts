@@ -63,6 +63,7 @@ export const ja: typeof en = {
   "message.newMessages": "{count}件の新着メッセージ",
   "message.today": "今日",
   "message.yesterday": "昨日",
+  "message.scrollToLatest": "最新メッセージへスクロール",
   "typing.isTyping": "が入力中...",
   "typing.areTyping": "が入力中...",
 

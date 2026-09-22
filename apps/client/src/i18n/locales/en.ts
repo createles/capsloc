@@ -61,6 +61,7 @@ export const en = {
   "message.newMessages": "{count} New Messages",
   "message.today": "Today",
   "message.yesterday": "Yesterday",
+  "message.scrollToLatest": "Scroll to latest messages",
   "typing.isTyping": "is typing...",
   "typing.areTyping": "are typing...",
 
