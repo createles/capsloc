@@ -257,6 +257,7 @@ async function main(): Promise<void> {
       category: 'Item',
       sourceJa: '鬼神薬',
       targetEn: 'Demondrug',
+      projectTag: 'MH-WILDS',
       notes: 'Canonical franchise term since Monster Hunter (2004). Never translate as "Demon Potion" or "Devil Elixir". When consumed in-game, triggers the hunter\'s flex/roar vocalization animation. Synergizes with Might Seed crafting recipes.',
     },
     {
@@ -264,6 +265,7 @@ async function main(): Promise<void> {
       category: 'Item',
       sourceJa: 'グリーンハーブ',
       targetEn: 'Green Herb',
+      projectTag: 'MH-WILDS',
       notes: 'Primary recovery medicinal herb in both Resident Evil and Monster Hunter. In RE games, always capitalized as "Green Herb" (combinable with Red and Blue herbs). In Monster Hunter, used for crafting standard Potions (回復薬).',
     },
     {
@@ -271,6 +273,7 @@ async function main(): Promise<void> {
       category: 'Monster',
       sourceJa: 'リオレウス',
       targetEn: 'Rathalos',
+      projectTag: 'MH-WILDS',
       notes: 'King of the Skies (空の王者). Flying Wyvern apex predator of the Ancient Forest. Pronunciation: [RAH-thah-lohss]. In French: "Rathalos", German: "Rathalos", Spanish: "Rathalos", Italian: "Rathalos". Retain uniform Latinization across all EFIGS localization targets.',
     },
     {
@@ -278,6 +281,7 @@ async function main(): Promise<void> {
       category: 'Character',
       sourceJa: 'オトモアイルー',
       targetEn: 'Palico',
+      projectTag: 'MH-WILDS',
       notes: 'Felyne companion warrior. Portmanteau of "Pal" and "Calico". Plural is "Palicoes". In French: "Palico", German: "Palico", Spanish: "Felyne Camarada" (legacy) -> "Palico". Dialogue must feature cat puns (e.g., "paws-itively", "purr-fect", "meow-velous") in English localization.',
     },
     {
@@ -285,6 +289,7 @@ async function main(): Promise<void> {
       category: 'System',
       sourceJa: '導蟲',
       targetEn: 'Scoutflies',
+      projectTag: 'MH-WILDS',
       notes: 'Bioluminescent insects stored in a cage on the hunter\'s hip used for tracking monster footprints, scent marks, and gathering nodes. Always capitalize as a proper system noun. Do not translate as "Guide Bugs" or "Tracker Flies".',
     },
 
@@ -294,6 +299,7 @@ async function main(): Promise<void> {
       category: 'Lore',
       sourceJa: 'T-ウィルス',
       targetEn: 'T-Virus',
+      projectTag: 'RE-ENGINE',
       notes: 'Progenitor-derived Tyrant Virus engineered by Umbrella Pharmaceuticals. Always hyphenated as "T-Virus" (never "TVirus" or "t-virus"). Induces extreme cellular mutation, tissue necrosis, and aggressive predatory instincts.',
     },
     {
@@ -301,6 +307,7 @@ async function main(): Promise<void> {
       category: 'Item',
       sourceJa: '調合ハーブ (緑+赤)',
       targetEn: 'Mixed Herb (G+R)',
+      projectTag: 'RE-ENGINE',
       notes: 'Medical compound synthesized by grinding Green and Red herbs. Fully restores vitality. Standardized notation: use single-letter abbreviations in inventory HUD ("G+R", "G+G+G", "G+R+B").',
     },
     {
@@ -308,6 +315,7 @@ async function main(): Promise<void> {
       category: 'Character',
       sourceJa: 'ネメシス-T型',
       targetEn: 'Nemesis-T Type',
+      projectTag: 'RE-ENGINE',
       notes: 'Bio-Organic Weapon (B.O.W.) implanted with the NE-α parasite. Iconic vocal line: "STARS..." must always be rendered in all-caps with four trailing periods in localization transcripts.',
     },
 
@@ -317,6 +325,7 @@ async function main(): Promise<void> {
       category: 'Character',
       sourceJa: 'ディアナ',
       targetEn: 'Diana',
+      projectTag: 'PRAGMATA',
       notes: 'Artificial companion android possessing psionic-matter manipulation capabilities. Tone in EN script: naive curiosity blended with precise technological cadence. Avoid overly human colloquialisms in initial story acts.',
     },
     {
@@ -324,6 +333,7 @@ async function main(): Promise<void> {
       category: 'Environment',
       sourceJa: '月面シェルター',
       targetEn: 'Lunar Shelter',
+      projectTag: 'PRAGMATA',
       notes: 'Sub-surface biosphere stations erected during the Cataclysm era. Use "Lunar Shelter" rather than "Moon Base" to reflect humanitarian civilian refugee origin.',
     },
     {
@@ -331,6 +341,7 @@ async function main(): Promise<void> {
       category: 'Weapon',
       sourceJa: 'パルスカノン',
       targetEn: 'Pulse Cannon',
+      projectTag: 'PRAGMATA',
       notes: 'Kinetic repulsion firearm utilizing compressed gravimetric charges. System UI display name is strictly "PULSE CANNON"; do not abbreviate as "PL-C" in equipment loadouts.',
     },
 
@@ -340,6 +351,7 @@ async function main(): Promise<void> {
       category: 'Item',
       sourceJa: 'E缶',
       targetEn: 'Energy Tank (E-Tank)',
+      projectTag: 'MEGAMAN',
       notes: 'Iconic cylindrical battery restoring maximum life energy. Formal noun is "Energy Tank", standard UI display abbreviation is "E-Tank". Precedent established in Mega Man 2 (1988).',
     },
     {
@@ -347,6 +359,7 @@ async function main(): Promise<void> {
       category: 'Weapon',
       sourceJa: 'バスターショット',
       targetEn: 'Buster Shot',
+      projectTag: 'MEGAMAN',
       notes: 'Default solar-energy projectile fired from the arm cannon (Rock Buster / Mega Buster). Secondary charged state is designated as "Charge Shot" (チャージショット).',
     },
     {
@@ -354,6 +367,7 @@ async function main(): Promise<void> {
       category: 'Lore',
       sourceJa: 'イレギュラー',
       targetEn: 'Maverick',
+      projectTag: 'MEGAMAN',
       notes: 'Reploids infected with the Sigma Virus or exhibiting hostile logic malfunctions. While Japanese source uses "Irregular" (イレギュラー), English franchise canon since Mega Man X (1993) strictly mandates "Maverick". Never use literal translation "Irregular".',
     },
   ];
@@ -365,6 +379,7 @@ async function main(): Promise<void> {
         category: entry.category,
         sourceJa: entry.sourceJa,
         targetEn: entry.targetEn,
+        projectTag: entry.projectTag,
         notes: entry.notes,
       },
       create: entry,

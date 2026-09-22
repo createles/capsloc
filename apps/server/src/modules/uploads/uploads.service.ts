@@ -1,8 +1,9 @@
 import 'multer';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AttachmentType } from '@capsloc/types';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { UploadAttachmentDto } from './dto/upload-attachment.dto.js';
+import { UpdateAttachmentDto } from './dto/update-attachment.dto.js';
 
 @Injectable()
 export class UploadsService {
@@ -45,6 +46,28 @@ export class UploadsService {
         fileType,
         fileSize: file.size,
         localeTag: dto.localeTag || null,
+      },
+    });
+  }
+
+  /**
+   * Updates metadata (e.g. localeTag QA pill) of a staged attachment.
+   * Disallows mutating attachments that have already been claimed by a sent message.
+   */
+  async updateAttachment(id: string, dto: UpdateAttachmentDto) {
+    const attachment = await this.prisma.attachment.findUnique({ where: { id } });
+    if (!attachment) {
+      throw new NotFoundException(`Attachment with ID ${id} not found`);
+    }
+
+    if (attachment.messageId !== null) {
+      throw new BadRequestException('Cannot edit metadata of an already sent attachment');
+    }
+
+    return this.prisma.attachment.update({
+      where: { id },
+      data: {
+        localeTag: dto.localeTag?.trim() || null,
       },
     });
   }
