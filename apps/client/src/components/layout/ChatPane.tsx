@@ -130,7 +130,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                 {dmRecipient && <LocRoleBadge role={dmRecipient.locRole} />}
                 {dmRecipient?.customStatus && (
                   <>
-                    <div className="hidden h-3.5 w-px bg-white/10 sm:block" />
+                    <div className="hidden h-3 w-px bg-white/10 sm:block" />
                     <span className="hidden truncate text-xs text-gray-400 italic sm:inline">
                       "{dmRecipient.customStatus}"
                     </span>
@@ -145,7 +145,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                 <button
                   type="button"
                   onClick={onOpenChannelDetails}
-                  className="group flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-semibold text-white transition-colors hover:bg-white/[0.06]"
+                  className="group flex h-6 items-center gap-1 rounded-md px-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/[0.06]"
                   title={t("channelDetails.title")}
                 >
                   <Info className="h-3 w-3 text-slate-500 transition-colors group-hover:text-accent-gold" />
@@ -155,7 +155,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                 </button>
 
                 {activeChannel?.localeTag && (
-                  <span className="flex h-7 shrink-0 items-center rounded-md border border-border-subtle bg-surface-card px-2 font-mono text-xs font-medium text-accent-gold">
+                  <span className="flex h-6 shrink-0 items-center rounded-md border border-border-subtle bg-surface-card px-2 font-mono text-[11px] font-medium text-accent-gold">
                     {activeChannel.localeTag}
                   </span>
                 )}
@@ -164,7 +164,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
               {/* 2. Channel Description / Topic */}
               {activeChannel?.description && (
                 <>
-                  <div className="hidden h-3.5 w-px bg-white/10 md:block" />
+                  <div className="hidden h-3 w-px bg-white/10 md:block" />
                   <button
                     type="button"
                     onClick={onOpenChannelDetails}
@@ -179,16 +179,16 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
               {/* 3. Action Badges & Sprint Status */}
               {activeChannel && (
                 <div className="flex shrink-0 items-center gap-1.5">
-                  <div className="hidden h-3.5 w-px bg-white/10 sm:block" />
+                  <div className="hidden h-3 w-px bg-white/10 sm:block" />
 
                   {/* Channel Members List Button */}
                   <button
                     type="button"
                     onClick={onOpenMembers}
-                    className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-surface-hover hover:text-white"
+                    className="flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-md border border-border-subtle bg-surface-card px-2 text-[11px] font-medium text-gray-300 transition-colors hover:bg-surface-hover hover:text-white"
                     title="View Channel Members"
                   >
-                    <Users className="h-3.5 w-3.5 text-accent-gold" />
+                    <Users className="h-3 w-3 text-accent-gold" />
                     <span>{t("chat.members")}</span>
                     {activeChannel.members && activeChannel.members.length > 0 && (
                       <span className="font-mono text-[10px] text-accent-gold">
@@ -202,7 +202,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                     <button
                       type="button"
                       onClick={() => onRestoreBanner(activeChannel.id)}
-                      className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 font-mono text-xs text-amber-300 transition-colors hover:bg-amber-500/20"
+                      className="flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 font-mono text-[11px] text-amber-300 transition-colors hover:bg-amber-500/20"
                       title="Restore pinned sprint status banner"
                     >
                       <Pin className="h-3 w-3 text-accent-gold" />
@@ -215,10 +215,10 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                     <button
                       type="button"
                       onClick={onOpenEditStatus}
-                      className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-border-subtle bg-surface-card px-2.5 font-mono text-xs text-gray-400 transition-colors hover:border-accent-gold/40 hover:bg-surface-hover hover:text-accent-gold"
+                      className="flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-md border border-dashed border-border-subtle bg-surface-card px-2 font-mono text-[11px] text-gray-400 transition-colors hover:border-accent-gold/40 hover:bg-surface-hover hover:text-accent-gold"
                       title="Set sprint status for this channel"
                     >
-                      <Pin className="h-3 w-3" />
+                      <Pin className="h-2.5 w-2.5" />
                       <span>{t("chat.pinSprintStatus")}</span>
                     </button>
                   )}
@@ -228,10 +228,10 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                     <button
                       type="button"
                       onClick={onOpenInvite}
-                      className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-accent-gold/30 bg-brand-navy/80 px-2.5 text-xs font-medium text-accent-gold transition-colors hover:bg-brand-navy"
+                      className="flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-md border border-accent-gold/30 bg-brand-navy/80 px-2 text-[11px] font-medium text-accent-gold transition-colors hover:bg-brand-navy"
                       title="Invite Teammates to Private Channel"
                     >
-                      <UserPlus className="h-3.5 w-3.5" />
+                      <UserPlus className="h-3 w-3" />
                       <span>{t("chat.invite")}</span>
                     </button>
                   )}
@@ -255,14 +255,14 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                   return true;
                 });
               }}
-              className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors ${
+              className={`flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 text-[11px] font-medium transition-colors ${
                 isSearchOpen
                   ? "border border-accent-gold/30 bg-brand-navy text-accent-gold"
                   : "border border-transparent text-gray-400 hover:bg-surface-hover hover:text-white"
               }`}
               title={t("chat.search")}
             >
-              <Search className="h-3.5 w-3.5" />
+              <Search className="h-3 w-3" />
               <span>{t("chat.searchBtn")}</span>
             </button>
           )}
@@ -270,17 +270,17 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
           <button
             type="button"
             onClick={onToggleInspector}
-            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors ${
+            className={`flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-md px-2 text-[11px] font-medium transition-colors ${
               isInspectorOpen
                 ? "border border-accent-gold/30 bg-brand-navy text-accent-gold"
                 : "border border-transparent text-gray-400 hover:bg-surface-hover hover:text-white"
             }`}
             title={isInspectorOpen ? "Collapse String Inspector" : "Open String Inspector"}
           >
-            <BookOpen className="h-3.5 w-3.5" />
+            <BookOpen className="h-3 w-3" />
             <span>{t("chat.inspector")}</span>
             {selectedStringKey && (
-              <span className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[10px] text-accent-gold/90">
+              <span className="py-0.2 rounded bg-black/30 px-1 font-mono text-[9px] text-accent-gold/90">
                 #{selectedStringKey}
               </span>
             )}
