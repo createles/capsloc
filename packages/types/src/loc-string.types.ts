@@ -74,3 +74,9 @@ export interface GlossarySearchQueryDTO {
   q: string;
   category?: "Character" | "Weapon" | "Item" | "Location" | "Monster";
 }
+
+// Query parameters for contextual project glossary suggestions
+export interface GlossarySuggestionsQueryDTO {
+  projectTag?: string;
+  limit?: number;
+}

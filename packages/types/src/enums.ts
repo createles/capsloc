@@ -39,3 +39,19 @@ export enum AttachmentType {
   DOCUMENT = "DOCUMENT",
   LOG_FILE = "LOG_FILE",
 }
+
+export const ATTACHMENT_TAG_PRESETS = [
+  // LQA Defect Categories
+  "UI-OVERFLOW",
+  "FONT-ISSUE",
+  "LINE-BREAK",
+  "AUDIO-DESYNC",
+  "UNTRANSLATED",
+  // Translation & Reference
+  "JA-REF",
+  "EN-BASE",
+  "DEV-NOTE",
+  "GLOSSARY-REF",
+] as const;
+
+export type AttachmentTagPreset = (typeof ATTACHMENT_TAG_PRESETS)[number];
