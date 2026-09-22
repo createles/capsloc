@@ -380,7 +380,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       let finalContent = trimmed;
       if (replyingTo) {
         const singleLineSnippet = replyingTo.content.split("\n")[0]?.slice(0, 150) || "";
-        finalContent = `> @${replyingTo.senderName}: ${singleLineSnippet}\n${trimmed}`;
+        finalContent = `> ${replyingTo.senderName}: ${singleLineSnippet}\n${trimmed}`;
       }
 
       sendMessage({
@@ -542,10 +542,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
         {/* Quote Reply Context Banner */}
         {replyingTo && (
-          <div className="animate-in fade-in slide-in-from-bottom-1 mb-2 flex items-center justify-between rounded-lg border border-accent-gold/30 bg-brand-navy/60 px-2.5 py-1.5 font-sans text-xs text-slate-200">
+          <div className="animate-in fade-in slide-in-from-bottom-1 mb-2 flex items-center justify-between rounded-lg border border-border-subtle bg-surface-card px-2.5 py-1.5 font-sans text-xs text-slate-200">
             <div className="flex min-w-0 items-center space-x-2">
-              <Reply className="h-3.5 w-3.5 shrink-0 text-accent-gold" />
-              <span className="shrink-0 font-semibold text-accent-gold">
+              <Reply className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span className="shrink-0 font-semibold text-slate-200">
                 {t("composer.replyingTo", { name: replyingTo.senderName })}:
               </span>
               <span className="truncate text-xs text-slate-400 italic">

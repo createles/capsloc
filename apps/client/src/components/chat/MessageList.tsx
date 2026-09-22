@@ -72,6 +72,23 @@ export const SmartMessageContent: React.FC<{
     bodyLines.shift();
   }
 
+  // Extract author if formatted as "@Name: snippet" or "Name: snippet"
+  let quoteAuthor: string | null = null;
+  let remainingQuoteText = quoteLines.join("\n");
+
+  if (quoteLines.length > 0) {
+    const firstLine = quoteLines[0] || "";
+    const authorMatch = firstLine.match(/^@?([^:\n]+):\s*(.*)$/);
+    if (authorMatch) {
+      quoteAuthor = authorMatch[1]?.trim() ?? null;
+      const restOfFirstLine = authorMatch[2] ?? "";
+      remainingQuoteText =
+        quoteLines.length > 1
+          ? [restOfFirstLine, ...quoteLines.slice(1)].join("\n")
+          : restOfFirstLine;
+    }
+  }
+
   const renderTextSegment = (text: string) => {
     const regex = /(#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+|@[a-zA-Z0-9_.-]+)/gi;
     const parts = text.split(regex);
@@ -115,8 +132,13 @@ export const SmartMessageContent: React.FC<{
   return (
     <div>
       {quoteLines.length > 0 && (
-        <div className="mb-1 rounded-r border-l-2 border-accent-gold/60 bg-accent-gold/[0.05] px-2.5 py-1 font-sans text-xs text-slate-300 italic">
-          <div className="line-clamp-3 select-text">{renderTextSegment(quoteLines.join("\n"))}</div>
+        <div className="mb-1 rounded-r border-l-2 border-slate-500 bg-surface-card/90 px-2.5 py-1 font-sans text-xs text-slate-300">
+          <div className="line-clamp-3 select-text">
+            {quoteAuthor && (
+              <span className="mr-1.5 font-bold text-slate-100 not-italic">{quoteAuthor}:</span>
+            )}
+            <span className="text-slate-300 italic">{renderTextSegment(remainingQuoteText)}</span>
+          </div>
         </div>
       )}
       <div className="font-sans leading-relaxed whitespace-pre-wrap text-gray-200">
