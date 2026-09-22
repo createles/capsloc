@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Terminal, BookOpen, UserPlus, Users, Pin, Pencil, X, Info } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Terminal, BookOpen, UserPlus, Users, Pin, Pencil, X, Info, Search } from "lucide-react";
 import {
   type ChannelDTO,
   ChannelType,
@@ -63,12 +63,28 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
     senderName: string;
     content: string;
   } | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [prevChannelId, setPrevChannelId] = useState(activeChannel?.id);
   if (activeChannel?.id !== prevChannelId) {
     setPrevChannelId(activeChannel?.id);
     setReplyingTo(null);
+    setIsSearchOpen(false);
+    setSearchQuery("");
   }
+
+  // Global Ctrl+F / Cmd+F shortcut to open in-chat search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Derived Direct Message & Admin Resolution
   const isDm = activeChannel?.type === ChannelType.DIRECT_MESSAGE;
@@ -204,8 +220,32 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
           )}
         </div>
 
-        {/* Right: Inspector Toggle Action */}
-        <div className="ml-3 flex shrink-0 items-center space-x-2">
+        {/* Right: Search & Inspector Toggle Actions */}
+        <div className="ml-3 flex shrink-0 items-center space-x-1.5">
+          {activeChannel && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSearchOpen((prev) => {
+                  if (prev) {
+                    setSearchQuery("");
+                    return false;
+                  }
+                  return true;
+                });
+              }}
+              className={`flex shrink-0 cursor-pointer items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                isSearchOpen
+                  ? "border border-accent-gold/30 bg-brand-navy text-accent-gold"
+                  : "border border-transparent text-gray-400 hover:bg-surface-hover hover:text-white"
+              }`}
+              title={t("chat.search")}
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span>{t("chat.searchBtn")}</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onToggleInspector}
@@ -288,6 +328,13 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
             highlightedTagKey={highlightedTagKey}
             onDismissTagHighlight={onDismissTagHighlight}
             onReportMatchesCount={onReportMatchesCount}
+            isSearchOpen={isSearchOpen}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            onCloseSearch={() => {
+              setIsSearchOpen(false);
+              setSearchQuery("");
+            }}
           />
           <TypingIndicator channelId={activeChannel.id} />
           <MessageInput

@@ -45,6 +45,7 @@ export const ja: typeof en = {
   "chat.edit": "編集",
   "chat.selectChannelPrompt": "チャンネルを選択してチャットを開始してください",
   "chat.search": "チャンネル内のメッセージを検索",
+  "chat.searchBtn": "検索",
   "chat.searchPlaceholder": "メッセージを検索...",
   "chat.searchMatches": "{total}件中 {current}件",
   "chat.noSearchMatches": "一致するメッセージはありません",

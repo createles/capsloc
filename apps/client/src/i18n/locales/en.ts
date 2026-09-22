@@ -43,6 +43,7 @@ export const en = {
   "chat.edit": "Edit",
   "chat.selectChannelPrompt": "Select a channel to start messaging",
   "chat.search": "Search messages in channel",
+  "chat.searchBtn": "Search",
   "chat.searchPlaceholder": "Search channel messages...",
   "chat.searchMatches": "{current} of {total}",
   "chat.noSearchMatches": "No matches found",

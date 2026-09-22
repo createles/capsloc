@@ -13,6 +13,7 @@ import {
   FileCode,
   MessageSquare,
   Reply,
+  Search,
 } from "lucide-react";
 import {
   UserStatus,
@@ -40,6 +41,10 @@ export interface MessageListProps {
   highlightedTagKey?: string | null;
   onDismissTagHighlight?: () => void;
   onReportMatchesCount?: (count: number) => void;
+  isSearchOpen?: boolean;
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
+  onCloseSearch?: () => void;
 }
 
 /**
@@ -254,6 +259,10 @@ export const MessageList: React.FC<MessageListProps> = ({
   highlightedTagKey,
   onDismissTagHighlight,
   onReportMatchesCount,
+  isSearchOpen = false,
+  searchQuery = "",
+  onSearchQueryChange,
+  onCloseSearch,
 }) => {
   const { user } = useAuth();
   const { socket, isConnected, onlineUsers, joinChannel } = useSocket();
@@ -273,17 +282,31 @@ export const MessageList: React.FC<MessageListProps> = ({
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const isAtBottomRef = useRef<boolean>(true);
   const isInitialLoadRef = useRef<boolean>(true);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(true);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
-  // In-chat tag highlight & jump navigation:
+  // In-chat tag highlight & search jump navigation:
   const matchingMessageIds = useMemo(() => {
-    if (!highlightedTagKey) return [];
-    const tag = highlightedTagKey.toLowerCase().replace(/^#/, "");
-    return messages.filter((m) => m.content.toLowerCase().includes(tag)).map((m) => m.id);
-  }, [messages, highlightedTagKey]);
+    if (isSearchOpen && searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      return messages
+        .filter(
+          (m) =>
+            m.content.toLowerCase().includes(q) ||
+            m.sender.displayName.toLowerCase().includes(q) ||
+            m.sender.username.toLowerCase().includes(q),
+        )
+        .map((m) => m.id);
+    }
+    if (highlightedTagKey) {
+      const tag = highlightedTagKey.toLowerCase().replace(/^#/, "");
+      return messages.filter((m) => m.content.toLowerCase().includes(tag)).map((m) => m.id);
+    }
+    return [];
+  }, [messages, isSearchOpen, searchQuery, highlightedTagKey]);
 
   const inspectedMatchesCount = useMemo(() => {
     if (!inspectedStringKey) return 0;
@@ -293,16 +316,49 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   const [currentMatchIndex, setCurrentMatchIndex] = useState<number>(0);
 
-  // Adjust state during render when highlighted tag changes:
+  // Adjust state during render when highlighted tag or search query changes:
   const [prevTagKey, setPrevTagKey] = useState(highlightedTagKey);
+  const [prevSearchQuery, setPrevSearchQuery] = useState(searchQuery);
   if (highlightedTagKey !== prevTagKey) {
     setPrevTagKey(highlightedTagKey);
     setCurrentMatchIndex(0);
   }
+  if (searchQuery !== prevSearchQuery) {
+    setPrevSearchQuery(searchQuery);
+    setCurrentMatchIndex(0);
+  }
 
-  // Reset current match index when tag changes
+  const safeMatchIndex =
+    matchingMessageIds.length > 0
+      ? Math.min(currentMatchIndex, matchingMessageIds.length - 1)
+      : 0;
+
+  // Auto-focus search input when search bar opens
   useEffect(() => {
-    if (highlightedTagKey && matchingMessageIds.length > 0 && matchingMessageIds[0]) {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }
+  }, [isSearchOpen]);
+
+  // Global Escape key dismisses active search
+  useEffect(() => {
+    if (!isSearchOpen) return;
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCloseSearch?.();
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [isSearchOpen, onCloseSearch]);
+
+  // Auto-scroll to first match when tag or search results update
+  useEffect(() => {
+    const isTagActive = !!highlightedTagKey;
+    const isSearchActive = isSearchOpen && searchQuery.trim().length > 0;
+
+    if ((isTagActive || isSearchActive) && matchingMessageIds.length > 0 && matchingMessageIds[0]) {
       const firstId = matchingMessageIds[0];
       const timer = setTimeout(() => {
         const el = messageRefs.current[firstId];
@@ -310,7 +366,7 @@ export const MessageList: React.FC<MessageListProps> = ({
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [highlightedTagKey, matchingMessageIds]);
+  }, [highlightedTagKey, isSearchOpen, searchQuery, matchingMessageIds]);
 
   useEffect(() => {
     onReportMatchesCount?.(inspectedMatchesCount);
@@ -327,16 +383,30 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   const handleNextMatch = () => {
     if (matchingMessageIds.length === 0) return;
-    const nextIdx = (currentMatchIndex + 1) % matchingMessageIds.length;
+    const nextIdx = (safeMatchIndex + 1) % matchingMessageIds.length;
     setCurrentMatchIndex(nextIdx);
     scrollToMatch(nextIdx);
   };
 
   const handlePrevMatch = () => {
     if (matchingMessageIds.length === 0) return;
-    const prevIdx = (currentMatchIndex - 1 + matchingMessageIds.length) % matchingMessageIds.length;
+    const prevIdx = (safeMatchIndex - 1 + matchingMessageIds.length) % matchingMessageIds.length;
     setCurrentMatchIndex(prevIdx);
     scrollToMatch(prevIdx);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (e.shiftKey) {
+        handlePrevMatch();
+      } else {
+        handleNextMatch();
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      onCloseSearch?.();
+    }
   };
 
   useEffect(() => {
@@ -526,15 +596,71 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
+      {/* Floating In-Chat Message Search Jumper Controller */}
+      {isSearchOpen && (
+        <div className="animate-in fade-in slide-in-from-top-2 absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center space-x-2 rounded-lg border border-border-subtle bg-surface-panel/95 px-3 py-1.5 font-sans text-xs shadow-2xl backdrop-blur-md transition-colors focus-within:border-accent-gold/50">
+          <Search className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchQueryChange?.(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+            placeholder={t("chat.searchPlaceholder")}
+            className="w-44 bg-transparent text-xs text-slate-100 placeholder-slate-500 outline-hidden sm:w-60"
+          />
+          {searchQuery.trim() !== "" && (
+            <span className="shrink-0 font-mono text-[11px] text-slate-400">
+              {matchingMessageIds.length > 0
+                ? t("chat.searchMatches", {
+                    current: safeMatchIndex + 1,
+                    total: matchingMessageIds.length,
+                  })
+                : t("chat.noSearchMatches")}
+            </span>
+          )}
+          <div className="flex items-center space-x-0.5 border-l border-border-subtle pl-1.5">
+            <button
+              type="button"
+              onClick={handlePrevMatch}
+              disabled={matchingMessageIds.length === 0}
+              className="cursor-pointer rounded p-1 text-slate-300 transition-colors hover:bg-surface-hover hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              title="Previous match (Shift+Enter / Up)"
+            >
+              <ChevronUp className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextMatch}
+              disabled={matchingMessageIds.length === 0}
+              className="cursor-pointer rounded p-1 text-slate-300 transition-colors hover:bg-surface-hover hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              title="Next match (Enter / Down)"
+            >
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          {onCloseSearch && (
+            <button
+              type="button"
+              onClick={onCloseSearch}
+              className="cursor-pointer rounded border-l border-border-subtle p-1 pl-2 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
+              title={t("chat.closeSearch")}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Floating Jump Controller for In-Chat Tag Mentions */}
-      {highlightedTagKey && matchingMessageIds.length > 0 && (
+      {!isSearchOpen && highlightedTagKey && matchingMessageIds.length > 0 && (
         <div className="animate-in fade-in slide-in-from-top-2 absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center space-x-2.5 rounded-full border border-accent-gold/40 bg-surface-panel/95 px-3.5 py-1.5 font-sans text-xs shadow-2xl backdrop-blur-md select-none">
           <span className="font-mono text-[11px] font-bold text-accent-gold">
             #{highlightedTagKey.replace(/^#/, "")}
           </span>
           <span className="font-mono text-[11px] text-gray-300">
             {t("message.mentionsCount", {
-              current: currentMatchIndex + 1,
+              current: safeMatchIndex + 1,
               total: matchingMessageIds.length,
             })}
           </span>
@@ -633,7 +759,7 @@ export const MessageList: React.FC<MessageListProps> = ({
               currentDate.getTime() - (prevDate?.getTime() || 0) < 300000;
 
             const isMatch = matchingMessageIds.includes(message.id);
-            const isCurrentMatch = isMatch && matchingMessageIds[currentMatchIndex] === message.id;
+            const isCurrentMatch = isMatch && matchingMessageIds[safeMatchIndex] === message.id;
 
             const initials = message.sender.displayName.substring(0, 2).toUpperCase();
 
