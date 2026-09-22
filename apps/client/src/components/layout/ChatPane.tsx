@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Terminal, BookOpen, UserPlus, Users, Pin, Pencil, X, Info } from "lucide-react";
 import {
   type ChannelDTO,
@@ -58,6 +58,17 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
   onRestoreBanner,
 }) => {
   const { t } = useTranslation();
+  const [replyingTo, setReplyingTo] = useState<{
+    id: string;
+    senderName: string;
+    content: string;
+  } | null>(null);
+
+  const [prevChannelId, setPrevChannelId] = useState(activeChannel?.id);
+  if (activeChannel?.id !== prevChannelId) {
+    setPrevChannelId(activeChannel?.id);
+    setReplyingTo(null);
+  }
 
   // Derived Direct Message & Admin Resolution
   const isDm = activeChannel?.type === ChannelType.DIRECT_MESSAGE;
@@ -266,6 +277,13 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
             isDm={isDm}
             onSelectStringKey={onSelectStringKey}
             onOpenDm={onOpenDm}
+            onReply={(msg) =>
+              setReplyingTo({
+                id: msg.id,
+                senderName: msg.sender.displayName,
+                content: msg.content,
+              })
+            }
             inspectedStringKey={selectedStringKey}
             highlightedTagKey={highlightedTagKey}
             onDismissTagHighlight={onDismissTagHighlight}
@@ -277,6 +295,8 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
             channelName={isDm ? dmRecipientName : activeChannel.name}
             channelLocaleTag={activeChannel.localeTag}
             isDm={isDm}
+            replyingTo={replyingTo}
+            onCancelReply={() => setReplyingTo(null)}
           />
         </div>
       ) : (

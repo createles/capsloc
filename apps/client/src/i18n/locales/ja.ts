@@ -44,16 +44,22 @@ export const ja: typeof en = {
   "chat.sprintStatusLabel": "スプリントステータス:",
   "chat.edit": "編集",
   "chat.selectChannelPrompt": "チャンネルを選択してチャットを開始してください",
+  "chat.search": "チャンネル内のメッセージを検索",
+  "chat.searchPlaceholder": "メッセージを検索...",
+  "chat.searchMatches": "{total}件中 {current}件",
+  "chat.noSearchMatches": "一致するメッセージはありません",
+  "chat.closeSearch": "検索を閉じる",
 
   // 4. Message Feed & Actions
   "message.noMessages": "まだメッセージはありません",
   "message.emptyGuide":
-    "#LOC-XXXX または $STR_XXXX タグを含むメッセージは自動的にリンクされ、インスペクターで検証できます。",
+    "メッセージ内の #LOC-XXXX または $STR_XXXX タグは、クリックすると自動的にインスペクターと連携します。",
   "message.welcomeChannel": "#{channel} へようこそ",
   "message.welcomeDm": "{name} とのダイレクトメッセージ",
   "message.emptyGuideEnhanced":
     "ここが #{channel} の始まりです。#LOC-XXXX または $STR_XXXX を含むメッセージは自動的にハイライトされます。",
   "message.emptyDmGuide": "ここが {name} とのダイレクトメッセージ履歴の始まりです。",
+  "message.reply": "引用返信",
   "message.copyText": "メッセージ本文をコピー",
   "message.copied": "コピー完了",
   "message.inspectTag": "検証:",
@@ -69,9 +75,11 @@ export const ja: typeof en = {
 
   // 5. Message Composer
   "composer.placeholderChannel":
-    "#{channel} へのメッセージ... (Shift+Enterで改行、@名前、#LOC-XXXX、または $STR_XXXX を入力)",
+    "#{channel} にメッセージを送信... (Shift+Enterで改行、@名前、#LOC-XXXX、または $STR_XXXX)",
   "composer.placeholderDm":
-    "@{recipient} へのメッセージ... (Shift+Enterで改行、@名前、#LOC-XXXX、または $STR_XXXX を入力)",
+    "@{recipient} にダイレクトメッセージを送信... (Shift+Enterで改行、#LOC-XXXX、または $STR_XXXX)",
+  "composer.replyingTo": "{name} に返信中",
+  "composer.cancelReply": "返信をキャンセル",
   "composer.dropToAttach": "ドロップしてファイルを添付",
   "composer.mentionHeader": "メンバーにメンション",
   "composer.attachTooltip": "スクリーンショットやファイルを添付",

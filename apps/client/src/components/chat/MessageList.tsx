@@ -12,6 +12,7 @@ import {
   Check,
   FileCode,
   MessageSquare,
+  Reply,
 } from "lucide-react";
 import {
   UserStatus,
@@ -34,6 +35,7 @@ export interface MessageListProps {
   isDm?: boolean;
   onSelectStringKey: (stringKey: string) => void;
   onOpenDm?: (targetUserId: string) => void;
+  onReply?: (message: MessageDTO) => void;
   inspectedStringKey?: string | null;
   highlightedTagKey?: string | null;
   onDismissTagHighlight?: () => void;
@@ -42,53 +44,85 @@ export interface MessageListProps {
 
 /**
  * Smart Highlighter: Parses message text and wraps #LOC-XXXX, $STR_XXXX,
- * and @mentions in interactive, clickable badges.
+ * and @mentions in interactive, clickable badges. Supports markdown blockquotes (> ).
  */
 export const SmartMessageContent: React.FC<{
   content: string;
   currentUsername?: string;
   onSelectStringKey: (stringKey: string) => void;
-}> = ({ content, currentUsername: _currentUsername, onSelectStringKey }) => {
-  const regex = /(#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+|@[a-zA-Z0-9_.-]+)/gi;
-  const parts = content.split(regex);
+}> = ({ content, onSelectStringKey }) => {
+  const lines = content.split("\n");
+  const quoteLines: string[] = [];
+  const bodyLines: string[] = [];
+  let isParsingQuote = true;
+
+  for (const line of lines) {
+    if (isParsingQuote && line.startsWith("> ")) {
+      quoteLines.push(line.slice(2));
+    } else {
+      if (line.trim() !== "" || quoteLines.length === 0) {
+        isParsingQuote = false;
+      }
+      bodyLines.push(line);
+    }
+  }
+
+  // Strip leading empty lines between quote and response body
+  while (bodyLines.length > 0 && bodyLines[0]?.trim() === "") {
+    bodyLines.shift();
+  }
+
+  const renderTextSegment = (text: string) => {
+    const regex = /(#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+|@[a-zA-Z0-9_.-]+)/gi;
+    const parts = text.split(regex);
+
+    return parts.map((part, index) => {
+      if (!part) return null;
+
+      // LOC String Tag Match - High-visibility String Literal Syntax Tag
+      if (part.match(/^#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+$/i) || part.match(/^\$STR_[A-Z0-9_]+$/i)) {
+        const cleanKey = part.replace(/^#/, "");
+        const displayLabel = part.startsWith("#") || part.startsWith("$") ? part : `#${part}`;
+        return (
+          <button
+            key={index}
+            type="button"
+            onClick={() => onSelectStringKey(cleanKey)}
+            className="mx-0.5 inline-flex cursor-pointer items-center rounded border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 align-baseline font-mono text-[11px] font-bold tracking-tight text-emerald-400 shadow-xs transition-colors hover:border-emerald-300 hover:bg-emerald-900/70 hover:text-emerald-200"
+          >
+            {displayLabel}
+          </button>
+        );
+      }
+
+      // @User Mention Tag Match - Bold with underline (no pill)
+      if (part.startsWith("@")) {
+        const cleanUsername = part.slice(1);
+        return (
+          <span
+            key={index}
+            className="mx-0.5 font-bold text-accent-gold decoration-accent-gold/70 transition-colors hover:decoration-accent-gold"
+          >
+            @{cleanUsername}
+          </span>
+        );
+      }
+
+      return <span key={index}>{part}</span>;
+    });
+  };
 
   return (
-    <span className="font-sans leading-relaxed whitespace-pre-wrap text-gray-200">
-      {parts.map((part, index) => {
-        if (!part) return null;
-
-        // LOC String Tag Match - High-visibility String Literal Syntax Tag
-        if (part.match(/^#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+$/i) || part.match(/^\$STR_[A-Z0-9_]+$/i)) {
-          const cleanKey = part.replace(/^#/, "");
-          const displayLabel = part.startsWith("#") || part.startsWith("$") ? part : `#${part}`;
-          return (
-            <button
-              key={index}
-              type="button"
-              onClick={() => onSelectStringKey(cleanKey)}
-              className="mx-0.5 inline-flex cursor-pointer items-center rounded border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 align-baseline font-mono text-[11px] font-bold tracking-tight text-emerald-400 shadow-xs transition-colors hover:border-emerald-300 hover:bg-emerald-900/70 hover:text-emerald-200"
-            >
-              {displayLabel}
-            </button>
-          );
-        }
-
-        // @User Mention Tag Match - Bold with underline (no pill)
-        if (part.startsWith("@")) {
-          const cleanUsername = part.slice(1);
-          return (
-            <span
-              key={index}
-              className={`mx-0.5 font-bold text-accent-gold decoration-accent-gold/70 transition-colors hover:decoration-accent-gold`}
-            >
-              @{cleanUsername}
-            </span>
-          );
-        }
-
-        return <span key={index}>{part}</span>;
-      })}
-    </span>
+    <div>
+      {quoteLines.length > 0 && (
+        <div className="mb-1 rounded-r border-l-2 border-accent-gold/60 bg-accent-gold/[0.05] px-2.5 py-1 font-sans text-xs text-slate-300 italic">
+          <div className="line-clamp-3 select-text">{renderTextSegment(quoteLines.join("\n"))}</div>
+        </div>
+      )}
+      <div className="font-sans leading-relaxed whitespace-pre-wrap text-gray-200">
+        {renderTextSegment(bodyLines.join("\n"))}
+      </div>
+    </div>
   );
 };
 
@@ -96,17 +130,18 @@ export const SmartMessageContent: React.FC<{
  * Floating hover toolbar for individual messages
  */
 const MessageHoverBar: React.FC<{
-  content: string;
+  message: MessageDTO;
+  onReply?: (message: MessageDTO) => void;
   onSelectStringKey?: (key: string) => void;
-}> = ({ content, onSelectStringKey }) => {
+}> = ({ message, onReply, onSelectStringKey }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
-  const tagMatch = content.match(/(#LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+)/i);
+  const tagMatch = message.content.match(/(#LOC-[A-Z0-9_-]+|\$STR_[A-Z0-9_]+)/i);
   const matchedKey = tagMatch ? tagMatch[0].replace(/^[#$]/, "") : null;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(message.content);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (e) {
@@ -116,6 +151,17 @@ const MessageHoverBar: React.FC<{
 
   return (
     <div className="absolute -top-3.5 right-3 z-10 hidden items-center space-x-0.5 rounded-lg border border-border-subtle bg-surface-card/95 px-1 py-0.5 shadow-md backdrop-blur-md group-hover:flex">
+      {onReply && (
+        <button
+          type="button"
+          onClick={() => onReply(message)}
+          className="cursor-pointer rounded p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-accent-gold"
+          title={t("message.reply")}
+        >
+          <Reply className="h-3.5 w-3.5" />
+        </button>
+      )}
+
       <button
         type="button"
         onClick={handleCopy}
@@ -181,6 +227,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   isDm = false,
   onSelectStringKey,
   onOpenDm,
+  onReply,
   inspectedStringKey,
   highlightedTagKey,
   onDismissTagHighlight,
@@ -600,7 +647,8 @@ export const MessageList: React.FC<MessageListProps> = ({
                 >
                   {/* Floating Action Bar on Hover */}
                   <MessageHoverBar
-                    content={message.content}
+                    message={message}
+                    onReply={onReply}
                     onSelectStringKey={onSelectStringKey}
                   />
 

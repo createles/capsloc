@@ -42,6 +42,11 @@ export const en = {
   "chat.sprintStatusLabel": "Sprint Status:",
   "chat.edit": "Edit",
   "chat.selectChannelPrompt": "Select a channel to start messaging",
+  "chat.search": "Search messages in channel",
+  "chat.searchPlaceholder": "Search channel messages...",
+  "chat.searchMatches": "{current} of {total}",
+  "chat.noSearchMatches": "No matches found",
+  "chat.closeSearch": "Close search",
 
   // 4. Message Feed & Actions
   "message.noMessages": "No messages yet",
@@ -52,6 +57,7 @@ export const en = {
   "message.emptyGuideEnhanced":
     "This is the start of #{channel}. Messages with #LOC-XXXX or $STR_XXXX tags will be automatically highlighted.",
   "message.emptyDmGuide": "This is the start of your direct message history with {name}.",
+  "message.reply": "Quote reply",
   "message.copyText": "Copy message text",
   "message.copied": "Copied",
   "message.inspectTag": "Inspect",
@@ -70,6 +76,8 @@ export const en = {
     "Message #{channel}... (Shift+Enter for newline, type @name, #LOC-XXXX, or $STR_XXXX)",
   "composer.placeholderDm":
     "Message @{recipient}... (Shift+Enter for newline, type @name, #LOC-XXXX, or $STR_XXXX)",
+  "composer.replyingTo": "Replying to {name}",
+  "composer.cancelReply": "Cancel reply",
   "composer.dropToAttach": "Drop file to attach",
   "composer.mentionHeader": "Mention Colleague",
   "composer.attachTooltip": "Attach screenshot or document",

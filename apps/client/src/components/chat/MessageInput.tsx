@@ -8,6 +8,7 @@ import {
   UploadCloud,
   AtSign,
   ChevronDown,
+  Reply,
 } from "lucide-react";
 import {
   type AttachmentDTO,
@@ -22,11 +23,19 @@ import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
 import { AttachmentTagPicker } from "./AttachmentTagPicker";
 
+export interface QuotedMessageInfo {
+  id: string;
+  senderName: string;
+  content: string;
+}
+
 export interface MessageInputProps {
   channelId: string;
   channelName?: string | null;
   channelLocaleTag?: string | null;
   isDm?: boolean;
+  replyingTo?: QuotedMessageInfo | null;
+  onCancelReply?: () => void;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
@@ -34,6 +43,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   channelName,
   channelLocaleTag,
   isDm,
+  replyingTo,
+  onCancelReply,
 }) => {
   const { user } = useAuth();
   const { socket, sendMessage, startTyping, stopTyping } = useSocket();
@@ -115,6 +126,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     }
   }, [content]);
 
+  useEffect(() => {
+    if (replyingTo && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [replyingTo]);
+
   const filteredMentionUsers = directoryUsers
     .filter((u) => u.id !== user?.id)
     .filter((u) => {
@@ -145,28 +162,33 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    const cursor = e.target.selectionStart;
-    setContent(text);
+    const val = e.target.value;
+    setContent(val);
 
-    startTyping(channelId);
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    typingTimeoutRef.current = setTimeout(() => {
+    if (val.trim()) {
+      startTyping(channelId);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        stopTyping(channelId);
+      }, 3000);
+    } else {
       stopTyping(channelId);
-    }, 1500);
+    }
 
-    const textBeforeCursor = text.slice(0, cursor);
-    const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_.-]*)$/);
+    const cursor = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursor);
+    const lastAt = textBeforeCursor.lastIndexOf("@");
 
-    if (mentionMatch) {
-      const matchIndex = textBeforeCursor.lastIndexOf("@");
-      setMentionCursorIndex(matchIndex);
-      setMentionQuery(mentionMatch[1] || "");
-      setSelectedMentionIndex(0);
-      setShowMentionPicker(true);
+    if (lastAt !== -1 && (lastAt === 0 || /\s/.test(textBeforeCursor[lastAt - 1] || ""))) {
+      const query = textBeforeCursor.slice(lastAt + 1);
+      if (!/\s/.test(query)) {
+        setMentionQuery(query);
+        setMentionCursorIndex(lastAt);
+        setSelectedMentionIndex(0);
+        setShowMentionPicker(true);
+      } else {
+        setShowMentionPicker(false);
+      }
     } else {
       setShowMentionPicker(false);
     }
@@ -199,6 +221,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         setShowMentionPicker(false);
         return;
       }
+    }
+
+    if (e.key === "Escape" && replyingTo && onCancelReply) {
+      e.preventDefault();
+      onCancelReply();
+      return;
     }
 
     if (e.key === "Enter" && !e.shiftKey) {
@@ -349,14 +377,21 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     stopTyping(channelId);
 
     try {
+      let finalContent = trimmed;
+      if (replyingTo) {
+        const singleLineSnippet = replyingTo.content.split("\n")[0]?.slice(0, 150) || "";
+        finalContent = `> @${replyingTo.senderName}: ${singleLineSnippet}\n${trimmed}`;
+      }
+
       sendMessage({
         channelId,
-        content: trimmed,
+        content: finalContent,
         attachmentIds: stagedAttachments.map((a) => a.id),
       });
 
       setContent("");
       setStagedAttachments([]);
+      onCancelReply?.();
       textareaRef.current?.focus();
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -502,6 +537,29 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* Quote Reply Context Banner */}
+        {replyingTo && (
+          <div className="animate-in fade-in slide-in-from-bottom-1 mb-2 flex items-center justify-between rounded-lg border border-accent-gold/30 bg-brand-navy/60 px-2.5 py-1.5 font-sans text-xs text-slate-200">
+            <div className="flex min-w-0 items-center space-x-2">
+              <Reply className="h-3.5 w-3.5 shrink-0 text-accent-gold" />
+              <span className="shrink-0 font-semibold text-accent-gold">
+                {t("composer.replyingTo", { name: replyingTo.senderName })}:
+              </span>
+              <span className="truncate text-xs text-slate-400 italic">
+                "{replyingTo.content.split("\n")[0]}"
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onCancelReply}
+              className="ml-2 cursor-pointer rounded p-0.5 text-slate-400 transition-colors hover:text-white"
+              title={t("composer.cancelReply")}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
 
