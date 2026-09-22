@@ -110,7 +110,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
       {/* 1. Channel Header Bar */}
       <div className="z-10 flex shrink-0 items-center justify-between border-b border-border-subtle bg-surface-panel/85 px-4 py-2.5 font-sans text-xs text-slate-400 backdrop-blur-md">
         {/* Left: Channel Info or DM Recipient Info */}
-        <div className="flex min-w-0 items-center space-x-2.5 truncate">
+        <div className="flex min-w-0 flex-1 items-center gap-3 truncate">
           {isDm ? (
             <>
               {/* Recipient Avatar Initials + Status Dot */}
@@ -125,103 +125,124 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                 />
               </div>
 
-              <div className="flex min-w-0 items-center space-x-2">
+              <div className="flex min-w-0 items-center gap-2">
                 <span className="truncate text-sm font-semibold text-white">{dmRecipientName}</span>
                 {dmRecipient && <LocRoleBadge role={dmRecipient.locRole} />}
                 {dmRecipient?.customStatus && (
-                  <span className="hidden truncate text-xs text-gray-400 italic sm:inline">
-                    "{dmRecipient.customStatus}"
-                  </span>
+                  <>
+                    <div className="hidden h-3.5 w-px bg-white/10 sm:block" />
+                    <span className="hidden truncate text-xs text-gray-400 italic sm:inline">
+                      "{dmRecipient.customStatus}"
+                    </span>
+                  </>
                 )}
               </div>
             </>
           ) : (
             <>
-              <button
-                type="button"
-                onClick={onOpenChannelDetails}
-                className="group flex min-w-0 cursor-pointer items-center space-x-1.5 rounded-lg px-1.5 py-0.5 transition-colors hover:bg-white/[0.06]"
-                title={t("channelDetails.title")}
-              >
-                <span className="truncate text-sm font-semibold text-white transition-colors group-hover:text-accent-gold">
-                  #{activeChannel?.name || "select-channel"}
-                </span>
-                <Info className="h-3 w-3 text-slate-500 transition-colors group-hover:text-accent-gold" />
-              </button>
-
-              {activeChannel?.localeTag && (
-                <span className="shrink-0 rounded-md border border-accent-gold/20 bg-brand-navy/60 px-2 py-0.5 font-mono text-[10px] text-accent-gold">
-                  {activeChannel.localeTag}
-                </span>
-              )}
-              {activeChannel?.description && (
+              {/* 1. Identity Capsule: Name + Locale Tag */}
+              <div className="flex shrink-0 items-center gap-1.5">
                 <button
                   type="button"
                   onClick={onOpenChannelDetails}
-                  className="ml-2 hidden max-w-md cursor-pointer truncate text-left text-xs text-gray-400 transition-colors hover:text-slate-200 md:inline"
+                  className="group flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-semibold text-white transition-colors hover:bg-white/[0.06]"
                   title={t("channelDetails.title")}
                 >
-                  {activeChannel.description}
+                  <Info className="h-3 w-3 text-slate-500 transition-colors group-hover:text-accent-gold" />
+                  <span className="truncate group-hover:text-accent-gold">
+                    #{activeChannel?.name || "select-channel"}
+                  </span>
                 </button>
+
+                {activeChannel?.localeTag && (
+                  <span className="flex h-7 shrink-0 items-center rounded-md border border-border-subtle bg-surface-card px-2 font-mono text-xs font-medium text-accent-gold">
+                    {activeChannel.localeTag}
+                  </span>
+                )}
+              </div>
+
+              {/* 2. Channel Description / Topic */}
+              {activeChannel?.description && (
+                <>
+                  <div className="hidden h-3.5 w-px bg-white/10 md:block" />
+                  <button
+                    type="button"
+                    onClick={onOpenChannelDetails}
+                    className="hidden max-w-xs cursor-pointer truncate text-left text-xs text-gray-400 transition-colors hover:text-slate-200 md:inline lg:max-w-md xl:max-w-lg"
+                    title={activeChannel.description}
+                  >
+                    {activeChannel.description}
+                  </button>
+                </>
               )}
 
-              {/* Channel Members List Button */}
+              {/* 3. Action Badges & Sprint Status */}
               {activeChannel && (
-                <button
-                  type="button"
-                  onClick={onOpenMembers}
-                  className="ml-2 flex shrink-0 cursor-pointer items-center space-x-1 rounded border border-border-subtle bg-surface-card px-2 py-0.5 text-[10px] font-medium text-gray-300 transition-colors hover:bg-surface-hover hover:text-white"
-                  title="View Channel Members"
-                >
-                  <Users className="h-3 w-3 text-accent-gold" />
-                  <span>{t("chat.members")}</span>
-                </button>
-              )}
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <div className="hidden h-3.5 w-px bg-white/10 sm:block" />
 
-              {/* Restore Pinned Sprint Status Banner */}
-              {activeChannel?.status && !isBannerVisible && (
-                <button
-                  type="button"
-                  onClick={() => onRestoreBanner(activeChannel.id)}
-                  className="ml-1.5 flex shrink-0 cursor-pointer items-center space-x-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] text-amber-300 transition-colors hover:bg-amber-500/20"
-                  title="Restore pinned sprint status banner"
-                >
-                  <Pin className="h-2.5 w-2.5 text-accent-gold" />
-                  <span>{t("chat.sprintStatus")}</span>
-                </button>
-              )}
+                  {/* Channel Members List Button */}
+                  <button
+                    type="button"
+                    onClick={onOpenMembers}
+                    className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-surface-hover hover:text-white"
+                    title="View Channel Members"
+                  >
+                    <Users className="h-3.5 w-3.5 text-accent-gold" />
+                    <span>{t("chat.members")}</span>
+                    {activeChannel.members && activeChannel.members.length > 0 && (
+                      <span className="font-mono text-[10px] text-accent-gold">
+                        {activeChannel.members.length}
+                      </span>
+                    )}
+                  </button>
 
-              {/* Set Sprint Status Button for Admins (if none set) */}
-              {!activeChannel?.status && isChannelAdmin && (
-                <button
-                  type="button"
-                  onClick={onOpenEditStatus}
-                  className="ml-1.5 flex shrink-0 cursor-pointer items-center space-x-1 rounded border border-dashed border-border-subtle bg-surface-card px-2 py-0.5 font-mono text-[10px] text-gray-400 transition-colors hover:border-accent-gold/40 hover:bg-surface-hover hover:text-accent-gold"
-                  title="Set sprint status for this channel"
-                >
-                  <Pin className="h-2.5 w-2.5" />
-                  <span>{t("chat.pinSprintStatus")}</span>
-                </button>
-              )}
+                  {/* Restore Pinned Sprint Status Banner */}
+                  {activeChannel.status && !isBannerVisible && (
+                    <button
+                      type="button"
+                      onClick={() => onRestoreBanner(activeChannel.id)}
+                      className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 font-mono text-xs text-amber-300 transition-colors hover:bg-amber-500/20"
+                      title="Restore pinned sprint status banner"
+                    >
+                      <Pin className="h-3 w-3 text-accent-gold" />
+                      <span>{t("chat.sprintStatus")}</span>
+                    </button>
+                  )}
 
-              {/* Admin Invite Button (for private channels) */}
-              {isChannelAdmin && activeChannel?.type === ChannelType.PRIVATE_LOCALE && (
-                <button
-                  type="button"
-                  onClick={onOpenInvite}
-                  className="ml-1 flex shrink-0 cursor-pointer items-center space-x-1 rounded border border-accent-gold/30 bg-brand-navy/80 px-2 py-0.5 text-[10px] font-medium text-accent-gold transition-colors hover:bg-brand-navy"
-                  title="Invite Teammates to Private Channel"
-                >
-                  <UserPlus className="h-3 w-3" />
-                  <span>{t("chat.invite")}</span>
-                </button>
+                  {/* Set Sprint Status Button for Admins (if none set) */}
+                  {!activeChannel.status && isChannelAdmin && (
+                    <button
+                      type="button"
+                      onClick={onOpenEditStatus}
+                      className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-border-subtle bg-surface-card px-2.5 font-mono text-xs text-gray-400 transition-colors hover:border-accent-gold/40 hover:bg-surface-hover hover:text-accent-gold"
+                      title="Set sprint status for this channel"
+                    >
+                      <Pin className="h-3 w-3" />
+                      <span>{t("chat.pinSprintStatus")}</span>
+                    </button>
+                  )}
+
+                  {/* Admin Invite Button (for private channels) */}
+                  {isChannelAdmin && activeChannel.type === ChannelType.PRIVATE_LOCALE && (
+                    <button
+                      type="button"
+                      onClick={onOpenInvite}
+                      className="flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-accent-gold/30 bg-brand-navy/80 px-2.5 text-xs font-medium text-accent-gold transition-colors hover:bg-brand-navy"
+                      title="Invite Teammates to Private Channel"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      <span>{t("chat.invite")}</span>
+                    </button>
+                  )}
+                </div>
               )}
             </>
           )}
         </div>
 
         {/* Right: Search & Inspector Toggle Actions */}
-        <div className="ml-3 flex shrink-0 items-center space-x-1.5">
+        <div className="ml-3 flex shrink-0 items-center gap-1.5">
           {activeChannel && (
             <button
               type="button"
@@ -234,7 +255,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                   return true;
                 });
               }}
-              className={`flex shrink-0 cursor-pointer items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+              className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors ${
                 isSearchOpen
                   ? "border border-accent-gold/30 bg-brand-navy text-accent-gold"
                   : "border border-transparent text-gray-400 hover:bg-surface-hover hover:text-white"
@@ -249,7 +270,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
           <button
             type="button"
             onClick={onToggleInspector}
-            className={`flex shrink-0 cursor-pointer items-center space-x-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+            className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors ${
               isInspectorOpen
                 ? "border border-accent-gold/30 bg-brand-navy text-accent-gold"
                 : "border border-transparent text-gray-400 hover:bg-surface-hover hover:text-white"
@@ -259,7 +280,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
             <BookOpen className="h-3.5 w-3.5" />
             <span>{t("chat.inspector")}</span>
             {selectedStringKey && (
-              <span className="py-0.2 rounded bg-black/30 px-1.5 font-mono text-[10px] text-accent-gold/90">
+              <span className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[10px] text-accent-gold/90">
                 #{selectedStringKey}
               </span>
             )}
