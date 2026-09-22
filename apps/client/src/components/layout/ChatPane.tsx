@@ -275,6 +275,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
           <MessageInput
             channelId={activeChannel.id}
             channelName={isDm ? dmRecipientName : activeChannel.name}
+            channelLocaleTag={activeChannel.localeTag}
             isDm={isDm}
           />
         </div>

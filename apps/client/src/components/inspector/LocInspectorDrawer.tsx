@@ -15,6 +15,8 @@ import { api } from "../../services/api";
 import { useTranslation } from "../../i18n";
 import { StringStatusBadge } from "../ui/StringStatusBadge";
 
+const EMPTY_GLOSSARY_RESULTS: GlossaryTermDTO[] = [];
+
 const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -65,22 +67,28 @@ const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
 
 export interface LocInspectorDrawerProps {
   stringKey: string | null;
+  onClearStringKey?: () => void;
   onClose: () => void;
   onStatusUpdated?: (updated: LocStringDTO) => void;
   mentionsCountInCurrentChat?: number;
   isTagHighlightActive?: boolean;
   onToggleTagHighlight?: (stringKey: string) => void;
+  projectTag?: string | null;
+  channelName?: string | null;
 }
 
 export type InspectorTab = "INSPECTOR" | "GLOSSARY";
 
 export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   stringKey,
+  onClearStringKey,
   onClose,
   onStatusUpdated,
   mentionsCountInCurrentChat = 0,
   isTagHighlightActive = false,
   onToggleTagHighlight,
+  projectTag,
+  channelName,
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<InspectorTab>("INSPECTOR");
@@ -94,7 +102,45 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   const [glossaryResults, setGlossaryResults] = useState<GlossaryTermDTO[]>([]);
   const [isSearchingGlossary, setIsSearchingGlossary] = useState<boolean>(false);
 
+  // Resolve active project context with generic slug extraction on channel name
+  const effectiveProjectTag = React.useMemo(() => {
+    if (projectTag && projectTag.trim().toUpperCase() !== "GLOBAL") {
+      return projectTag.trim();
+    }
+    if (channelName) {
+      // Strip common taxonomy prefixes (loc-, proj-, channel-, ch-) and extract first slug token
+      const slug = channelName.replace(/^(?:loc|proj|channel|ch)[-_]/i, "");
+      const token = slug.split(/[-_]/)[0];
+      if (token && token.length >= 2) {
+        return token.toUpperCase();
+      }
+    }
+    return null;
+  }, [projectTag, channelName]);
+
+  // Derived idle state: when no search query and no project context, yield empty results without triggering cascading effects
+  const isIdleWithoutProject = !glossaryQuery.trim() && !effectiveProjectTag;
+  const activeGlossaryResults = isIdleWithoutProject ? EMPTY_GLOSSARY_RESULTS : glossaryResults;
+
+  // Detected glossary terms within current inspected string
+  const detectedTerms = React.useMemo(() => {
+    if (!stringData) return [];
+    return activeGlossaryResults.filter((term) => {
+      const inJa = stringData.sourceText?.includes(term.sourceJa);
+      const inEn =
+        term.targetEn && stringData.targetText?.toLowerCase().includes(term.targetEn.toLowerCase());
+      return Boolean(inJa || inEn);
+    });
+  }, [stringData, activeGlossaryResults]);
+
+  const nonDetectedTerms = React.useMemo(() => {
+    if (detectedTerms.length === 0) return activeGlossaryResults;
+    const detectedIds = new Set(detectedTerms.map((t) => t.id));
+    return activeGlossaryResults.filter((t) => !detectedIds.has(t.id));
+  }, [detectedTerms, activeGlossaryResults]);
+
   const [prevStringKey, setPrevStringKey] = useState(stringKey);
+
   if (stringKey !== prevStringKey) {
     setPrevStringKey(stringKey);
     setStringData(null);
@@ -102,22 +148,6 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
       setActiveTab("INSPECTOR");
     }
   }
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchInitialGlossary = async () => {
-      try {
-        const { data } = await api.get<GlossaryTermDTO[]>("/glossary");
-        if (isMounted) setGlossaryResults(data);
-      } catch (err) {
-        console.error("Failed to load initial glossary:", err);
-      }
-    };
-    fetchInitialGlossary();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (!stringKey) {
@@ -152,19 +182,31 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   useEffect(() => {
     const trimmed = glossaryQuery.trim();
     if (!trimmed) {
+      // Idle without active project: early exit (activeGlossaryResults derived as [])
+      if (!effectiveProjectTag) {
+        return;
+      }
+
+      let isMounted = true;
       api
-        .get<GlossaryTermDTO[]>("/glossary")
-        .then(({ data }) => setGlossaryResults(data))
-        .catch(console.error);
-      return;
+        .get<GlossaryTermDTO[]>("/glossary/suggestions", {
+          params: { projectTag: effectiveProjectTag, limit: 15 },
+        })
+        .then(({ data }) => {
+          if (isMounted) setGlossaryResults(data);
+        })
+        .catch((err) => console.error("Failed to load glossary suggestions:", err));
+      return () => {
+        isMounted = false;
+      };
     }
 
     const timer = setTimeout(async () => {
       setIsSearchingGlossary(true);
       try {
-        const { data } = await api.get<GlossaryTermDTO[]>(
-          `/glossary/search?q=${encodeURIComponent(trimmed)}`,
-        );
+        const { data } = await api.get<GlossaryTermDTO[]>("/glossary/search", {
+          params: { q: trimmed },
+        });
         setGlossaryResults(data);
       } catch (err) {
         console.error("Glossary lookup failed:", err);
@@ -174,7 +216,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [glossaryQuery]);
+  }, [glossaryQuery, effectiveProjectTag]);
 
   const handleStatusChange = async (newStatus: StringStatus) => {
     if (!stringData || stringData.status === newStatus || isMutatingStatus) return;
@@ -287,6 +329,17 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             <span>
               {t("inspector.inspecting")} #{stringKey}...
             </span>
+            {onClearStringKey && (
+              <button
+                type="button"
+                onClick={onClearStringKey}
+                className="mt-1 inline-flex cursor-pointer items-center gap-1 rounded-md border border-border-subtle bg-surface-card px-2 py-0.5 font-mono text-[10px] text-slate-400 hover:text-slate-200"
+                title={t("inspector.clearString")}
+              >
+                <X className="h-3 w-3" />
+                <span>{t("inspector.clear")}</span>
+              </button>
+            )}
           </div>
         ) : !stringData ? (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center font-mono text-xs text-slate-500">
@@ -294,6 +347,17 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             <span>
               {t("inspector.notFound")} #{stringKey}
             </span>
+            {onClearStringKey && (
+              <button
+                type="button"
+                onClick={onClearStringKey}
+                className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 py-1 text-[11px] text-slate-300 transition-colors hover:border-accent-gold/40 hover:text-accent-gold"
+                title={t("inspector.clearString")}
+              >
+                <X className="h-3.5 w-3.5" />
+                <span>{t("inspector.clearString")}</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -308,7 +372,20 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                     #{stringData.stringKey}
                   </span>
                 </div>
-                <StringStatusBadge status={stringData.status} />
+                <div className="flex items-center gap-1.5">
+                  <StringStatusBadge status={stringData.status} />
+                  {onClearStringKey && (
+                    <button
+                      type="button"
+                      onClick={onClearStringKey}
+                      className="flex cursor-pointer items-center gap-1 rounded-md border border-border-subtle bg-surface-panel/80 px-2 py-1 font-mono text-[10px] text-slate-400 transition-colors hover:border-rose-500/40 hover:bg-surface-card hover:text-rose-300"
+                      title={t("inspector.clearString")}
+                    >
+                      <X className="h-3 w-3" />
+                      <span>{t("inspector.clear")}</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center justify-between border-t border-border-subtle/50 pt-2 font-mono text-[11px] text-slate-400">
@@ -508,21 +585,68 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             )}
           </div>
 
-          <div className="flex-1 space-y-2 overflow-y-auto pr-1">
-            {glossaryResults.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500">
-                <BookOpen className="mb-2 h-7 w-7 text-slate-600" />
-                <span className="text-xs font-medium text-slate-400">
-                  {t("inspector.noTermsFound")}
-                </span>
-                <span className="mt-1 text-[11px] text-slate-500">
-                  {glossaryQuery
-                    ? t("inspector.noEntriesMatch", { query: glossaryQuery })
-                    : t("inspector.noRecords")}
-                </span>
-              </div>
+          <div className="flex-1 space-y-3 overflow-y-auto pr-1">
+            {activeGlossaryResults.length === 0 ? (
+              isSearchingGlossary ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center font-mono text-xs text-slate-500">
+                  <Loader2 className="mb-2 h-6 w-6 animate-spin text-accent-gold" />
+                </div>
+              ) : glossaryQuery.trim() ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500">
+                  <BookOpen className="mb-2 h-7 w-7 text-slate-600" />
+                  <span className="text-xs font-medium text-slate-400">
+                    {t("inspector.noTermsFound")}
+                  </span>
+                  <span className="mt-1 text-[11px] text-slate-500">
+                    {t("inspector.noEntriesMatch", { query: glossaryQuery })}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 px-6 text-center select-none">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-surface-card text-accent-gold shadow-sm">
+                    <Search className="h-6 w-6" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-200">
+                    {t("inspector.searchTermsTitle")}
+                  </span>
+                  <span className="mt-1.5 max-w-xs text-[11px] leading-relaxed text-slate-400">
+                    {t("inspector.searchTermsPrompt")}
+                  </span>
+                </div>
+              )
             ) : (
-              glossaryResults.map((term) => <GlossaryTermCard key={term.id} term={term} />)
+              <>
+                {/* 1. Terms Detected in Currently Inspected String */}
+                {detectedTerms.length > 0 && (
+                  <div className="space-y-1.5 rounded-lg border border-accent-gold/40 bg-brand-navy/30 p-2.5">
+                    <div className="flex items-center space-x-1.5 font-mono text-[10px] font-bold tracking-wider text-accent-gold uppercase">
+                      <Languages className="h-3.5 w-3.5 text-accent-gold" />
+                      <span>
+                        {t("inspector.detectedTerms")} ({detectedTerms.length})
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {detectedTerms.map((term) => (
+                        <GlossaryTermCard key={`detected-${term.id}`} term={term} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Project Suggestions or Search Query Results */}
+                {nonDetectedTerms.length > 0 && (
+                  <div className="space-y-2">
+                    {!glossaryQuery && effectiveProjectTag && (
+                      <div className="font-mono text-[10px] font-semibold tracking-wider text-gray-400 uppercase">
+                        {t("inspector.projectSuggestions")} ({effectiveProjectTag})
+                      </div>
+                    )}
+                    {nonDetectedTerms.map((term) => (
+                      <GlossaryTermCard key={term.id} term={term} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

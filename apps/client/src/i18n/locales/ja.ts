@@ -68,16 +68,25 @@ export const ja: typeof en = {
 
   // 5. Message Composer
   "composer.placeholderChannel":
-    "#{channel} へのメッセージ... (Shift+Enterで改行、@名前 または #LOC-XXXX を入力)",
+    "#{channel} へのメッセージ... (Shift+Enterで改行、@名前、#LOC-XXXX、または $STR_XXXX を入力)",
   "composer.placeholderDm":
-    "@{recipient} へのメッセージ... (Shift+Enterで改行、@名前 または #LOC-XXXX を入力)",
+    "@{recipient} へのメッセージ... (Shift+Enterで改行、@名前、#LOC-XXXX、または $STR_XXXX を入力)",
   "composer.dropToAttach": "ドロップしてファイルを添付",
   "composer.mentionHeader": "メンバーにメンション",
   "composer.attachTooltip": "スクリーンショットやファイルを添付",
   "composer.mentionTooltip": "メンバーをメンション (@)",
   "composer.locTagTooltip": "#LOC タグを挿入",
+  "composer.strTagTooltip": "$STR タグを挿入",
   "composer.uploadHint": "最大10MB • スクリーンショットを貼り付けまたはドロップ",
   "composer.uploadingAttachment": "添付ファイルをアップロード中...",
+  "composer.editTag": "QAタグを編集",
+  "composer.addTag": "QAタグ追加",
+  "composer.tagPopoverTitle": "添付ファイルのQAタグ",
+  "composer.customTagPlaceholder": "カスタムタグを入力 (Enterで適用)...",
+  "composer.clearTag": "タグをクリア",
+  "composer.tagPresetsLqa": "LQA不具合プリセット",
+  "composer.tagPresetsRef": "参照・文脈プリセット",
+  "composer.tagPresetsChannel": "現在のチャンネル設定",
   "composer.send": "送信",
   "composer.sending": "送信中...",
 
@@ -86,6 +95,11 @@ export const ja: typeof en = {
   "inspector.badge": "LQAツール",
   "inspector.tabInspector": "文字列インスペクター",
   "inspector.tabGlossary": "用語集コーデックス",
+  "inspector.projectSuggestions": "プロジェクト用語候補",
+  "inspector.noSuggestionsPrompt":
+    "このチャンネルの候補はありません。上部の検索バーをご利用ください。",
+  "inspector.detectedTerms": "文字列内で検出された用語",
+
   "inspector.noStringSelected": "文字列が選択されていません",
   "inspector.noStringHelp":
     "チャット内の #LOC-XXXX または $STR_XXXX タグをクリックすると、日本語ソース、文字数制限ゲージ、ワークフロー状況を検証できます。",
@@ -113,10 +127,15 @@ export const ja: typeof en = {
   "inspector.glossarySearchPlaceholder": "用語を検索 (例: 鬼人薬, ロックピック)...",
   "inspector.noTermsFound": "登録用語が見つかりません",
   "inspector.noEntriesMatch": '"{query}" に一致する用語はありません',
+  "inspector.searchTermsTitle": "用語集コーデックスを検索",
+  "inspector.searchTermsPrompt":
+    "上部の検索バーにキーワードを入力して、公式ゲーム用語、アイテム名、コーデックス設定を検索できます。",
   "inspector.noRecords": "用語集レコードが読み込まれていません",
   "inspector.source": "原文:",
   "inspector.showLess": "折りたたむ",
   "inspector.showGuidelines": "ガイドラインと注記を表示",
+  "inspector.clear": "クリア",
+  "inspector.clearString": "検証中の文字列をクリア",
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal

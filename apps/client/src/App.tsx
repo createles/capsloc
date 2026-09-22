@@ -205,6 +205,11 @@ const LocTerminal: React.FC = () => {
     setHighlightedTagKey(null);
   };
 
+  const handleClearStringKey = () => {
+    setSelectedStringKey(null);
+    setHighlightedTagKey(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-surface-canvas font-sans text-xs text-slate-400">
@@ -260,6 +265,9 @@ const LocTerminal: React.FC = () => {
         {isInspectorOpen && (
           <LocInspectorDrawer
             stringKey={selectedStringKey}
+            onClearStringKey={handleClearStringKey}
+            projectTag={activeChannel?.projectTag}
+            channelName={activeChannel?.name}
             onClose={handleCloseInspector}
             mentionsCountInCurrentChat={mentionsCount}
             isTagHighlightActive={!!highlightedTagKey && highlightedTagKey === selectedStringKey}

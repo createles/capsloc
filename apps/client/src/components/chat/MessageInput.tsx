@@ -1,19 +1,40 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, X, Image as ImageIcon, Loader2, UploadCloud, AtSign } from "lucide-react";
-import type { AttachmentDTO, ChannelMemberDTO, UserProfileDTO } from "@capsloc/types";
+import {
+  Send,
+  Paperclip,
+  X,
+  Image as ImageIcon,
+  Loader2,
+  UploadCloud,
+  AtSign,
+  ChevronDown,
+} from "lucide-react";
+import {
+  type AttachmentDTO,
+  type ChannelMemberDTO,
+  type UserProfileDTO,
+  LocRole,
+} from "@capsloc/types";
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
 import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
+import { AttachmentTagPicker } from "./AttachmentTagPicker";
 
 export interface MessageInputProps {
   channelId: string;
   channelName?: string | null;
+  channelLocaleTag?: string | null;
   isDm?: boolean;
 }
 
-export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelName, isDm }) => {
+export const MessageInput: React.FC<MessageInputProps> = ({
+  channelId,
+  channelName,
+  channelLocaleTag,
+  isDm,
+}) => {
   const { user } = useAuth();
   const { socket, sendMessage, startTyping, stopTyping } = useSocket();
   const { t } = useTranslation();
@@ -22,6 +43,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
   const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [activeTagPickerId, setActiveTagPickerId] = useState<string | null>(null);
 
   // Mention (@tag) state
   const [directoryUsers, setDirectoryUsers] = useState<UserProfileDTO[]>([]);
@@ -202,6 +224,27 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     }, 10);
   };
 
+  const inferDefaultTag = (): string => {
+    if (user?.locRole === LocRole.TRANSLATOR) return "JA-REF";
+    if (user?.locRole === LocRole.LQA_TESTER) return "UI-OVERFLOW";
+    if (channelLocaleTag) {
+      const clean = channelLocaleTag.replace("->", "-").toUpperCase();
+      return `${clean}-BUG`;
+    }
+    return "UI-OVERFLOW";
+  };
+
+  const handleUpdateTag = async (attachmentId: string, newTag: string | null) => {
+    setStagedAttachments((prev) =>
+      prev.map((a) => (a.id === attachmentId ? { ...a, localeTag: newTag } : a)),
+    );
+    try {
+      await api.patch(`/uploads/${attachmentId}`, { localeTag: newTag });
+    } catch (err) {
+      console.error("Failed to update attachment tag:", err);
+    }
+  };
+
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -217,7 +260,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
         try {
           const formData = new FormData();
           formData.append("file", file, `screenshot_${Date.now()}.png`);
-          formData.append("localeTag", "LQA-Paste");
+          formData.append("localeTag", inferDefaultTag());
 
           const { data } = await api.post<AttachmentDTO>("/uploads", formData, {
             headers: { "Content-Type": "multipart/form-data" },
@@ -245,7 +288,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("localeTag", "QA-Drop");
+      formData.append("localeTag", inferDefaultTag());
 
       const { data } = await api.post<AttachmentDTO>("/uploads", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -269,7 +312,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("localeTag", "QA-Screenshot");
+      formData.append("localeTag", inferDefaultTag());
 
       const { data } = await api.post<AttachmentDTO>("/uploads", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -287,6 +330,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
   };
 
   const removeAttachment = (attachmentId: string) => {
+    if (activeTagPickerId === attachmentId) {
+      setActiveTagPickerId(null);
+    }
     setStagedAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
   };
 
@@ -336,13 +382,25 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           {stagedAttachments.map((att) => (
             <div
               key={att.id}
-              className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 font-sans text-xs text-gray-200"
+              className="relative flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 font-sans text-xs text-gray-200"
             >
               <ImageIcon className="h-3.5 w-3.5 shrink-0 text-accent-gold" />
               <span className="max-w-xs truncate">{att.fileName}</span>
               <span className="font-mono text-[10px] text-gray-500">
                 ({(att.fileSize / 1024).toFixed(1)} KB)
               </span>
+
+              {/* Interactive Tag Pill Trigger */}
+              <button
+                type="button"
+                onClick={() => setActiveTagPickerId(activeTagPickerId === att.id ? null : att.id)}
+                className="flex cursor-pointer items-center gap-1 rounded border border-accent-gold/40 bg-brand-navy px-1.5 py-0.5 font-mono text-[10px] font-medium text-accent-gold uppercase transition-colors hover:bg-brand-navy/80"
+                title={t("composer.editTag")}
+              >
+                <span>{att.localeTag || t("composer.addTag")}</span>
+                <ChevronDown className="h-2.5 w-2.5 opacity-70" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => removeAttachment(att.id)}
@@ -350,6 +408,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
               >
                 <X className="h-3.5 w-3.5" />
               </button>
+
+              {/* Tag Picker Popover */}
+              {activeTagPickerId === att.id && (
+                <AttachmentTagPicker
+                  currentTag={att.localeTag}
+                  channelLocaleTag={channelLocaleTag}
+                  onSelectTag={(tag) => handleUpdateTag(att.id, tag)}
+                  onClose={() => setActiveTagPickerId(null)}
+                />
+              )}
             </div>
           ))}
 
@@ -478,13 +546,32 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
             <button
               type="button"
               onClick={() => {
-                setContent((prev) => `${prev}#LOC-`);
+                setContent((prev) => {
+                  const spacer = prev.length > 0 && !/\s$/.test(prev) ? " " : "";
+                  return `${prev}${spacer}#LOC-`;
+                });
                 textareaRef.current?.focus();
               }}
               title={t("composer.locTagTooltip")}
               className="cursor-pointer rounded border border-emerald-500/30 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 hover:text-emerald-300"
             >
               #LOC
+            </button>
+
+            {/* Quick $STR Tag Insertion Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                setContent((prev) => {
+                  const spacer = prev.length > 0 && !/\s$/.test(prev) ? " " : "";
+                  return `${prev}${spacer}$STR_`;
+                });
+                textareaRef.current?.focus();
+              }}
+              title={t("composer.strTagTooltip")}
+              className="cursor-pointer rounded border border-emerald-500/30 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 hover:text-emerald-300"
+            >
+              $STR
             </button>
 
             <span className="ml-1 hidden font-sans text-[10px] text-slate-500 sm:inline">

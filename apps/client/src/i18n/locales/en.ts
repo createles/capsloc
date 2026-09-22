@@ -66,16 +66,25 @@ export const en = {
 
   // 5. Message Composer
   "composer.placeholderChannel":
-    "Message #{channel}... (Shift+Enter for newline, type @name or #LOC-XXXX)",
+    "Message #{channel}... (Shift+Enter for newline, type @name, #LOC-XXXX, or $STR_XXXX)",
   "composer.placeholderDm":
-    "Message @{recipient}... (Shift+Enter for newline, type @name or #LOC-XXXX)",
+    "Message @{recipient}... (Shift+Enter for newline, type @name, #LOC-XXXX, or $STR_XXXX)",
   "composer.dropToAttach": "Drop file to attach",
   "composer.mentionHeader": "Mention Colleague",
   "composer.attachTooltip": "Attach screenshot or document",
   "composer.mentionTooltip": "Tag colleague (@)",
   "composer.locTagTooltip": "Insert #LOC Key Shortcut",
+  "composer.strTagTooltip": "Insert $STR Key Shortcut",
   "composer.uploadHint": "Max 10MB • Paste or drop screenshots",
   "composer.uploadingAttachment": "Uploading attachment...",
+  "composer.editTag": "Edit QA Tag",
+  "composer.addTag": "Add QA Tag",
+  "composer.tagPopoverTitle": "Attachment QA Tag",
+  "composer.customTagPlaceholder": "Custom tag (Enter to apply)...",
+  "composer.clearTag": "Clear tag",
+  "composer.tagPresetsLqa": "LQA Defect Presets",
+  "composer.tagPresetsRef": "Reference & Context Presets",
+  "composer.tagPresetsChannel": "Active Channel Preset",
   "composer.send": "Send",
   "composer.sending": "Sending...",
 
@@ -84,6 +93,10 @@ export const en = {
   "inspector.badge": "LQA Tools",
   "inspector.tabInspector": "String Inspector",
   "inspector.tabGlossary": "Glossary Codex",
+  "inspector.projectSuggestions": "Project Suggestions",
+  "inspector.noSuggestionsPrompt": "No suggestions for this channel. Use the search bar above.",
+  "inspector.detectedTerms": "Detected in String",
+
   "inspector.noStringSelected": "No String Selected",
   "inspector.noStringHelp":
     "Click any #LOC-XXXX or $STR_XXXX tag in chat to inspect its Japanese source, character limit gauge, and workflow review status.",
@@ -111,10 +124,15 @@ export const en = {
   "inspector.glossarySearchPlaceholder": "Search terms (e.g. Demondrug, Lockpick)...",
   "inspector.noTermsFound": "No Canonical Terms Found",
   "inspector.noEntriesMatch": 'No entries match "{query}"',
+  "inspector.searchTermsTitle": "Search Canonical Glossary",
+  "inspector.searchTermsPrompt":
+    "Type in the search bar above to look up official game terminology, item names, and lore codex entries.",
   "inspector.noRecords": "No glossary records loaded",
   "inspector.source": "Source:",
   "inspector.showLess": "Show less",
   "inspector.showGuidelines": "Show guidelines & notes",
+  "inspector.clear": "Clear",
+  "inspector.clearString": "Clear inspected string",
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal
