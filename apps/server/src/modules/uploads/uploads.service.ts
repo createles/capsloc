@@ -4,10 +4,14 @@ import { AttachmentType } from '@capsloc/types';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { UploadAttachmentDto } from './dto/upload-attachment.dto.js';
 import { UpdateAttachmentDto } from './dto/update-attachment.dto.js';
+import { StorageService } from '../storage/storage.service.js';
 
 @Injectable()
 export class UploadsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   /**
    * Classifies uploaded media into appropriate domain attachment categories based on MIME and filename
@@ -36,15 +40,16 @@ export class UploadsService {
     if (!file) throw new BadRequestException('No file provided for upload');
 
     const fileType = this.classifyFileType(file.mimetype, file.originalname);
-    const fileUrl = `/uploads/${file.filename}`;
+
+    const stored = await this.storageService.upload(file, { folder: 'capsloc/attachments' });
 
     return this.prisma.attachment.create({
       data: {
         messageId: null, // Staged attachment
-        fileUrl,
-        fileName: file.originalname,
+        fileUrl: stored.fileUrl,
+        fileName: stored.fileName,
         fileType,
-        fileSize: file.size,
+        fileSize: stored.fileSize,
         localeTag: dto.localeTag || null,
       },
     });

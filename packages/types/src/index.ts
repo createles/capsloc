@@ -4,3 +4,4 @@ export * from "./channel.types.js";
 export * from "./loc-string.types.js";
 export * from "./message.types.js";
 export * from "./socket-events.js";
+export * from "./storage.types.js";
