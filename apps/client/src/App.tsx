@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
 import { type ChannelDTO, type UserProfileDTO, LocRole } from "@capsloc/types";
 import { api } from "./services/api";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./hooks/useAuth";
 import { SocketProvider } from "./context/SocketProvider";
 import { useSocket } from "./hooks/useSocket";
-import { I18nProvider, useTranslation } from "./i18n";
+import { I18nProvider } from "./i18n";
 import { AuthModal } from "./components/auth/AuthModal";
 import { Header } from "./components/layout/Header";
+import { AppShellSkeleton } from "./components/layout/AppShellSkeleton";
 import { ChannelSidebar } from "./components/layout/ChannelSidebar";
 import { ChatPane } from "./components/layout/ChatPane";
 import { LocInspectorDrawer } from "./components/inspector/LocInspectorDrawer";
@@ -32,7 +32,6 @@ const getInitialInspectorOpen = (): boolean => {
 
 const LocTerminal: React.FC = () => {
   const { user, logout, isLoading, isAuthenticated } = useAuth();
-  const { t } = useTranslation();
   const {
     socket,
     isConnected,
@@ -211,12 +210,7 @@ const LocTerminal: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-surface-canvas font-sans text-xs text-slate-400">
-        <Loader2 className="mb-3 h-6 w-6 animate-spin text-accent-gold" />
-        <span>{t("app.connecting")}</span>
-      </div>
-    );
+    return <AppShellSkeleton />;
   }
 
   if (!isAuthenticated || !user) {

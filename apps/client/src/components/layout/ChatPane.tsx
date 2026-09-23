@@ -293,7 +293,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
         <div key={activeChannel.id} className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {/* Pinned Sprint Status Banner */}
           {isBannerVisible && (
-            <div className="animate-in fade-in flex shrink-0 items-center justify-between border-b border-amber-500/20 bg-amber-500/[0.07] px-4 py-2 text-xs backdrop-blur-xs duration-150">
+            <div className="toast-slide-in flex shrink-0 items-center justify-between border-b border-amber-500/20 bg-amber-500/[0.07] px-4 py-2 text-xs backdrop-blur-xs">
               <div className="flex min-w-0 items-center space-x-2.5">
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-amber-500/30 bg-amber-500/15">
                   <Pin className="h-3.5 w-3.5 text-accent-gold" />

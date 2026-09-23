@@ -63,11 +63,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ onClose }) =
 
   return (
     <div
-      className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none"
+      className="modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md select-none"
       onClick={onClose}
     >
       <div
-        className="animate-in zoom-in-95 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80 duration-150"
+        className="modal-card-animate w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

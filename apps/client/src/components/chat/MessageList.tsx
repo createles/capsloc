@@ -329,9 +329,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   }
 
   const safeMatchIndex =
-    matchingMessageIds.length > 0
-      ? Math.min(currentMatchIndex, matchingMessageIds.length - 1)
-      : 0;
+    matchingMessageIds.length > 0 ? Math.min(currentMatchIndex, matchingMessageIds.length - 1) : 0;
 
   // Auto-focus search input when search bar opens
   useEffect(() => {
@@ -598,7 +596,7 @@ export const MessageList: React.FC<MessageListProps> = ({
     <div className="relative flex min-h-0 flex-1 flex-col">
       {/* Floating In-Chat Message Search Jumper Controller */}
       {isSearchOpen && (
-        <div className="animate-in fade-in slide-in-from-top-2 absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center space-x-2 rounded-lg border border-border-subtle bg-surface-panel/95 px-3 py-1.5 font-sans text-xs shadow-2xl backdrop-blur-md transition-colors focus-within:border-accent-gold/50">
+        <div className="toast-slide-in absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center space-x-2 rounded-lg border border-border-subtle bg-surface-panel/95 px-3 py-1.5 font-sans text-xs shadow-2xl backdrop-blur-md transition-colors focus-within:border-accent-gold/50">
           <Search className="h-3.5 w-3.5 shrink-0 text-slate-400" />
           <input
             ref={searchInputRef}
@@ -654,7 +652,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 
       {/* Floating Jump Controller for In-Chat Tag Mentions */}
       {!isSearchOpen && highlightedTagKey && matchingMessageIds.length > 0 && (
-        <div className="animate-in fade-in slide-in-from-top-2 absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center space-x-2.5 rounded-full border border-accent-gold/40 bg-surface-panel/95 px-3.5 py-1.5 font-sans text-xs shadow-2xl backdrop-blur-md select-none">
+        <div className="toast-slide-in absolute top-2 left-1/2 z-30 flex -translate-x-1/2 items-center space-x-2.5 rounded-full border border-accent-gold/40 bg-surface-panel/95 px-3.5 py-1.5 font-sans text-xs shadow-2xl backdrop-blur-md select-none">
           <span className="font-mono text-[11px] font-bold text-accent-gold">
             #{highlightedTagKey.replace(/^#/, "")}
           </span>
@@ -912,7 +910,7 @@ export const MessageList: React.FC<MessageListProps> = ({
 
       {/* Floating Quick Scroll-to-Bottom Action Button (when scrolled away with 0 unread) */}
       {!isAtBottom && unreadCount === 0 && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 absolute bottom-1 left-1/2 z-20 -translate-x-1/2 duration-150">
+        <div className="slide-in-bottom absolute bottom-1 left-1/2 z-20 -translate-x-1/2">
           <button
             type="button"
             onClick={() => scrollToBottom("smooth")}

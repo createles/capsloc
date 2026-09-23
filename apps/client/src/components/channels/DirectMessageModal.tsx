@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { X, Users, Search, Loader2, MessageSquare } from "lucide-react";
+import { X, Users, Search, MessageSquare } from "lucide-react";
 import { UserStatus, type UserProfileDTO, type ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
 import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
+import { Skeleton } from "../ui/Skeleton";
 
 export interface DirectMessageModalProps {
   onClose: () => void;
@@ -90,11 +91,11 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
 
   return (
     <div
-      className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none"
+      className="modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md select-none"
       onClick={onClose}
     >
       <div
-        className="animate-in zoom-in-95 flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel font-sans shadow-2xl shadow-black/80 duration-150"
+        className="modal-card-animate flex max-h-[80vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel font-sans shadow-2xl shadow-black/80"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -138,9 +139,20 @@ export const DirectMessageModal: React.FC<DirectMessageModalProps> = ({
         {/* Teammates Directory List */}
         <div className="flex-1 space-y-1 overflow-y-auto p-3">
           {isLoading ? (
-            <div className="flex items-center justify-center space-x-2 py-10 text-xs text-slate-500">
-              <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
-              <span>{t("dm.loading")}</span>
+            <div className="space-y-2 py-1 select-none">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center space-x-3 rounded-xl border border-white/[0.04] bg-surface-card/40 p-2.5"
+                >
+                  <Skeleton className="h-9 w-9 rounded-xl" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-3.5 w-28 rounded" />
+                    <Skeleton className="h-2.5 w-16 rounded bg-surface-card/60" />
+                  </div>
+                  <Skeleton className="h-4 w-16 rounded-md" />
+                </div>
+              ))}
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="py-10 text-center text-xs text-slate-500">

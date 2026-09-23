@@ -1,6 +1,7 @@
 export const en = {
   // 1. Top Header & Global Shell
-  "header.studioSubtitle": "Localization Studio",
+  "header.studioSubtitle": "Localization & LQA Hub",
+  "header.subtitle": "Localization & LQA Hub",
   "header.connected": "Connected",
   "header.reconnecting": "Reconnecting...",
   "header.signOut": "Sign Out",
@@ -99,7 +100,7 @@ export const en = {
   "composer.sending": "Sending...",
 
   // 6. Localization & Glossary Inspector
-  "inspector.title": "Studio Codex",
+  "inspector.title": "String Codex",
   "inspector.badge": "LQA Tools",
   "inspector.tabInspector": "String Inspector",
   "inspector.tabGlossary": "Glossary Codex",
@@ -146,8 +147,8 @@ export const en = {
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal
-  "auth.title": "CapsLoc Studio",
-  "auth.tagline": "Internal Game Localization Suite",
+  "auth.title": "CapsLoc",
+  "auth.tagline": "Game Localization & LQA Triage Platform",
   "auth.signIn": "Sign In",
   "auth.register": "Create Account",
   "auth.username": "Username",

@@ -4,6 +4,7 @@ import type { UserProfileDTO, ChannelDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
+import { Skeleton } from "../ui/Skeleton";
 
 export interface InviteMemberModalProps {
   channel: ChannelDTO;
@@ -73,8 +74,8 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   });
 
   return (
-    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none">
-      <div className="animate-in zoom-in-95 relative w-full max-w-md space-y-4 rounded-2xl border border-white/[0.08] bg-surface-panel p-6 font-sans shadow-2xl shadow-black/80 duration-150">
+    <div className="modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md select-none">
+      <div className="modal-card-animate relative w-full max-w-md space-y-4 rounded-2xl border border-white/[0.08] bg-surface-panel p-6 font-sans shadow-2xl shadow-black/80">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div className="flex items-center space-x-2.5">
@@ -115,9 +116,22 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
         {/* User List */}
         <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
           {isLoading ? (
-            <div className="flex items-center justify-center space-x-2 py-8 text-xs text-slate-500">
-              <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
-              <span>{t("invite.scanning")}</span>
+            <div className="space-y-2 py-1 select-none">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-surface-card/40 p-2.5"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-3.5 w-28 rounded" />
+                      <Skeleton className="h-2.5 w-16 rounded bg-surface-card/60" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-7 w-16 rounded-lg" />
+                </div>
+              ))}
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="py-8 text-center text-xs text-slate-500">

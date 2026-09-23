@@ -56,3 +56,134 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.22);
 }
+
+/* ==========================================================================
+   Hardware-Accelerated Animation & Transition Layer (Tailwind v4 Native)
+   ========================================================================== */
+
+/* 1. Skeleton Shimmer Sweep Engine */
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(24, 28, 39, 0.75);
+}
+
+.skeleton-shimmer::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 20%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmerSweep 1.8s infinite ease-in-out;
+  content: "";
+}
+
+/* 2. Modal Backdrop & Dialog Animations */
+@keyframes modalBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-backdrop-animate {
+  animation: modalBackdropFadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-card-animate {
+  animation: modalScaleIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center center;
+}
+
+/* 3. Slide-Out Drawer Animation */
+@keyframes drawerSlideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-slide-in {
+  animation: drawerSlideInRight 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 4. Popover & HoverCard Subtle Scale */
+@keyframes popoverScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.popover-scale-in {
+  animation: popoverScaleIn 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+}
+
+/* 5. Floating Toast & Banner Slide-Down */
+@keyframes toastSlideInTop {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-slide-in {
+  animation: toastSlideInTop 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 6. Floating Scroll-To-Bottom & Footer Action Slide-Up */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-bottom {
+  animation: slideInFromBottom 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+

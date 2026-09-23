@@ -13,17 +13,17 @@ export const Header: React.FC<HeaderProps> = ({ isConnected, onLogout }) => {
 
   return (
     <header className="z-20 flex h-12 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-panel/90 px-4 backdrop-blur-md select-none">
-      {/* Left: Studio Branding with Modern Badge */}
+      {/* Left: CapsLoc Branding with Modern Badge */}
       <div className="flex items-center space-x-3">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-accent-gold/40 bg-brand-navy shadow-xs">
           <Terminal className="h-4 w-4 text-accent-gold" />
         </div>
         <div className="flex items-baseline space-x-2">
           <span className="font-sans text-sm font-bold tracking-tight text-white">CapsLoc</span>
-          <span className="font-sans text-[11px] text-slate-400">{t("header.studioSubtitle")}</span>
+          <span className="font-sans text-[11px] text-slate-400">{t("header.subtitle")}</span>
         </div>
         <span className="rounded-md border border-border-subtle bg-surface-card px-2 py-0.5 font-mono text-[10px] text-slate-400">
-          v0.2.0
+          v1.0.0
         </span>
       </div>
 

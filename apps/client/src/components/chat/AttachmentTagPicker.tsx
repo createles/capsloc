@@ -64,7 +64,7 @@ export const AttachmentTagPicker: React.FC<AttachmentTagPickerProps> = ({
   return (
     <div
       ref={popoverRef}
-      className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 z-30 mb-2 w-72 rounded-lg border border-border-subtle bg-surface-card p-3 shadow-2xl backdrop-blur-md duration-100"
+      className="popover-scale-in absolute bottom-full left-0 z-30 mb-2 w-72 rounded-lg border border-border-subtle bg-surface-card p-3 shadow-2xl backdrop-blur-md"
     >
       {/* Header */}
       <div className="mb-2 flex items-center justify-between border-b border-border-subtle pb-1.5 font-sans text-xs text-slate-300">

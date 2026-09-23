@@ -60,8 +60,8 @@ export const AuthModal: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-screen items-center justify-center bg-surface-canvas p-4 text-slate-200">
-      <div className="animate-in zoom-in-95 w-full max-w-md rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-7 shadow-2xl shadow-black/80 backdrop-blur-xl duration-150">
+    <div className="modal-backdrop-animate flex min-h-screen w-screen items-center justify-center bg-surface-canvas p-4 text-slate-200">
+      <div className="modal-card-animate w-full max-w-md rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-7 shadow-2xl shadow-black/80 backdrop-blur-xl">
         {/* Header */}
         <div className="flex items-center space-x-3 border-b border-white/[0.08] pb-5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">

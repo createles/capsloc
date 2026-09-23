@@ -2,7 +2,8 @@ import { en } from "./en";
 
 export const ja: typeof en = {
   // 1. Top Header & Global Shell
-  "header.studioSubtitle": "ローカライゼーションスタジオ",
+  "header.studioSubtitle": "ローカライゼーション & LQA ハブ",
+  "header.subtitle": "ローカライゼーション & LQA ハブ",
   "header.connected": "接続済み",
   "header.reconnecting": "再接続中...",
   "header.signOut": "サインアウト",
@@ -101,7 +102,7 @@ export const ja: typeof en = {
   "composer.sending": "送信中...",
 
   // 6. Localization & Glossary Inspector
-  "inspector.title": "スタジオコーデックス",
+  "inspector.title": "ストリングコーデックス",
   "inspector.badge": "LQAツール",
   "inspector.tabInspector": "文字列インスペクター",
   "inspector.tabGlossary": "用語集コーデックス",
@@ -149,8 +150,8 @@ export const ja: typeof en = {
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal
-  "auth.title": "CapsLoc スタジオ",
-  "auth.tagline": "ゲームローカライゼーション 統合スイート",
+  "auth.title": "CapsLoc",
+  "auth.tagline": "ゲームローカライゼーション & LQA トリアージプラットフォーム",
   "auth.signIn": "ログイン",
   "auth.register": "アカウント作成",
   "auth.username": "ユーザー名",

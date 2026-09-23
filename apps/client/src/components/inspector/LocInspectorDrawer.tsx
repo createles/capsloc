@@ -14,6 +14,7 @@ import { StringStatus, type LocStringDTO, type GlossaryTermDTO } from "@capsloc/
 import { api } from "../../services/api";
 import { useTranslation } from "../../i18n";
 import { StringStatusBadge } from "../ui/StringStatusBadge";
+import { Skeleton } from "../ui/Skeleton";
 
 const EMPTY_GLOSSARY_RESULTS: GlossaryTermDTO[] = [];
 
@@ -257,7 +258,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
         : "bg-emerald-500";
 
   return (
-    <aside className="flex h-full w-96 shrink-0 flex-col border-l border-border-subtle bg-surface-panel shadow-2xl select-text">
+    <aside className="drawer-slide-in flex h-full w-96 shrink-0 flex-col border-l border-border-subtle bg-surface-panel shadow-2xl select-text">
       {/* Header Bar with Modern Frosted Glass */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-panel/90 px-4 backdrop-blur-md select-none">
         <div className="flex items-center space-x-2">
@@ -324,22 +325,48 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             </span>
           </div>
         ) : isLoading ? (
-          <div className="flex flex-1 flex-col items-center justify-center space-y-2 font-mono text-xs text-slate-500">
-            <Loader2 className="h-5 w-5 animate-spin text-accent-gold" />
-            <span>
-              {t("inspector.inspecting")} #{stringKey}...
-            </span>
-            {onClearStringKey && (
-              <button
-                type="button"
-                onClick={onClearStringKey}
-                className="mt-1 inline-flex cursor-pointer items-center gap-1 rounded-md border border-border-subtle bg-surface-card px-2 py-0.5 font-mono text-[10px] text-slate-400 hover:text-slate-200"
-                title={t("inspector.clearString")}
-              >
-                <X className="h-3 w-3" />
-                <span>{t("inspector.clear")}</span>
-              </button>
-            )}
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 select-none">
+            {/* Key & Status Ribbon Skeleton */}
+            <div className="space-y-2.5 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Skeleton className="h-2.5 w-20 rounded" />
+                  <Skeleton className="h-4 w-32 rounded" />
+                </div>
+                <Skeleton className="h-5 w-20 rounded-md" />
+              </div>
+              <div className="flex items-center justify-between border-t border-border-subtle/50 pt-2">
+                <Skeleton className="h-3 w-24 rounded" />
+                <Skeleton className="h-3 w-20 rounded" />
+              </div>
+            </div>
+
+            {/* Gauge Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3 w-24 rounded" />
+                <Skeleton className="h-3 w-16 rounded" />
+              </div>
+              <Skeleton className="h-2 w-full rounded-full" />
+            </div>
+
+            {/* Source Text Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <Skeleton className="h-3 w-28 rounded" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+            </div>
+
+            {/* Target Text Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <Skeleton className="h-3 w-32 rounded" />
+              <Skeleton className="h-16 w-full rounded-lg" />
+            </div>
+
+            {/* Context Notes Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <Skeleton className="h-3 w-36 rounded" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
           </div>
         ) : !stringData ? (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center font-mono text-xs text-slate-500">
@@ -588,8 +615,20 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
           <div className="flex-1 space-y-3 overflow-y-auto pr-1">
             {activeGlossaryResults.length === 0 ? (
               isSearchingGlossary ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center font-mono text-xs text-slate-500">
-                  <Loader2 className="mb-2 h-6 w-6 animate-spin text-accent-gold" />
+                <div className="space-y-2 py-1">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="space-y-2 rounded-lg border border-border-subtle/50 bg-surface-card/60 p-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-28 rounded" />
+                        <Skeleton className="h-3.5 w-16 rounded bg-brand-navy/60" />
+                      </div>
+                      <Skeleton className="h-3 w-36 rounded bg-surface-card/80" />
+                      <Skeleton className="h-2.5 w-full rounded bg-surface-card/50" />
+                    </div>
+                  ))}
                 </div>
               ) : glossaryQuery.trim() ? (
                 <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500">
@@ -602,7 +641,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                   </span>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 px-6 text-center select-none">
+                <div className="flex flex-col items-center justify-center px-6 py-12 text-center select-none">
                   <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-surface-card text-accent-gold shadow-sm">
                     <Search className="h-6 w-6" />
                   </div>

@@ -491,7 +491,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
         {/* @Mention Autocomplete Popover */}
         {showMentionPicker && filteredMentionUsers.length > 0 && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 absolute bottom-full left-0 z-40 mb-2 max-h-56 w-80 overflow-y-auto rounded-xl border border-border-subtle bg-surface-panel p-1.5 font-sans shadow-2xl duration-150">
+          <div className="slide-in-bottom absolute bottom-full left-0 z-40 mb-2 max-h-56 w-80 overflow-y-auto rounded-xl border border-border-subtle bg-surface-panel p-1.5 font-sans shadow-2xl">
             <div className="flex items-center justify-between border-b border-border-subtle/50 px-2.5 py-1 font-mono text-[10px] tracking-wider text-slate-400 uppercase">
               <span>{t("composer.mentionHeader")}</span>
               <span className="text-accent-gold">@{mentionQuery || "..."}</span>
@@ -542,7 +542,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
         {/* Quote Reply Context Banner */}
         {replyingTo && (
-          <div className="animate-in fade-in slide-in-from-bottom-1 mb-2 flex items-center justify-between rounded-lg border border-border-subtle bg-surface-card px-2.5 py-1.5 font-sans text-xs text-slate-200">
+          <div className="slide-in-bottom mb-2 flex items-center justify-between rounded-lg border border-border-subtle bg-surface-card px-2.5 py-1.5 font-sans text-xs text-slate-200">
             <div className="flex min-w-0 items-center space-x-2">
               <Reply className="h-3.5 w-3.5 shrink-0 text-slate-400" />
               <span className="shrink-0 font-semibold text-slate-200">

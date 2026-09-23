@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Search, Loader2, Users, UserPlus } from "lucide-react";
+import { X, Search, Users, UserPlus } from "lucide-react";
 import {
   UserStatus,
   type ChannelDTO,
@@ -12,6 +12,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
 import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
+import { Skeleton } from "../ui/Skeleton";
 
 export interface ChannelMembersModalProps {
   channel: ChannelDTO;
@@ -95,8 +96,8 @@ export const ChannelMembersModal: React.FC<ChannelMembersModalProps> = ({
     channel.members?.some((m) => m.userId === user?.id && m.role?.toLowerCase() === "admin");
 
   return (
-    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none">
-      <div className="animate-in zoom-in-95 relative w-full max-w-lg space-y-4 rounded-2xl border border-white/[0.08] bg-surface-panel p-6 font-sans shadow-2xl shadow-black/80 duration-150">
+    <div className="modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md select-none">
+      <div className="modal-card-animate relative w-full max-w-lg space-y-4 rounded-2xl border border-white/[0.08] bg-surface-panel p-6 font-sans shadow-2xl shadow-black/80">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
           <div className="flex items-center space-x-3">
@@ -162,9 +163,22 @@ export const ChannelMembersModal: React.FC<ChannelMembersModalProps> = ({
         {/* Members Directory */}
         <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
           {isLoading ? (
-            <div className="flex items-center justify-center space-x-2 py-10 text-xs text-slate-500">
-              <Loader2 className="h-4 w-4 animate-spin text-accent-gold" />
-              <span>{t("members.loading")}</span>
+            <div className="space-y-2 py-1 select-none">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between rounded-xl border border-white/[0.04] bg-surface-card/40 p-2.5"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-3.5 w-28 rounded" />
+                      <Skeleton className="h-2.5 w-16 rounded bg-surface-card/60" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </div>
+              ))}
             </div>
           ) : filteredMembers.length === 0 ? (
             <div className="py-10 text-center text-xs text-slate-500">

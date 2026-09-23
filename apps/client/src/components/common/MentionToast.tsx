@@ -25,7 +25,7 @@ export const MentionToast: React.FC<MentionToastProps> = ({
   return (
     <aside
       aria-label={isDm ? "Direct message notification" : "Direct mention notification"}
-      className="animate-in slide-in-from-top-3 fixed top-14 right-4 z-50 w-84 rounded-2xl border border-accent-gold/40 bg-surface-panel/95 p-4 font-sans shadow-2xl shadow-accent-gold/10 backdrop-blur-xl duration-200 select-none"
+      className="toast-slide-in fixed top-14 right-4 z-50 w-84 rounded-2xl border border-accent-gold/40 bg-surface-panel/95 p-4 font-sans shadow-2xl shadow-accent-gold/10 backdrop-blur-xl select-none"
     >
       {/* Top Banner */}
       <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
