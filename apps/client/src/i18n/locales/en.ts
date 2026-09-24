@@ -156,7 +156,7 @@ export const en = {
   // 7. Modal Dialogs
   // 7.1 Auth Modal
   "auth.title": "CapsLoc",
-  "auth.tagline": "Game Localization & LQA Triage Platform",
+  "auth.tagline": "Game Localization & LQA Triage Hub",
   "auth.signIn": "Sign In",
   "auth.register": "Create Account",
   "auth.username": "Username",

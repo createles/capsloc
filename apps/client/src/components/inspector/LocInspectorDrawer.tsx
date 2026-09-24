@@ -628,7 +628,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                           key={audit.id}
                           className="space-y-1.5 rounded-lg border border-border-subtle/70 bg-surface-panel/80 p-2.5 text-xs shadow-xs"
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between gap-2">
                             <div className="flex min-w-0 items-center gap-2">
                               <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-brand-navy font-mono text-[10px] font-bold text-accent-gold">
                                 {audit.user?.displayName?.slice(0, 2).toUpperCase() || "??"}
