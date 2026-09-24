@@ -46,7 +46,7 @@ async function main(): Promise<void> {
   // ===================================
   const dante = await prisma.user.upsert({
     where: { email: 'dante@capcom.local' },
-    update: { passwordHash: defaultPasswordHash, customStatus: 'In Chapter 1 script triage' },
+    update: { passwordHash: defaultPasswordHash, customStatus: 'Ch.1 スクリプト監修中 (JA->EN)' },
     create: {
       username: 'dante_translator',
       email: 'dante@capcom.local',
@@ -56,13 +56,13 @@ async function main(): Promise<void> {
       primaryLocale: 'ja-JP',
       targetLocales: ['en-US'],
       status: 'online',
-      customStatus: 'In Chapter 1 script triage',
+      customStatus: 'Ch.1 スクリプト監修中 (JA->EN)',
     },
   });
 
   const jill = await prisma.user.upsert({
     where: { email: 'jill@capcom.local' },
-    update: { passwordHash: defaultPasswordHash, customStatus: 'Verifying German HUD layouts' },
+    update: { passwordHash: defaultPasswordHash, customStatus: '☕ On Break' },
     create: {
       username: 'jill_lqa',
       email: 'jill@capcom.local',
@@ -72,7 +72,7 @@ async function main(): Promise<void> {
       primaryLocale: 'en-US',
       targetLocales: ['en-US', 'de-DE'],
       status: 'online',
-      customStatus: 'Verifying German HUD layouts',
+      customStatus: '☕ On Break',
     },
   });
 
@@ -94,7 +94,7 @@ async function main(): Promise<void> {
 
   const ada = await prisma.user.upsert({
     where: { email: 'ada@capcom.local' },
-    update: { passwordHash: defaultPasswordHash, customStatus: 'Sprint deadline: September 20' },
+    update: { passwordHash: defaultPasswordHash, customStatus: 'RE:VERONICAのシナリオチームと会議中' },
     create: {
       username: 'ada_pm',
       email: 'ada@capcom.local',
@@ -104,13 +104,13 @@ async function main(): Promise<void> {
       primaryLocale: 'en-US',
       targetLocales: ['ja-JP', 'en-US', 'zh-CN'],
       status: 'online',
-      customStatus: 'Sprint deadline: September 20',
+      customStatus: 'RE:VERONICAのシナリオチームと会議中',
     },
   });
 
   const nero = await prisma.user.upsert({
     where: { email: 'nero@capcom.local' },
-    update: { passwordHash: defaultPasswordHash, customStatus: 'Reviewing cutscene 04 lip-sync' },
+    update: { passwordHash: defaultPasswordHash, customStatus: 'Cutscene 04 音声ミックス調整中' },
     create: {
       username: 'nero_audio',
       email: 'nero@capcom.local',
@@ -120,7 +120,7 @@ async function main(): Promise<void> {
       primaryLocale: 'en-US',
       targetLocales: ['en-US', 'ja-JP'],
       status: 'online',
-      customStatus: 'Reviewing cutscene 04 lip-sync',
+      customStatus: 'Cutscene 04 音声ミックス調整中',
     },
   });
 
@@ -174,7 +174,7 @@ async function main(): Promise<void> {
 
   const chunli = await prisma.user.upsert({
     where: { email: 'chunli@capcom.local' },
-    update: { passwordHash: defaultPasswordHash, customStatus: 'Coordinating CJK font matrices' },
+    update: { passwordHash: defaultPasswordHash, customStatus: 'CJK フォントテクスチャ検証中' },
     create: {
       username: 'chunli_coord',
       email: 'chunli@capcom.local',
@@ -184,7 +184,7 @@ async function main(): Promise<void> {
       primaryLocale: 'zh-CN',
       targetLocales: ['zh-CN', 'ja-JP'],
       status: 'offline',
-      customStatus: 'Coordinating CJK font matrices',
+      customStatus: 'CJK フォントテクスチャ検証中',
     },
   });
 
@@ -215,7 +215,7 @@ async function main(): Promise<void> {
     update: {
       name: 'loc-re-requiem',
       description: 'Resident Evil Requiem dialogue & lore verification',
-      status: 'Voice-over recording lock in progress',
+      status: '【進行中】音声収録ロック・リップシンク最終検証',
       projectTag: 'RE-REQUIEM',
       localeTag: 'JA->EN',
     },
@@ -223,7 +223,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000002',
       name: 'loc-re-requiem',
       description: 'Resident Evil Requiem dialogue & lore verification',
-      status: 'Voice-over recording lock in progress',
+      status: '【進行中】音声収録ロック・リップシンク最終検証',
       type: 'PUBLIC_PROJECT',
       projectTag: 'RE-REQUIEM',
       localeTag: 'JA->EN',
@@ -236,7 +236,7 @@ async function main(): Promise<void> {
     update: {
       name: 'loc-pragmata',
       description: 'Restricted LQA & telemetry triage for PRAGMATA lunar builds',
-      status: 'NDA / Production build access only',
+      status: 'プライベート / ビルド検証',
       projectTag: 'PRAGMATA',
       localeTag: 'GLOBAL',
     },
@@ -244,7 +244,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000003',
       name: 'loc-pragmata',
       description: 'Restricted LQA & telemetry triage for PRAGMATA lunar builds',
-      status: 'NDA / Production build access only',
+      status: 'プライベート / ビルド検証',
       type: 'PRIVATE_LOCALE',
       projectTag: 'PRAGMATA',
       localeTag: 'GLOBAL',
@@ -712,7 +712,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000204',
       channelId: mhChannel.id,
       senderId: jill.id,
-      content: 'Discovered text overflow in #LOC-MH-003! The German quest failure dialogue banner exceeds the 190-character HUD ceiling by 65 characters. Truncating severely on 1080p and Steam Deck builds. Flagging for dev triage.',
+      content: 'Discovered text overflow in #LOC-MH-003! The German quest failure dialogue:\n"Die Jagd ist fehlgeschlagen! Das Großmonster konnte weder erfolgreich erlegt noch gefangen genommen werden. Bitte kehren Sie unverzüglich in das Basislager zurück..."\nexceeds the 190-character HUD ceiling by 65 characters (+34%). Truncating severely on 1080p and Steam Deck builds. Flagging for dev triage.',
       hoursAgo: 1.8,
       attachment: {
         id: '00000000-0000-0000-0000-000000000301',
@@ -738,7 +738,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000211',
       channelId: reChannel.id,
       senderId: ada.id,
-      content: "Opening Resident Evil Requiem script & terminology triage channel. Please verify tactical items like $STR_ITEM_GREEN_HERB and $STR_ITEM_INJECTOR before tomorrow's build cut.",
+      content: "「【音声収録ロック完了】バイオハザード レクイエムのスクリプト・用語トリアージを開始します。明日のビルドFIXに向けて、$STR_ITEM_GREEN_HERB や $STR_ITEM_INJECTOR などの重要アイテム名は最新の用語集と完全一致させてください。」\nOpening Resident Evil Requiem script & terminology triage. Please verify tactical items before tomorrow's build cut.",
       hoursAgo: 4.0,
       stringKeys: ['STR_ITEM_GREEN_HERB', 'STR_ITEM_INJECTOR'],
     },
@@ -746,7 +746,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000212',
       channelId: reChannel.id,
       senderId: dante.id,
-      content: "Sherry Birkin's Chapter 1 comm link insertion #LOC-REQ-001 is verified against the Japanese audio stems. Lip-sync matches well.",
+      content: "Sherry Birkin's Chapter 1 comm link insertion #LOC-REQ-001 is verified against the Japanese audio stems (日本語音声との同期確認完了). Lip-sync cadence matches within 0.2s tolerance.",
       hoursAgo: 3.2,
       stringKeys: ['LOC-REQ-001'],
     },
@@ -778,7 +778,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000215',
       channelId: reChannel.id,
       senderId: carlos.id,
-      content: 'Also checked lab document #LOC-REQ-003 on PS5 dev kits. Text renders cleanly across Spanish and Portuguese builds.',
+      content: 'Also checked lab document #LOC-REQ-003 on PS5 dev kits. Text renders cleanly across Spanish and Portuguese builds: "Experimento Omega: Fallo de contención biológica".',
       hoursAgo: 0.4,
       stringKeys: ['LOC-REQ-003'],
     },
@@ -788,7 +788,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000221',
       channelId: pragChannel.id,
       senderId: chris.id,
-      content: 'Confidential PRAGMATA localization channel. Access restricted to authorized team members. Reviewing lunar telemetry dialogue and item constants like $STR_ITEM_PULSE_CANNON.',
+      content: '「【機密】PRAGMATA ローカライゼーションチャンネルです。認可メンバーのみアクセス可能。月面テレメトリ通信および $STR_ITEM_PULSE_CANNON 等の武装HUD表示を確認してください。」\nConfidential PRAGMATA localization channel. Reviewing lunar telemetry dialogue and item constants.',
       hoursAgo: 3.0,
       stringKeys: ['STR_ITEM_PULSE_CANNON'],
     },
@@ -796,7 +796,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000222',
       channelId: pragChannel.id,
       senderId: carlos.id,
-      content: "Ran telemetry checks on PS5 dev kits. Diana's uplink dialogue #LOC-PRAG-001 currently has raw Japanese Kanji showing in the English HUD ($STR_ITEM_GRAV_ANCHOR is displaying properly). Attached capture.",
+      content: 'Ran telemetry checks on PS5 dev kits. Diana\'s uplink dialogue #LOC-PRAG-001 currently has raw Japanese Kanji showing in the English caption:\n"【端末通信：同期率98.4%】]\nOther HUD items have been confirmed clean($STR_ITEM_GRAV_ANCHOR is displaying properly). ',
       hoursAgo: 1.5,
       attachment: {
         id: '00000000-0000-0000-0000-000000000303',
@@ -812,7 +812,7 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000223',
       channelId: pragChannel.id,
       senderId: leon.id,
-      content: "> @Carlos Oliveira (Console LQA): Ran telemetry checks on PS5 dev kits. Diana's uplink dialogue #LOC-PRAG-001 currently has raw Japanese Kanji...\nInvestigating the font fallback atlas for PRAGMATA. Looks like the CJK glyph table leaked into the English string pack. Checking #LOC-PRAG-002 as well.",
+      content: "> @Carlos Oliveira (Console LQA): Ran telemetry checks on PS5 dev kits. Diana's uplink dialogue #LOC-PRAG-001 currently has raw Japanese Kanji...\nInvestigating the font fallback atlas for PRAGMATA. Looks like the CJK glyph table leaked into the English string pack because the string table wasn't exported in build 0.8.4. Checking #LOC-PRAG-002 as well.",
       hoursAgo: 0.6,
       stringKeys: ['LOC-PRAG-001', 'LOC-PRAG-002'],
     },
@@ -847,14 +847,14 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000241',
       channelId: dm2.id,
       senderId: ada.id,
-      content: "Dante, what's our ETA on the Chapter 1 narrative strings for Monster Hunter? Production is locking the voice recording schedule.",
+      content: '「ダンテさん、モンスターハンターのチャプター1主要スクリプトの翻訳進捗はいかがでしょうか？収録スケジュールの最終FIXが迫っています。」',
       hoursAgo: 2.0,
     },
     {
       id: '00000000-0000-0000-0000-000000000242',
       channelId: dm2.id,
       senderId: dante.id,
-      content: 'Just wrapped up #LOC-MH-001 and #LOC-MH-002. Voice director approved the cadence. EFIGS team is doing their pass now.',
+      content: '「エイダさん、#LOC-MH-001 と #LOC-MH-002 の監修は完了し、音響監督の承認も得られました。現在EFIGSチームへのハンドオフを進めています。」',
       hoursAgo: 1.2,
       stringKeys: ['LOC-MH-001', 'LOC-MH-002'],
     },
@@ -862,8 +862,9 @@ async function main(): Promise<void> {
       id: '00000000-0000-0000-0000-000000000243',
       channelId: dm2.id,
       senderId: ada.id,
-      content: 'Excellent work. Let me know as soon as the German team finishes reviewing the quest failure banner.',
+      content: '「承知しました。ドイツ語チームからクエスト失敗バナー（#LOC-MH-003）のレビューが上がり次第、至急共有をお願いします。」',
       hoursAgo: 0.7,
+      stringKeys: ['LOC-MH-003'],
     },
 
     // --- Channel 6: Direct Message (dm3: Jill & Carlos) ---
