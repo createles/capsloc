@@ -159,7 +159,7 @@ export const ja: typeof en = {
   // 7. Modal Dialogs
   // 7.1 Auth Modal
   "auth.title": "CapsLoc",
-  "auth.tagline": "ゲームローカライゼーション & LQA トリアージプラットフォーム",
+  "auth.tagline": "ゲームローカライゼーション & LQA トリアージハブ",
   "auth.signIn": "ログイン",
   "auth.register": "アカウント作成",
   "auth.username": "ユーザー名",
