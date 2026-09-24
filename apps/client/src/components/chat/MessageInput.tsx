@@ -611,7 +611,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 textareaRef.current?.focus();
               }}
               title={t("composer.locTagTooltip")}
-              className="cursor-pointer rounded border border-emerald-500/30 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 hover:text-emerald-300"
+              className="cursor-pointer rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/10 hover:text-emerald-300"
             >
               #LOC
             </button>
@@ -627,7 +627,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 textareaRef.current?.focus();
               }}
               title={t("composer.strTagTooltip")}
-              className="cursor-pointer rounded border border-emerald-500/30 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 hover:text-emerald-300"
+              className="cursor-pointer rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-cyan-400 transition-colors hover:bg-cyan-500/10 hover:text-cyan-300"
             >
               $STR
             </button>

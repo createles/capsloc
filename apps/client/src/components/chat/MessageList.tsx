@@ -29,6 +29,7 @@ import { LocRoleBadge } from "../ui/LocRoleBadge";
 import { ImageLightboxModal } from "./ImageLightBoxModal";
 import { UserProfileHoverCard } from "../common/UserProfileHoverCard";
 import { type AttachmentDTO } from "@capsloc/types";
+import { cn } from "../../lib/utils";
 
 export interface MessageListProps {
   channelId: string;
@@ -101,16 +102,32 @@ export const SmartMessageContent: React.FC<{
     return parts.map((part, index) => {
       if (!part) return null;
 
-      // LOC String Tag Match - High-visibility String Literal Syntax Tag
-      if (part.match(/^#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+$/i) || part.match(/^\$STR_[A-Z0-9_]+$/i)) {
+      // #LOC- Narrative & Dialogue Script String Tag Match -> IDE Dotted Underline Emerald Text
+      if (part.match(/^#?[A-Z0-9_-]*LOC-[A-Z0-9_-]+$/i)) {
         const cleanKey = part.replace(/^#/, "");
-        const displayLabel = part.startsWith("#") || part.startsWith("$") ? part : `#${part}`;
+        const displayLabel = part.startsWith("#") ? part : `#${part}`;
         return (
           <button
             key={index}
             type="button"
             onClick={() => onSelectStringKey(cleanKey)}
-            className="mx-0.5 inline-flex cursor-pointer items-center rounded border border-emerald-500/40 bg-emerald-950/60 px-2 py-0.5 align-baseline font-mono text-[11px] font-bold tracking-tight text-emerald-400 shadow-xs transition-colors hover:border-emerald-300 hover:bg-emerald-900/70 hover:text-emerald-200"
+            className="mx-0.5 inline-flex cursor-pointer items-center rounded px-0.5 py-0 align-baseline font-mono text-[13px] font-medium tracking-tight text-emerald-400 underline decoration-dotted decoration-emerald-500/50 underline-offset-4 transition-colors hover:text-emerald-300 hover:decoration-emerald-300"
+          >
+            {displayLabel}
+          </button>
+        );
+      }
+
+      // $STR_ System, Item, & HUD Constant Tag Match -> IDE Dotted Underline Cyan Text
+      if (part.match(/^\$STR_[A-Z0-9_]+$/i)) {
+        const cleanKey = part.replace(/^\$/, "");
+        const displayLabel = part.startsWith("$") ? part : `$${part}`;
+        return (
+          <button
+            key={index}
+            type="button"
+            onClick={() => onSelectStringKey(cleanKey)}
+            className="mx-0.5 inline-flex cursor-pointer items-center rounded px-0.5 py-0 align-baseline font-mono text-[13px] font-medium tracking-tight text-cyan-400 underline decoration-dotted decoration-cyan-500/50 underline-offset-4 transition-colors hover:text-cyan-300 hover:decoration-cyan-300"
           >
             {displayLabel}
           </button>
@@ -206,7 +223,12 @@ const MessageHoverBar: React.FC<{
         <button
           type="button"
           onClick={() => onSelectStringKey(matchedKey)}
-          className="cursor-pointer rounded p-1 text-emerald-400 transition-colors hover:bg-emerald-950/50 hover:text-emerald-300"
+          className={cn(
+            "cursor-pointer rounded p-1 transition-colors",
+            matchedKey.startsWith("STR_")
+              ? "text-cyan-400 hover:bg-cyan-950/50 hover:text-cyan-300"
+              : "text-emerald-400 hover:bg-emerald-950/50 hover:text-emerald-300",
+          )}
           title={`${t("message.inspectTag")} ${tagMatch?.[0]}`}
         >
           <FileCode className="h-3.5 w-3.5" />
