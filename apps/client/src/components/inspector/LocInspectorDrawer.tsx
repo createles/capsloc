@@ -9,11 +9,17 @@ import {
   Copy,
   Check,
   ChevronDown,
+  History,
 } from "lucide-react";
-import { StringStatus, type LocStringDTO, type GlossaryTermDTO } from "@capsloc/types";
+import { StringStatus, LocRole, type LocStringDTO, type GlossaryTermDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useTranslation } from "../../i18n";
+import { useAuth } from "../../hooks/useAuth";
 import { StringStatusBadge } from "../ui/StringStatusBadge";
+import { LocRoleBadge } from "../ui/LocRoleBadge";
+import { Skeleton } from "../ui/Skeleton";
+
+const EMPTY_GLOSSARY_RESULTS: GlossaryTermDTO[] = [];
 
 const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
   const { t } = useTranslation();
@@ -65,59 +71,92 @@ const GlossaryTermCard: React.FC<{ term: GlossaryTermDTO }> = ({ term }) => {
 
 export interface LocInspectorDrawerProps {
   stringKey: string | null;
+  onClearStringKey?: () => void;
   onClose: () => void;
   onStatusUpdated?: (updated: LocStringDTO) => void;
   mentionsCountInCurrentChat?: number;
   isTagHighlightActive?: boolean;
   onToggleTagHighlight?: (stringKey: string) => void;
+  projectTag?: string | null;
+  channelName?: string | null;
 }
 
 export type InspectorTab = "INSPECTOR" | "GLOSSARY";
 
 export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   stringKey,
+  onClearStringKey,
   onClose,
   onStatusUpdated,
   mentionsCountInCurrentChat = 0,
   isTagHighlightActive = false,
   onToggleTagHighlight,
+  projectTag,
+  channelName,
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const canApprove = user?.locRole === LocRole.LOC_PM || user?.locRole === LocRole.SOLUTIONS_DEV;
+
   const [activeTab, setActiveTab] = useState<InspectorTab>("INSPECTOR");
   const [stringData, setStringData] = useState<LocStringDTO | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMutatingStatus, setIsMutatingStatus] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [isAuditHistoryOpen, setIsAuditHistoryOpen] = useState<boolean>(false);
 
   // Glossary search state
   const [glossaryQuery, setGlossaryQuery] = useState<string>("");
   const [glossaryResults, setGlossaryResults] = useState<GlossaryTermDTO[]>([]);
   const [isSearchingGlossary, setIsSearchingGlossary] = useState<boolean>(false);
 
+  // Resolve active project context with generic slug extraction on channel name
+  const effectiveProjectTag = React.useMemo(() => {
+    if (projectTag && projectTag.trim().toUpperCase() !== "GLOBAL") {
+      return projectTag.trim();
+    }
+    if (channelName) {
+      // Strip common taxonomy prefixes (loc-, proj-, channel-, ch-) and extract first slug token
+      const slug = channelName.replace(/^(?:loc|proj|channel|ch)[-_]/i, "");
+      const token = slug.split(/[-_]/)[0];
+      if (token && token.length >= 2) {
+        return token.toUpperCase();
+      }
+    }
+    return null;
+  }, [projectTag, channelName]);
+
+  // Derived idle state: when no search query and no project context, yield empty results without triggering cascading effects
+  const isIdleWithoutProject = !glossaryQuery.trim() && !effectiveProjectTag;
+  const activeGlossaryResults = isIdleWithoutProject ? EMPTY_GLOSSARY_RESULTS : glossaryResults;
+
+  // Detected glossary terms within current inspected string
+  const detectedTerms = React.useMemo(() => {
+    if (!stringData) return [];
+    return activeGlossaryResults.filter((term) => {
+      const inJa = stringData.sourceText?.includes(term.sourceJa);
+      const inEn =
+        term.targetEn && stringData.targetText?.toLowerCase().includes(term.targetEn.toLowerCase());
+      return Boolean(inJa || inEn);
+    });
+  }, [stringData, activeGlossaryResults]);
+
+  const nonDetectedTerms = React.useMemo(() => {
+    if (detectedTerms.length === 0) return activeGlossaryResults;
+    const detectedIds = new Set(detectedTerms.map((t) => t.id));
+    return activeGlossaryResults.filter((t) => !detectedIds.has(t.id));
+  }, [detectedTerms, activeGlossaryResults]);
+
   const [prevStringKey, setPrevStringKey] = useState(stringKey);
+
   if (stringKey !== prevStringKey) {
     setPrevStringKey(stringKey);
     setStringData(null);
+    setIsAuditHistoryOpen(false);
     if (stringKey) {
       setActiveTab("INSPECTOR");
     }
   }
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchInitialGlossary = async () => {
-      try {
-        const { data } = await api.get<GlossaryTermDTO[]>("/glossary");
-        if (isMounted) setGlossaryResults(data);
-      } catch (err) {
-        console.error("Failed to load initial glossary:", err);
-      }
-    };
-    fetchInitialGlossary();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (!stringKey) {
@@ -152,19 +191,31 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   useEffect(() => {
     const trimmed = glossaryQuery.trim();
     if (!trimmed) {
+      // Idle without active project: early exit (activeGlossaryResults derived as [])
+      if (!effectiveProjectTag) {
+        return;
+      }
+
+      let isMounted = true;
       api
-        .get<GlossaryTermDTO[]>("/glossary")
-        .then(({ data }) => setGlossaryResults(data))
-        .catch(console.error);
-      return;
+        .get<GlossaryTermDTO[]>("/glossary/suggestions", {
+          params: { projectTag: effectiveProjectTag, limit: 15 },
+        })
+        .then(({ data }) => {
+          if (isMounted) setGlossaryResults(data);
+        })
+        .catch((err) => console.error("Failed to load glossary suggestions:", err));
+      return () => {
+        isMounted = false;
+      };
     }
 
     const timer = setTimeout(async () => {
       setIsSearchingGlossary(true);
       try {
-        const { data } = await api.get<GlossaryTermDTO[]>(
-          `/glossary/search?q=${encodeURIComponent(trimmed)}`,
-        );
+        const { data } = await api.get<GlossaryTermDTO[]>("/glossary/search", {
+          params: { q: trimmed },
+        });
         setGlossaryResults(data);
       } catch (err) {
         console.error("Glossary lookup failed:", err);
@@ -174,7 +225,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [glossaryQuery]);
+  }, [glossaryQuery, effectiveProjectTag]);
 
   const handleStatusChange = async (newStatus: StringStatus) => {
     if (!stringData || stringData.status === newStatus || isMutatingStatus) return;
@@ -204,7 +255,13 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
   const charLimit = stringData?.charLimit ?? null;
   const currentLength = stringData?.targetText?.length ?? 0;
   const isOverflow = charLimit ? currentLength > charLimit : false;
-  const percentUsed = charLimit ? Math.min(Math.round((currentLength / charLimit) * 100), 100) : 0;
+  const rawPercent = charLimit ? Math.round((currentLength / charLimit) * 100) : 0;
+  const percentUsed = Math.min(rawPercent, 100);
+
+  // In overflow state, the visual ceiling tick is positioned at (charLimit / currentLength) * 100%
+  const boundaryPercent =
+    isOverflow && charLimit ? Math.round((charLimit / currentLength) * 100) : 100;
+  const overflowChars = isOverflow && charLimit ? currentLength - charLimit : 0;
 
   const gaugeColor = !charLimit
     ? "bg-accent-gold"
@@ -215,7 +272,7 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
         : "bg-emerald-500";
 
   return (
-    <aside className="flex h-full w-96 shrink-0 flex-col border-l border-border-subtle bg-surface-panel shadow-2xl select-text">
+    <aside className="drawer-slide-in flex h-full w-96 shrink-0 flex-col border-l border-border-subtle bg-surface-panel shadow-2xl select-text">
       {/* Header Bar with Modern Frosted Glass */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-border-subtle bg-surface-panel/90 px-4 backdrop-blur-md select-none">
         <div className="flex items-center space-x-2">
@@ -282,11 +339,48 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             </span>
           </div>
         ) : isLoading ? (
-          <div className="flex flex-1 flex-col items-center justify-center space-y-2 font-mono text-xs text-slate-500">
-            <Loader2 className="h-5 w-5 animate-spin text-accent-gold" />
-            <span>
-              {t("inspector.inspecting")} #{stringKey}...
-            </span>
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 select-none">
+            {/* Key & Status Ribbon Skeleton */}
+            <div className="space-y-2.5 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Skeleton className="h-2.5 w-20 rounded" />
+                  <Skeleton className="h-4 w-32 rounded" />
+                </div>
+                <Skeleton className="h-5 w-20 rounded-md" />
+              </div>
+              <div className="flex items-center justify-between border-t border-border-subtle/50 pt-2">
+                <Skeleton className="h-3 w-24 rounded" />
+                <Skeleton className="h-3 w-20 rounded" />
+              </div>
+            </div>
+
+            {/* Gauge Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-3 w-24 rounded" />
+                <Skeleton className="h-3 w-16 rounded" />
+              </div>
+              <Skeleton className="h-2 w-full rounded-full" />
+            </div>
+
+            {/* Source Text Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <Skeleton className="h-3 w-28 rounded" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+            </div>
+
+            {/* Target Text Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <Skeleton className="h-3 w-32 rounded" />
+              <Skeleton className="h-16 w-full rounded-lg" />
+            </div>
+
+            {/* Context Notes Skeleton */}
+            <div className="space-y-2 rounded-xl border border-border-subtle bg-surface-card/60 p-3">
+              <Skeleton className="h-3 w-36 rounded" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
           </div>
         ) : !stringData ? (
           <div className="flex flex-1 flex-col items-center justify-center p-6 text-center font-mono text-xs text-slate-500">
@@ -294,21 +388,44 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             <span>
               {t("inspector.notFound")} #{stringKey}
             </span>
+            {onClearStringKey && (
+              <button
+                type="button"
+                onClick={onClearStringKey}
+                className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border-subtle bg-surface-card px-2.5 py-1 text-[11px] text-slate-300 transition-colors hover:border-accent-gold/40 hover:text-accent-gold"
+                title={t("inspector.clearString")}
+              >
+                <X className="h-3.5 w-3.5" />
+                <span>{t("inspector.clearString")}</span>
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex-1 space-y-4 overflow-y-auto p-4">
             {/* Key & Status Ribbon Card */}
-            <div className="space-y-2.5 rounded-xl border border-border-subtle bg-surface-card/60 p-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="block font-mono text-[10px] tracking-wider text-slate-500 uppercase">
-                    {t("inspector.stringIdentifier")}
-                  </span>
-                  <span className="font-mono text-sm font-bold text-accent-gold">
+            <div className="relative space-y-2.5 rounded-xl border border-border-subtle bg-surface-card/60 p-3 shadow-xs">
+              {/* Top Corner Clear Action */}
+              {onClearStringKey && (
+                <button
+                  type="button"
+                  onClick={onClearStringKey}
+                  className="absolute top-1 right-2.5 cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-surface-hover hover:text-white"
+                  title={t("inspector.clearString")}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+
+              <div>
+                <span className="block pr-7 font-mono text-[10px] tracking-wider text-slate-500 uppercase">
+                  {t("inspector.stringIdentifier")}
+                </span>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <span className="truncate font-mono text-sm font-bold text-accent-gold">
                     #{stringData.stringKey}
                   </span>
+                  <StringStatusBadge status={stringData.status} className="shrink-0" />
                 </div>
-                <StringStatusBadge status={stringData.status} />
               </div>
 
               <div className="flex items-center justify-between border-t border-border-subtle/50 pt-2 font-mono text-[11px] text-slate-400">
@@ -337,7 +454,14 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                     <option value={StringStatus.LQA_FLAGGED}>
                       {t("StringStatus.LQA_FLAGGED")}
                     </option>
-                    <option value={StringStatus.APPROVED}>{t("StringStatus.APPROVED")}</option>
+                    <option
+                      value={StringStatus.APPROVED}
+                      disabled={!canApprove}
+                      className={!canApprove ? "bg-surface-canvas text-slate-500" : ""}
+                    >
+                      {t("StringStatus.APPROVED")}{" "}
+                      {!canApprove ? `(${t("inspector.requiresLeadApproval")})` : ""}
+                    </option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 </div>
@@ -377,15 +501,6 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                 <span className="font-mono text-[11px] font-semibold text-slate-400 uppercase">
                   {t("inspector.targetTranslation")} ({stringData.targetLocale})
                 </span>
-                {charLimit && (
-                  <span
-                    className={`font-mono text-[11px] font-bold ${
-                      isOverflow ? "text-rose-400" : "text-slate-400"
-                    }`}
-                  >
-                    {currentLength} / {charLimit} {t("inspector.chars")}
-                  </span>
-                )}
               </div>
 
               <div className="rounded-xl border border-border-subtle bg-surface-card/60 p-3 font-sans text-xs leading-relaxed break-words whitespace-pre-wrap text-slate-200 shadow-xs select-text">
@@ -394,23 +509,72 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                 )}
               </div>
 
-              {/* Visual Character Gauge Bar */}
+              {/* Integrated Character Limit Telemetry Bar */}
               {charLimit && (
-                <div className="space-y-1">
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-panel">
-                    <div
-                      className={`h-full transition-all duration-300 ${gaugeColor}`}
-                      style={{
-                        width: `${Math.min((currentLength / charLimit) * 100, 100)}%`,
-                      }}
-                    />
+                <div className="space-y-1.5 rounded-xl border border-border-subtle bg-surface-card/60 p-2.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                      {t("inspector.characterLimit")}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {isOverflow && (
+                        <span title={`Overflow: +${overflowChars} chars`}>
+                          <AlertTriangle className="h-3.5 w-3.5 shrink-0 animate-pulse text-rose-400" />
+                        </span>
+                      )}
+                      <span
+                        className={`font-mono text-[11px] font-bold ${
+                          isOverflow
+                            ? "text-rose-400"
+                            : percentUsed >= 80
+                              ? "text-amber-400"
+                              : "text-emerald-400"
+                        }`}
+                      >
+                        {currentLength} / {charLimit} {t("inspector.chars")}
+                      </span>
+                    </div>
                   </div>
-                  {isOverflow && (
-                    <p className="flex items-center gap-1 font-mono text-[10px] text-rose-400">
-                      <AlertTriangle className="h-3 w-3 shrink-0" />
-                      {t("inspector.overflowWarning", { count: currentLength - charLimit })}
-                    </p>
-                  )}
+
+                  {/* Progress Bar Track with Centered Percentage Label */}
+                  <div className="relative h-5 w-full overflow-hidden rounded-lg border border-white/[0.08] bg-surface-canvas p-0.5">
+                    {!isOverflow ? (
+                      <div
+                        className={`h-full rounded-md transition-all duration-300 ${gaugeColor}`}
+                        style={{ width: `${percentUsed}%` }}
+                      />
+                    ) : (
+                      <div className="relative h-full w-full overflow-hidden rounded-md bg-rose-950/60">
+                        {/* Allowed Capacity Segment */}
+                        <div
+                          className="absolute top-0 bottom-0 left-0 bg-rose-600 transition-all duration-300"
+                          style={{ width: `${boundaryPercent}%` }}
+                          title={`Allowed limit: ${charLimit} chars`}
+                        />
+                        {/* Vertical Boundary Ceiling Tick */}
+                        <div
+                          className="absolute top-0 bottom-0 z-10 w-0.5 bg-white/90 shadow-sm"
+                          style={{ left: `${boundaryPercent}%` }}
+                          title={`Limit ceiling: ${charLimit} chars`}
+                        />
+                        {/* Hazard Cross-Hatching Segment */}
+                        <div
+                          className="absolute top-0 right-0 bottom-0 transition-all duration-300"
+                          style={{
+                            left: `${boundaryPercent}%`,
+                            backgroundImage:
+                              "repeating-linear-gradient(-45deg, rgba(244,63,94,0.9), rgba(244,63,94,0.9) 4px, rgba(136,19,55,0.95) 4px, rgba(136,19,55,0.95) 8px)",
+                          }}
+                          title={`Overflow: +${overflowChars} chars (${rawPercent - 100}% over limit)`}
+                        />
+                      </div>
+                    )}
+
+                    {/* Centered Percentage Label */}
+                    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center font-mono text-[10px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                      {rawPercent}%
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -426,6 +590,87 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Audit History Collapsible Accordion */}
+            <div className="rounded-xl border border-border-subtle bg-surface-card/60 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setIsAuditHistoryOpen(!isAuditHistoryOpen)}
+                className="flex w-full cursor-pointer items-center justify-between p-3 text-left transition-colors hover:bg-surface-hover/50"
+                title={isAuditHistoryOpen ? "Collapse audit history" : "Expand audit history"}
+              >
+                <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-slate-400 uppercase">
+                  <History className="h-3.5 w-3.5 text-accent-gold" />
+                  <span>{t("inspector.auditTrailTitle")}</span>
+                  {stringData.audits && stringData.audits.length > 0 && (
+                    <span className="py-0.2 ml-1 rounded-md border border-white/[0.08] bg-surface-panel px-1.5 font-mono text-[9px] font-bold text-slate-300">
+                      {stringData.audits.length}
+                    </span>
+                  )}
+                </div>
+                <ChevronDown
+                  className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
+                    isAuditHistoryOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isAuditHistoryOpen && (
+                <div className="border-t border-border-subtle/50 p-3 pt-2.5">
+                  {!stringData.audits || stringData.audits.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-border-subtle/80 bg-surface-panel/40 px-3 py-2 text-center font-mono text-[11px] text-slate-500 italic">
+                      {t("inspector.noAuditHistory")}
+                    </div>
+                  ) : (
+                    <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+                      {stringData.audits.map((audit) => (
+                        <div
+                          key={audit.id}
+                          className="space-y-1.5 rounded-lg border border-border-subtle/70 bg-surface-panel/80 p-2.5 text-xs shadow-xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-brand-navy font-mono text-[10px] font-bold text-accent-gold">
+                                {audit.user?.displayName?.slice(0, 2).toUpperCase() || "??"}
+                              </div>
+                              <span className="truncate font-sans text-xs font-semibold text-slate-200">
+                                {audit.user?.displayName || "System"}
+                              </span>
+                              {audit.user?.locRole && <LocRoleBadge role={audit.user.locRole} />}
+                            </div>
+                            <span className="shrink-0 font-mono text-[10px] text-slate-400">
+                              {new Date(audit.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 pt-0.5 font-mono text-[11px]">
+                            {audit.oldStatus ? (
+                              <>
+                                <span className="rounded bg-surface-card px-1.5 py-0.5 text-slate-400 line-through">
+                                  {t(`StringStatus.${audit.oldStatus}` as const)}
+                                </span>
+                                <span className="text-slate-500">→</span>
+                                <StringStatusBadge status={audit.newStatus} />
+                              </>
+                            ) : (
+                              <div className="flex items-center gap-1 text-slate-400">
+                                <span className="text-[10px] tracking-wide text-slate-500 uppercase">
+                                  {t("inspector.auditBaseline")}:
+                                </span>
+                                <StringStatusBadge status={audit.newStatus} />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Channel Mentions Highlight Trigger */}
             <div className="space-y-1.5 border-t border-border-subtle/50 pt-3">
@@ -508,21 +753,80 @@ export const LocInspectorDrawer: React.FC<LocInspectorDrawerProps> = ({
             )}
           </div>
 
-          <div className="flex-1 space-y-2 overflow-y-auto pr-1">
-            {glossaryResults.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500">
-                <BookOpen className="mb-2 h-7 w-7 text-slate-600" />
-                <span className="text-xs font-medium text-slate-400">
-                  {t("inspector.noTermsFound")}
-                </span>
-                <span className="mt-1 text-[11px] text-slate-500">
-                  {glossaryQuery
-                    ? t("inspector.noEntriesMatch", { query: glossaryQuery })
-                    : t("inspector.noRecords")}
-                </span>
-              </div>
+          <div className="flex-1 space-y-3 overflow-y-auto pr-1">
+            {activeGlossaryResults.length === 0 ? (
+              isSearchingGlossary ? (
+                <div className="space-y-2 py-1">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="space-y-2 rounded-lg border border-border-subtle/50 bg-surface-card/60 p-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-28 rounded" />
+                        <Skeleton className="h-3.5 w-16 rounded bg-brand-navy/60" />
+                      </div>
+                      <Skeleton className="h-3 w-36 rounded bg-surface-card/80" />
+                      <Skeleton className="h-2.5 w-full rounded bg-surface-card/50" />
+                    </div>
+                  ))}
+                </div>
+              ) : glossaryQuery.trim() ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500">
+                  <BookOpen className="mb-2 h-7 w-7 text-slate-600" />
+                  <span className="text-xs font-medium text-slate-400">
+                    {t("inspector.noTermsFound")}
+                  </span>
+                  <span className="mt-1 text-[11px] text-slate-500">
+                    {t("inspector.noEntriesMatch", { query: glossaryQuery })}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center px-6 py-12 text-center select-none">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-surface-card text-accent-gold shadow-sm">
+                    <Search className="h-6 w-6" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-200">
+                    {t("inspector.searchTermsTitle")}
+                  </span>
+                  <span className="mt-1.5 max-w-xs text-[11px] leading-relaxed text-slate-400">
+                    {t("inspector.searchTermsPrompt")}
+                  </span>
+                </div>
+              )
             ) : (
-              glossaryResults.map((term) => <GlossaryTermCard key={term.id} term={term} />)
+              <>
+                {/* 1. Terms Detected in Currently Inspected String */}
+                {detectedTerms.length > 0 && (
+                  <div className="space-y-1.5 rounded-lg border border-accent-gold/40 bg-brand-navy/30 p-2.5">
+                    <div className="flex items-center space-x-1.5 font-mono text-[10px] font-bold tracking-wider text-accent-gold uppercase">
+                      <Languages className="h-3.5 w-3.5 text-accent-gold" />
+                      <span>
+                        {t("inspector.detectedTerms")} ({detectedTerms.length})
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {detectedTerms.map((term) => (
+                        <GlossaryTermCard key={`detected-${term.id}`} term={term} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Project Suggestions or Search Query Results */}
+                {nonDetectedTerms.length > 0 && (
+                  <div className="space-y-2">
+                    {!glossaryQuery && effectiveProjectTag && (
+                      <div className="font-mono text-[10px] font-semibold tracking-wider text-gray-400 uppercase">
+                        {t("inspector.projectSuggestions")} ({effectiveProjectTag})
+                      </div>
+                    )}
+                    {nonDetectedTerms.map((term) => (
+                      <GlossaryTermCard key={term.id} term={term} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

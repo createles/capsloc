@@ -17,7 +17,6 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [status, setStatus] = useState<string>(channel.status || "");
-  const [description, setDescription] = useState<string>(channel.description || "");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +28,6 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
     try {
       const response = await api.patch<ChannelDTO>(`/channels/${channel.id}`, {
         status: status.trim() || null,
-        description: description.trim() || null,
       });
       onUpdated(response.data);
       onClose();
@@ -64,9 +62,9 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
   };
 
   return (
-    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md duration-150 select-none">
+    <div className="modal-backdrop-animate fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md select-none">
       <div
-        className="animate-in zoom-in-95 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80 duration-150"
+        className="modal-card-animate w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-panel shadow-2xl shadow-black/80"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -127,22 +125,6 @@ export const EditChannelStatusModal: React.FC<EditChannelStatusModalProps> = ({
             <p className="mt-1.5 font-mono text-[10px] text-slate-400">
               {t("editStatus.bannerNotice")}
             </p>
-          </div>
-
-          {/* Description Input */}
-          <div>
-            <label className="mb-1.5 flex items-center justify-between font-mono text-xs font-medium tracking-wider text-slate-400 uppercase">
-              <span>{t("editStatus.channelDescription")}</span>
-              <span className="font-mono text-[10px] text-slate-500">{description.length}/250</span>
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("editStatus.descPlaceholder")}
-              maxLength={250}
-              rows={2}
-              className="focus:bg-surface-elevated w-full resize-none rounded-lg border border-white/[0.08] bg-surface-card/90 px-3 py-2 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
-            />
           </div>
 
           {/* Actions */}

@@ -1,27 +1,60 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, X, Image as ImageIcon, Loader2, UploadCloud, AtSign } from "lucide-react";
-import type { AttachmentDTO, ChannelMemberDTO, UserProfileDTO } from "@capsloc/types";
+import {
+  Send,
+  Paperclip,
+  X,
+  Image as ImageIcon,
+  Loader2,
+  UploadCloud,
+  AtSign,
+  ChevronDown,
+  Reply,
+} from "lucide-react";
+import {
+  type AttachmentDTO,
+  type ChannelMemberDTO,
+  type UserProfileDTO,
+  LocRole,
+} from "@capsloc/types";
 import { api } from "../../services/api";
 import { useSocket } from "../../hooks/useSocket";
 import { useAuth } from "../../hooks/useAuth";
 import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
+import { AttachmentTagPicker } from "./AttachmentTagPicker";
+
+export interface QuotedMessageInfo {
+  id: string;
+  senderName: string;
+  content: string;
+}
 
 export interface MessageInputProps {
   channelId: string;
   channelName?: string | null;
+  channelLocaleTag?: string | null;
   isDm?: boolean;
+  replyingTo?: QuotedMessageInfo | null;
+  onCancelReply?: () => void;
 }
 
-export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelName, isDm }) => {
+export const MessageInput: React.FC<MessageInputProps> = ({
+  channelId,
+  channelName,
+  channelLocaleTag,
+  isDm,
+  replyingTo,
+  onCancelReply,
+}) => {
   const { user } = useAuth();
-  const { sendMessage, startTyping, stopTyping } = useSocket();
+  const { socket, sendMessage, startTyping, stopTyping } = useSocket();
   const { t } = useTranslation();
   const [content, setContent] = useState("");
   const [stagedAttachments, setStagedAttachments] = useState<AttachmentDTO[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [activeTagPickerId, setActiveTagPickerId] = useState<string | null>(null);
 
   // Mention (@tag) state
   const [directoryUsers, setDirectoryUsers] = useState<UserProfileDTO[]>([]);
@@ -57,6 +90,21 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     };
   }, [channelId]);
 
+  // Synchronize directory users on real-time profile updates
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = (updatedUser: UserProfileDTO) => {
+      setDirectoryUsers((prev) =>
+        prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u)),
+      );
+    };
+
+    socket.on("user_updated", handleUserUpdated);
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [socket]);
+
   const stopTypingRef = useRef(stopTyping);
   useEffect(() => {
     stopTypingRef.current = stopTyping;
@@ -77,6 +125,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 192)}px`;
     }
   }, [content]);
+
+  useEffect(() => {
+    if (replyingTo && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [replyingTo]);
 
   const filteredMentionUsers = directoryUsers
     .filter((u) => u.id !== user?.id)
@@ -108,28 +162,33 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    const cursor = e.target.selectionStart;
-    setContent(text);
+    const val = e.target.value;
+    setContent(val);
 
-    startTyping(channelId);
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    typingTimeoutRef.current = setTimeout(() => {
+    if (val.trim()) {
+      startTyping(channelId);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        stopTyping(channelId);
+      }, 3000);
+    } else {
       stopTyping(channelId);
-    }, 1500);
+    }
 
-    const textBeforeCursor = text.slice(0, cursor);
-    const mentionMatch = textBeforeCursor.match(/@([a-zA-Z0-9_.-]*)$/);
+    const cursor = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursor);
+    const lastAt = textBeforeCursor.lastIndexOf("@");
 
-    if (mentionMatch) {
-      const matchIndex = textBeforeCursor.lastIndexOf("@");
-      setMentionCursorIndex(matchIndex);
-      setMentionQuery(mentionMatch[1] || "");
-      setSelectedMentionIndex(0);
-      setShowMentionPicker(true);
+    if (lastAt !== -1 && (lastAt === 0 || /\s/.test(textBeforeCursor[lastAt - 1] || ""))) {
+      const query = textBeforeCursor.slice(lastAt + 1);
+      if (!/\s/.test(query)) {
+        setMentionQuery(query);
+        setMentionCursorIndex(lastAt);
+        setSelectedMentionIndex(0);
+        setShowMentionPicker(true);
+      } else {
+        setShowMentionPicker(false);
+      }
     } else {
       setShowMentionPicker(false);
     }
@@ -164,6 +223,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
       }
     }
 
+    if (e.key === "Escape" && replyingTo && onCancelReply) {
+      e.preventDefault();
+      onCancelReply();
+      return;
+    }
+
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -187,6 +252,27 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     }, 10);
   };
 
+  const inferDefaultTag = (): string => {
+    if (user?.locRole === LocRole.TRANSLATOR) return "JA-REF";
+    if (user?.locRole === LocRole.LQA_TESTER) return "UI-OVERFLOW";
+    if (channelLocaleTag) {
+      const clean = channelLocaleTag.replace("->", "-").toUpperCase();
+      return `${clean}-BUG`;
+    }
+    return "UI-OVERFLOW";
+  };
+
+  const handleUpdateTag = async (attachmentId: string, newTag: string | null) => {
+    setStagedAttachments((prev) =>
+      prev.map((a) => (a.id === attachmentId ? { ...a, localeTag: newTag } : a)),
+    );
+    try {
+      await api.patch(`/uploads/${attachmentId}`, { localeTag: newTag });
+    } catch (err) {
+      console.error("Failed to update attachment tag:", err);
+    }
+  };
+
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -202,7 +288,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
         try {
           const formData = new FormData();
           formData.append("file", file, `screenshot_${Date.now()}.png`);
-          formData.append("localeTag", "LQA-Paste");
+          formData.append("localeTag", inferDefaultTag());
 
           const { data } = await api.post<AttachmentDTO>("/uploads", formData, {
             headers: { "Content-Type": "multipart/form-data" },
@@ -230,7 +316,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("localeTag", "QA-Drop");
+      formData.append("localeTag", inferDefaultTag());
 
       const { data } = await api.post<AttachmentDTO>("/uploads", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -254,7 +340,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("localeTag", "QA-Screenshot");
+      formData.append("localeTag", inferDefaultTag());
 
       const { data } = await api.post<AttachmentDTO>("/uploads", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -272,6 +358,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
   };
 
   const removeAttachment = (attachmentId: string) => {
+    if (activeTagPickerId === attachmentId) {
+      setActiveTagPickerId(null);
+    }
     setStagedAttachments((prev) => prev.filter((a) => a.id !== attachmentId));
   };
 
@@ -288,14 +377,21 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
     stopTyping(channelId);
 
     try {
+      let finalContent = trimmed;
+      if (replyingTo) {
+        const singleLineSnippet = replyingTo.content.split("\n")[0]?.slice(0, 150) || "";
+        finalContent = `> ${replyingTo.senderName}: ${singleLineSnippet}\n${trimmed}`;
+      }
+
       sendMessage({
         channelId,
-        content: trimmed,
+        content: finalContent,
         attachmentIds: stagedAttachments.map((a) => a.id),
       });
 
       setContent("");
       setStagedAttachments([]);
+      onCancelReply?.();
       textareaRef.current?.focus();
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -321,13 +417,25 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           {stagedAttachments.map((att) => (
             <div
               key={att.id}
-              className="flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 font-sans text-xs text-gray-200"
+              className="relative flex items-center space-x-1.5 rounded-md border border-border-subtle bg-surface-card px-2.5 py-1 font-sans text-xs text-gray-200"
             >
               <ImageIcon className="h-3.5 w-3.5 shrink-0 text-accent-gold" />
               <span className="max-w-xs truncate">{att.fileName}</span>
               <span className="font-mono text-[10px] text-gray-500">
                 ({(att.fileSize / 1024).toFixed(1)} KB)
               </span>
+
+              {/* Interactive Tag Pill Trigger */}
+              <button
+                type="button"
+                onClick={() => setActiveTagPickerId(activeTagPickerId === att.id ? null : att.id)}
+                className="flex cursor-pointer items-center gap-1 rounded border border-accent-gold/40 bg-brand-navy px-1.5 py-0.5 font-mono text-[10px] font-medium text-accent-gold uppercase transition-colors hover:bg-brand-navy/80"
+                title={t("composer.editTag")}
+              >
+                <span>{att.localeTag || t("composer.addTag")}</span>
+                <ChevronDown className="h-2.5 w-2.5 opacity-70" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => removeAttachment(att.id)}
@@ -335,6 +443,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
               >
                 <X className="h-3.5 w-3.5" />
               </button>
+
+              {/* Tag Picker Popover */}
+              {activeTagPickerId === att.id && (
+                <AttachmentTagPicker
+                  currentTag={att.localeTag}
+                  channelLocaleTag={channelLocaleTag}
+                  onSelectTag={(tag) => handleUpdateTag(att.id, tag)}
+                  onClose={() => setActiveTagPickerId(null)}
+                />
+              )}
             </div>
           ))}
 
@@ -373,7 +491,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
 
         {/* @Mention Autocomplete Popover */}
         {showMentionPicker && filteredMentionUsers.length > 0 && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 absolute bottom-full left-0 z-40 mb-2 max-h-56 w-80 overflow-y-auto rounded-xl border border-border-subtle bg-surface-panel p-1.5 font-sans shadow-2xl duration-150">
+          <div className="slide-in-bottom absolute bottom-full left-0 z-40 mb-2 max-h-56 w-80 overflow-y-auto rounded-xl border border-border-subtle bg-surface-panel p-1.5 font-sans shadow-2xl">
             <div className="flex items-center justify-between border-b border-border-subtle/50 px-2.5 py-1 font-mono text-[10px] tracking-wider text-slate-400 uppercase">
               <span>{t("composer.mentionHeader")}</span>
               <span className="text-accent-gold">@{mentionQuery || "..."}</span>
@@ -422,6 +540,29 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
           </div>
         )}
 
+        {/* Quote Reply Context Banner */}
+        {replyingTo && (
+          <div className="slide-in-bottom mb-2 flex items-center justify-between rounded-lg border border-border-subtle bg-surface-card px-2.5 py-1.5 font-sans text-xs text-slate-200">
+            <div className="flex min-w-0 items-center space-x-2">
+              <Reply className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              <span className="shrink-0 font-semibold text-slate-200">
+                {t("composer.replyingTo", { name: replyingTo.senderName })}:
+              </span>
+              <span className="truncate text-xs text-slate-400 italic">
+                "{replyingTo.content.split("\n")[0]}"
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onCancelReply}
+              className="ml-2 cursor-pointer rounded p-0.5 text-slate-400 transition-colors hover:text-white"
+              title={t("composer.cancelReply")}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+
         <textarea
           ref={textareaRef}
           value={content}
@@ -463,13 +604,32 @@ export const MessageInput: React.FC<MessageInputProps> = ({ channelId, channelNa
             <button
               type="button"
               onClick={() => {
-                setContent((prev) => `${prev}#LOC-`);
+                setContent((prev) => {
+                  const spacer = prev.length > 0 && !/\s$/.test(prev) ? " " : "";
+                  return `${prev}${spacer}#LOC-`;
+                });
                 textareaRef.current?.focus();
               }}
               title={t("composer.locTagTooltip")}
-              className="cursor-pointer rounded border border-emerald-500/30 bg-emerald-950/40 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 hover:text-emerald-300"
+              className="cursor-pointer rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/10 hover:text-emerald-300"
             >
               #LOC
+            </button>
+
+            {/* Quick $STR Tag Insertion Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                setContent((prev) => {
+                  const spacer = prev.length > 0 && !/\s$/.test(prev) ? " " : "";
+                  return `${prev}${spacer}$STR_`;
+                });
+                textareaRef.current?.focus();
+              }}
+              title={t("composer.strTagTooltip")}
+              className="cursor-pointer rounded px-1.5 py-0.5 font-mono text-xs font-semibold text-cyan-400 transition-colors hover:bg-cyan-500/10 hover:text-cyan-300"
+            >
+              $STR
             </button>
 
             <span className="ml-1 hidden font-sans text-[10px] text-slate-500 sm:inline">

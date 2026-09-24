@@ -2,7 +2,8 @@ import { en } from "./en";
 
 export const ja: typeof en = {
   // 1. Top Header & Global Shell
-  "header.studioSubtitle": "ローカライゼーションスタジオ",
+  "header.studioSubtitle": "ローカライゼーション & LQA ハブ",
+  "header.subtitle": "ローカライゼーション & LQA ハブ",
   "header.connected": "接続済み",
   "header.reconnecting": "再接続中...",
   "header.signOut": "サインアウト",
@@ -44,16 +45,23 @@ export const ja: typeof en = {
   "chat.sprintStatusLabel": "スプリントステータス:",
   "chat.edit": "編集",
   "chat.selectChannelPrompt": "チャンネルを選択してチャットを開始してください",
+  "chat.search": "チャンネル内のメッセージを検索",
+  "chat.searchBtn": "検索",
+  "chat.searchPlaceholder": "メッセージを検索...",
+  "chat.searchMatches": "{total}件中 {current}件",
+  "chat.noSearchMatches": "一致するメッセージはありません",
+  "chat.closeSearch": "検索を閉じる",
 
   // 4. Message Feed & Actions
   "message.noMessages": "まだメッセージはありません",
   "message.emptyGuide":
-    "#LOC-XXXX または $STR_XXXX タグを含むメッセージは自動的にリンクされ、インスペクターで検証できます。",
+    "メッセージ内の #LOC-XXXX または $STR_XXXX タグは、クリックすると自動的にインスペクターと連携します。",
   "message.welcomeChannel": "#{channel} へようこそ",
   "message.welcomeDm": "{name} とのダイレクトメッセージ",
   "message.emptyGuideEnhanced":
     "ここが #{channel} の始まりです。#LOC-XXXX または $STR_XXXX を含むメッセージは自動的にハイライトされます。",
   "message.emptyDmGuide": "ここが {name} とのダイレクトメッセージ履歴の始まりです。",
+  "message.reply": "引用返信",
   "message.copyText": "メッセージ本文をコピー",
   "message.copied": "コピー完了",
   "message.inspectTag": "検証:",
@@ -63,29 +71,46 @@ export const ja: typeof en = {
   "message.newMessages": "{count}件の新着メッセージ",
   "message.today": "今日",
   "message.yesterday": "昨日",
+  "message.scrollToLatest": "最新メッセージへスクロール",
   "typing.isTyping": "が入力中...",
   "typing.areTyping": "が入力中...",
 
   // 5. Message Composer
   "composer.placeholderChannel":
-    "#{channel} へのメッセージ... (Shift+Enterで改行、@名前 または #LOC-XXXX を入力)",
+    "#{channel} にメッセージを送信... (Shift+Enterで改行、@名前、#LOC-XXXX、または $STR_XXXX)",
   "composer.placeholderDm":
-    "@{recipient} へのメッセージ... (Shift+Enterで改行、@名前 または #LOC-XXXX を入力)",
+    "@{recipient} にダイレクトメッセージを送信... (Shift+Enterで改行、#LOC-XXXX、または $STR_XXXX)",
+  "composer.replyingTo": "{name} に返信中",
+  "composer.cancelReply": "返信をキャンセル",
   "composer.dropToAttach": "ドロップしてファイルを添付",
   "composer.mentionHeader": "メンバーにメンション",
   "composer.attachTooltip": "スクリーンショットやファイルを添付",
   "composer.mentionTooltip": "メンバーをメンション (@)",
   "composer.locTagTooltip": "#LOC タグを挿入",
+  "composer.strTagTooltip": "$STR タグを挿入",
   "composer.uploadHint": "最大10MB • スクリーンショットを貼り付けまたはドロップ",
   "composer.uploadingAttachment": "添付ファイルをアップロード中...",
+  "composer.editTag": "QAタグを編集",
+  "composer.addTag": "QAタグ追加",
+  "composer.tagPopoverTitle": "添付ファイルのQAタグ",
+  "composer.customTagPlaceholder": "カスタムタグを入力 (Enterで適用)...",
+  "composer.clearTag": "タグをクリア",
+  "composer.tagPresetsLqa": "LQA不具合プリセット",
+  "composer.tagPresetsRef": "参照・文脈プリセット",
+  "composer.tagPresetsChannel": "現在のチャンネル設定",
   "composer.send": "送信",
   "composer.sending": "送信中...",
 
   // 6. Localization & Glossary Inspector
-  "inspector.title": "スタジオコーデックス",
+  "inspector.title": "ストリングコーデックス",
   "inspector.badge": "LQAツール",
   "inspector.tabInspector": "文字列インスペクター",
   "inspector.tabGlossary": "用語集コーデックス",
+  "inspector.projectSuggestions": "プロジェクト用語候補",
+  "inspector.noSuggestionsPrompt":
+    "このチャンネルの候補はありません。上部の検索バーをご利用ください。",
+  "inspector.detectedTerms": "文字列内で検出された用語",
+
   "inspector.noStringSelected": "文字列が選択されていません",
   "inspector.noStringHelp":
     "チャット内の #LOC-XXXX または $STR_XXXX タグをクリックすると、日本語ソース、文字数制限ゲージ、ワークフロー状況を検証できます。",
@@ -102,6 +127,14 @@ export const ja: typeof en = {
   "inspector.translationPending": "翻訳待ち...",
   "inspector.chars": "文字",
   "inspector.overflowWarning": "表示枠超過: 制限より +{count} 文字オーバーしています！",
+  "inspector.characterLimit": "文字数制限",
+  "inspector.limitPercent": "{current} / {limit} 文字 ({percent}%)",
+  "inspector.requiresLeadApproval": "PM/リード承認が必要",
+  "inspector.auditTrailTitle": "監査履歴",
+  "inspector.noAuditHistory": "監査履歴はありません",
+  "inspector.auditBaseline": "初期ベースライン",
+  "inspector.auditTransition": "ステータスを変更:",
+  "inspector.overflowHazard": "表示枠超過: 制限より +{count} 文字オーバー ({percent}% 上限)",
   "inspector.contextNotes": "文脈・シーン注記",
   "inspector.channelMentions": "チャンネル内のメンション",
   "inspector.inChannelCount": "このチャンネル内に {count} 件",
@@ -113,26 +146,33 @@ export const ja: typeof en = {
   "inspector.glossarySearchPlaceholder": "用語を検索 (例: 鬼人薬, ロックピック)...",
   "inspector.noTermsFound": "登録用語が見つかりません",
   "inspector.noEntriesMatch": '"{query}" に一致する用語はありません',
+  "inspector.searchTermsTitle": "用語集コーデックスを検索",
+  "inspector.searchTermsPrompt":
+    "上部の検索バーにキーワードを入力して、公式ゲーム用語、アイテム名、コーデックス設定を検索できます。",
   "inspector.noRecords": "用語集レコードが読み込まれていません",
   "inspector.source": "原文:",
   "inspector.showLess": "折りたたむ",
   "inspector.showGuidelines": "ガイドラインと注記を表示",
+  "inspector.clear": "クリア",
+  "inspector.clearString": "検証中の文字列をクリア",
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal
-  "auth.terminalAuth": "CAPSLOC // 端末認証",
-  "auth.tagline": "社内ゲームローカライゼーション業務",
-  "auth.signIn": "サインイン",
-  "auth.register": "新規オペレーター登録",
+  "auth.title": "CapsLoc",
+  "auth.tagline": "ゲームローカライゼーション & LQA トリアージプラットフォーム",
+  "auth.signIn": "ログイン",
+  "auth.register": "アカウント作成",
   "auth.username": "ユーザー名",
   "auth.displayName": "表示名",
-  "auth.locRole": "担当ロール",
-  "auth.primaryLocale": "主要ロケール",
-  "auth.workstationEmail": "ワークステーション メールアドレス",
-  "auth.securityPassword": "セキュリティパスワード",
-  "auth.btnRegister": "登録してターミナルを開始",
-  "auth.btnSignIn": "セッションを認証",
-  "auth.quickSelect": "デモ用ペルソナ即時選択 (シード済みDB)",
+  "auth.role": "担当ロール",
+  "auth.primaryLanguage": "主要言語",
+  "auth.email": "メールアドレス",
+  "auth.password": "パスワード",
+  "auth.confirmPassword": "パスワード（確認）",
+  "auth.passwordMismatch": "パスワードが一致しません",
+  "auth.btnRegister": "アカウントを作成",
+  "auth.btnSignIn": "ログイン",
+  "auth.demoAccounts": "デモアカウントで試す",
 
   // 7.2 User Profile Modal
   "profile.editProfile": "プロフィール編集",
@@ -204,6 +244,25 @@ export const ja: typeof en = {
   "lightbox.download": "アセットをダウンロード",
   "lightbox.close": "閉じる (Esc)",
 
+  // 7.9 Channel Details Modal
+  "channelDetails.title": "チャンネル詳細",
+  "channelDetails.description": "説明",
+  "channelDetails.descPlaceholder": "このチャンネルの目的やローカライズ範囲を入力...",
+  "channelDetails.noDescription": "チャンネルの説明はまだ設定されていません。",
+  "channelDetails.publicProject": "公開プロジェクト",
+  "channelDetails.privateLocale": "限定ロケール",
+  "channelDetails.membersCount": "メンバー {count} 名",
+  "channelDetails.editDescription": "編集",
+  "channelDetails.saveChanges": "保存",
+  "channelDetails.cancel": "キャンセル",
+  "channelDetails.close": "閉じる",
+  "channelDetails.projectTag": "プロジェクトタグ",
+  "channelDetails.localeTag": "ロケールタグ",
+  "channelDetails.createdBy": "作成者",
+  "channelDetails.createdOnLabel": "作成日",
+  "channelDetails.unknownUser": "不明なユーザー",
+  "channelDetails.system": "システム",
+
   // 8. Hover Cards & Toast Notifications
   // 8.1 User Profile Hover Card
   "hoverCard.status": "ステータス",
@@ -214,6 +273,9 @@ export const ja: typeof en = {
   "toast.taggedIn": "#{channel} でメンションされました",
   "toast.mentionedYou": "さんがあなたをメンションしました",
   "toast.viewMention": "メンションを確認",
+  "toast.directMessage": "ダイレクトメッセージ",
+  "toast.sentDirectMessage": "さんからメッセージが届きました",
+  "toast.openDm": "DMを開く",
 
   // 9. Roles & Status Enums
   // 9.1 Localization Roles

@@ -1,6 +1,7 @@
 export const en = {
   // 1. Top Header & Global Shell
-  "header.studioSubtitle": "Localization Studio",
+  "header.studioSubtitle": "Localization & LQA Hub",
+  "header.subtitle": "Localization & LQA Hub",
   "header.connected": "Connected",
   "header.reconnecting": "Reconnecting...",
   "header.signOut": "Sign Out",
@@ -42,6 +43,12 @@ export const en = {
   "chat.sprintStatusLabel": "Sprint Status:",
   "chat.edit": "Edit",
   "chat.selectChannelPrompt": "Select a channel to start messaging",
+  "chat.search": "Search messages in channel",
+  "chat.searchBtn": "Search",
+  "chat.searchPlaceholder": "Search channel messages...",
+  "chat.searchMatches": "{current} of {total}",
+  "chat.noSearchMatches": "No matches found",
+  "chat.closeSearch": "Close search",
 
   // 4. Message Feed & Actions
   "message.noMessages": "No messages yet",
@@ -52,6 +59,7 @@ export const en = {
   "message.emptyGuideEnhanced":
     "This is the start of #{channel}. Messages with #LOC-XXXX or $STR_XXXX tags will be automatically highlighted.",
   "message.emptyDmGuide": "This is the start of your direct message history with {name}.",
+  "message.reply": "Quote reply",
   "message.copyText": "Copy message text",
   "message.copied": "Copied",
   "message.inspectTag": "Inspect",
@@ -61,29 +69,45 @@ export const en = {
   "message.newMessages": "{count} New Messages",
   "message.today": "Today",
   "message.yesterday": "Yesterday",
+  "message.scrollToLatest": "Scroll to latest messages",
   "typing.isTyping": "is typing...",
   "typing.areTyping": "are typing...",
 
   // 5. Message Composer
   "composer.placeholderChannel":
-    "Message #{channel}... (Shift+Enter for newline, type @name or #LOC-XXXX)",
+    "Message #{channel}... (Shift+Enter for newline, type @name, #LOC-XXXX, or $STR_XXXX)",
   "composer.placeholderDm":
-    "Message @{recipient}... (Shift+Enter for newline, type @name or #LOC-XXXX)",
+    "Message @{recipient}... (Shift+Enter for newline, type @name, #LOC-XXXX, or $STR_XXXX)",
+  "composer.replyingTo": "Replying to {name}",
+  "composer.cancelReply": "Cancel reply",
   "composer.dropToAttach": "Drop file to attach",
   "composer.mentionHeader": "Mention Colleague",
   "composer.attachTooltip": "Attach screenshot or document",
   "composer.mentionTooltip": "Tag colleague (@)",
   "composer.locTagTooltip": "Insert #LOC Key Shortcut",
+  "composer.strTagTooltip": "Insert $STR Key Shortcut",
   "composer.uploadHint": "Max 10MB • Paste or drop screenshots",
   "composer.uploadingAttachment": "Uploading attachment...",
+  "composer.editTag": "Edit QA Tag",
+  "composer.addTag": "Add QA Tag",
+  "composer.tagPopoverTitle": "Attachment QA Tag",
+  "composer.customTagPlaceholder": "Custom tag (Enter to apply)...",
+  "composer.clearTag": "Clear tag",
+  "composer.tagPresetsLqa": "LQA Defect Presets",
+  "composer.tagPresetsRef": "Reference & Context Presets",
+  "composer.tagPresetsChannel": "Active Channel Preset",
   "composer.send": "Send",
   "composer.sending": "Sending...",
 
   // 6. Localization & Glossary Inspector
-  "inspector.title": "Studio Codex",
+  "inspector.title": "String Codex",
   "inspector.badge": "LQA Tools",
   "inspector.tabInspector": "String Inspector",
   "inspector.tabGlossary": "Glossary Codex",
+  "inspector.projectSuggestions": "Project Suggestions",
+  "inspector.noSuggestionsPrompt": "No suggestions for this channel. Use the search bar above.",
+  "inspector.detectedTerms": "Detected in String",
+
   "inspector.noStringSelected": "No String Selected",
   "inspector.noStringHelp":
     "Click any #LOC-XXXX or $STR_XXXX tag in chat to inspect its Japanese source, character limit gauge, and workflow review status.",
@@ -100,6 +124,14 @@ export const en = {
   "inspector.translationPending": "Translation pending...",
   "inspector.chars": "CHARS",
   "inspector.overflowWarning": "Overflow: +{count} chars beyond UI box limit!",
+  "inspector.characterLimit": "Character Limit",
+  "inspector.limitPercent": "{current} / {limit} chars ({percent}%)",
+  "inspector.requiresLeadApproval": "Requires PM/Lead",
+  "inspector.auditTrailTitle": "Audit History",
+  "inspector.noAuditHistory": "No audit history available",
+  "inspector.auditBaseline": "Initial Baseline",
+  "inspector.auditTransition": "Changed status to",
+  "inspector.overflowHazard": "Overflow: +{count} chars beyond boundary limit ({percent}% limit)",
   "inspector.contextNotes": "Context & Scene Notes",
   "inspector.channelMentions": "Channel Mentions",
   "inspector.inChannelCount": "{count} in this channel",
@@ -111,26 +143,33 @@ export const en = {
   "inspector.glossarySearchPlaceholder": "Search terms (e.g. Demondrug, Lockpick)...",
   "inspector.noTermsFound": "No Canonical Terms Found",
   "inspector.noEntriesMatch": 'No entries match "{query}"',
+  "inspector.searchTermsTitle": "Search Canonical Glossary",
+  "inspector.searchTermsPrompt":
+    "Type in the search bar above to look up official game terminology, item names, and lore codex entries.",
   "inspector.noRecords": "No glossary records loaded",
   "inspector.source": "Source:",
   "inspector.showLess": "Show less",
   "inspector.showGuidelines": "Show guidelines & notes",
+  "inspector.clear": "Clear",
+  "inspector.clearString": "Clear inspected string",
 
   // 7. Modal Dialogs
   // 7.1 Auth Modal
-  "auth.terminalAuth": "CAPSLOC // TERMINAL AUTH",
-  "auth.tagline": "Internal Game Localization Operations",
-  "auth.signIn": "SIGN IN",
-  "auth.register": "REGISTER NEW OPERATOR",
+  "auth.title": "CapsLoc",
+  "auth.tagline": "Game Localization & LQA Triage Platform",
+  "auth.signIn": "Sign In",
+  "auth.register": "Create Account",
   "auth.username": "Username",
   "auth.displayName": "Display Name",
-  "auth.locRole": "Loc Role",
-  "auth.primaryLocale": "Primary Locale",
-  "auth.workstationEmail": "Workstation Email",
-  "auth.securityPassword": "Security Password",
-  "auth.btnRegister": "REGISTER & ENTER TERMINAL",
-  "auth.btnSignIn": "AUTHENTICATE SESSION",
-  "auth.quickSelect": "Demo Persona Quick-Select (Seeded DB)",
+  "auth.role": "Role",
+  "auth.primaryLanguage": "Primary Language",
+  "auth.email": "Email Address",
+  "auth.password": "Password",
+  "auth.confirmPassword": "Confirm Password",
+  "auth.passwordMismatch": "Passwords do not match",
+  "auth.btnRegister": "Create Account",
+  "auth.btnSignIn": "Sign In",
+  "auth.demoAccounts": "Demo Accounts",
 
   // 7.2 User Profile Modal
   "profile.editProfile": "Edit Profile",
@@ -204,6 +243,26 @@ export const en = {
   "lightbox.download": "Download asset",
   "lightbox.close": "Close (Esc)",
 
+  // 7.9 Channel Details Modal
+  "channelDetails.title": "Channel Details",
+  "channelDetails.description": "Description",
+  "channelDetails.descPlaceholder":
+    "Add a description to tell your team what this channel is for...",
+  "channelDetails.noDescription": "No description provided for this channel.",
+  "channelDetails.publicProject": "Public Project",
+  "channelDetails.privateLocale": "Private Locale",
+  "channelDetails.membersCount": "{count} members",
+  "channelDetails.editDescription": "Edit",
+  "channelDetails.saveChanges": "Save",
+  "channelDetails.cancel": "Cancel",
+  "channelDetails.close": "Close",
+  "channelDetails.projectTag": "Project Tag",
+  "channelDetails.localeTag": "Locale Tag",
+  "channelDetails.createdBy": "Created By",
+  "channelDetails.createdOnLabel": "Created On",
+  "channelDetails.unknownUser": "Unknown User",
+  "channelDetails.system": "System",
+
   // 8. Hover Cards & Toast Notifications
   // 8.1 User Profile Hover Card
   "hoverCard.status": "Status",
@@ -214,6 +273,9 @@ export const en = {
   "toast.taggedIn": "Tagged in #{channel}",
   "toast.mentionedYou": "mentioned you",
   "toast.viewMention": "View Mention",
+  "toast.directMessage": "Direct Message",
+  "toast.sentDirectMessage": "sent you a message",
+  "toast.openDm": "Open DM",
 
   // 9. Roles & Status Enums
   // 9.1 Localization Roles

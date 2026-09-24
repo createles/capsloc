@@ -2,11 +2,21 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { GlossaryService } from './glossary.service.js';
 import { SearchGlossaryDto } from './dto/search-glossary.dto.js';
+import { SuggestionsGlossaryDto } from './dto/suggestions-glossary.dto.js';
 
 @Controller('glossary')
 @UseGuards(JwtAuthGuard)
 export class GlossaryController {
   constructor(private readonly glossaryService: GlossaryService) {}
+
+  /**
+   * GET /api/glossary/suggestions?projectTag=MH-WILDS&limit=15
+   * Contextual suggestions scoped to active channel project.
+   */
+  @Get('suggestions')
+  async getSuggestions(@Query() dto: SuggestionsGlossaryDto) {
+    return this.glossaryService.getSuggestions(dto);
+  }
 
   /**
    * GET /api/glossary/search?q=demon&category=Item
@@ -19,7 +29,7 @@ export class GlossaryController {
 
   /**
    * GET /api/glossary
-   * Retrieves all canonical glossary terms, optionally filtered by ?category=Monster.
+   * Retrieves canonical glossary terms, optionally filtered by ?category=Monster.
    */
   @Get()
   async findAll(@Query('category') category?: string) {

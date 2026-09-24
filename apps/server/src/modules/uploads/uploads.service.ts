@@ -1,12 +1,17 @@
 import 'multer';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AttachmentType } from '@capsloc/types';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { UploadAttachmentDto } from './dto/upload-attachment.dto.js';
+import { UpdateAttachmentDto } from './dto/update-attachment.dto.js';
+import { StorageService } from '../storage/storage.service.js';
 
 @Injectable()
 export class UploadsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   /**
    * Classifies uploaded media into appropriate domain attachment categories based on MIME and filename
@@ -35,16 +40,39 @@ export class UploadsService {
     if (!file) throw new BadRequestException('No file provided for upload');
 
     const fileType = this.classifyFileType(file.mimetype, file.originalname);
-    const fileUrl = `/uploads/${file.filename}`;
+
+    const stored = await this.storageService.upload(file, { folder: 'capsloc/attachments' });
 
     return this.prisma.attachment.create({
       data: {
         messageId: null, // Staged attachment
-        fileUrl,
-        fileName: file.originalname,
+        fileUrl: stored.fileUrl,
+        fileName: stored.fileName,
         fileType,
-        fileSize: file.size,
+        fileSize: stored.fileSize,
         localeTag: dto.localeTag || null,
+      },
+    });
+  }
+
+  /**
+   * Updates metadata (e.g. localeTag QA pill) of a staged attachment.
+   * Disallows mutating attachments that have already been claimed by a sent message.
+   */
+  async updateAttachment(id: string, dto: UpdateAttachmentDto) {
+    const attachment = await this.prisma.attachment.findUnique({ where: { id } });
+    if (!attachment) {
+      throw new NotFoundException(`Attachment with ID ${id} not found`);
+    }
+
+    if (attachment.messageId !== null) {
+      throw new BadRequestException('Cannot edit metadata of an already sent attachment');
+    }
+
+    return this.prisma.attachment.update({
+      where: { id },
+      data: {
+        localeTag: dto.localeTag?.trim() || null,
       },
     });
   }

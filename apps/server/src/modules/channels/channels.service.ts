@@ -20,7 +20,18 @@ export class ChannelsService {
   async findUserAccessibleChannelIds(userId: string): Promise<string[]> {
     const channels = await this.prisma.channel.findMany({
       where: {
-        OR: [{ type: ChannelType.PUBLIC_PROJECT }, { members: { some: { userId } } }],
+        OR: [
+          { type: ChannelType.PUBLIC_PROJECT },
+          {
+            type: ChannelType.PRIVATE_LOCALE,
+            members: { some: { userId } },
+          },
+          {
+            type: ChannelType.DIRECT_MESSAGE,
+            members: { some: { userId } },
+            OR: [{ messages: { some: {} } }, { createdById: userId }],
+          },
+        ],
       },
       select: { id: true },
     });
@@ -28,14 +39,23 @@ export class ChannelsService {
   }
 
   /*
-    List all public channels + private/DM channels where caller is enrolled
+    List all public channels + private/DM channels where caller is enrolled.
+    Lazy DM Realization: Only reveals DM channels if at least one message has been sent or the caller is the creator.
     */
   async findAll(userId: string) {
     return this.prisma.channel.findMany({
       where: {
         OR: [
           { type: ChannelType.PUBLIC_PROJECT },
-          { members: { some: { userId } } }, // channels that caller is apart of
+          {
+            type: ChannelType.PRIVATE_LOCALE,
+            members: { some: { userId } },
+          },
+          {
+            type: ChannelType.DIRECT_MESSAGE,
+            members: { some: { userId } },
+            OR: [{ messages: { some: {} } }, { createdById: userId }],
+          },
         ],
       },
       include: {

@@ -8,6 +8,7 @@ import { GetMessagesQueryDto } from './dto/get-messages-query.dto.js';
 export interface MentionNotificationTarget {
   targetUserId: string;
   channelName: string | null;
+  channelType?: ChannelType;
 }
 
 @Injectable()
@@ -170,6 +171,7 @@ export class MessagesService {
       select: {
         id: true,
         name: true,
+        type: true,
         members: {
           select: {
             userId: true,
@@ -198,6 +200,7 @@ export class MessagesService {
       .map((u) => ({
         targetUserId: u.id,
         channelName: channel.name ?? null,
+        channelType: channel.type as unknown as ChannelType,
       }));
   }
 }

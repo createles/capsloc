@@ -49,7 +49,7 @@ export const ImageLightboxModal: React.FC<ImageLightboxModalProps> = ({
 
   return (
     <div
-      className="animate-in fade-in fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-md duration-150 select-none"
+      className="modal-backdrop-animate fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-md select-none"
       onClick={onClose}
     >
       {/* Lightbox Header Bar */}

@@ -1,7 +1,7 @@
 import { MessageDTO } from "./message.types.js";
 import { ChannelDTO } from "./channel.types.js";
 import { UserProfileDTO } from "./user.types.js";
-import { UserStatus } from "./enums.js";
+import { UserStatus, ChannelType } from "./enums.js";
 
 export interface JoinChannelPayload {
   channelId: string;
@@ -31,6 +31,23 @@ export interface UserMentionedPayload {
   message: MessageDTO;
   channelId: string;
   channelName?: string | null;
+  channelType?: ChannelType;
+  senderName: string;
+}
+
+export interface DmReceivedPayload {
+  message: MessageDTO;
+  channelId: string;
+  channelType?: ChannelType;
+  senderName: string;
+}
+
+export interface NotificationToastPayload {
+  type: "mention" | "dm";
+  message: MessageDTO;
+  channelId: string;
+  channelName?: string | null;
+  channelType?: ChannelType;
   senderName: string;
 }
 
@@ -41,6 +58,8 @@ export interface OnlineUsersPayload {
 export interface ServerToClientEvents {
   new_message: (message: MessageDTO) => void;
   user_mentioned: (payload: UserMentionedPayload) => void;
+  dm_received: (payload: DmReceivedPayload) => void;
+  channel_created: (channel: ChannelDTO) => void;
   user_typing: (payload: TypingIndicatorPayload) => void;
   user_stop_typing: (payload: { channelId: string; userId: string }) => void;
   user_presence: (payload: UserPresencePayload) => void;

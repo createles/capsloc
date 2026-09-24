@@ -6,6 +6,7 @@ import {
   type ClientToServerEvents,
   type SendMessagePayload,
   type UserMentionedPayload,
+  type NotificationToastPayload,
 } from "@capsloc/types";
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>; // TS definition for Socket.io
@@ -16,9 +17,11 @@ export interface SocketContextType {
   onlineUsers: Record<string, UserStatus>;
   unreadCounts: Record<string, number>;
   mentionCounts: Record<string, number>;
+  activeNotificationToast: NotificationToastPayload | null;
   activeMentionToast: UserMentionedPayload | null;
   setActiveChannelId: (channelId: string | null) => void;
   clearUnread: (channelId: string) => void;
+  dismissNotificationToast: () => void;
   dismissMentionToast: () => void;
   joinChannel: (channelId: string) => void;
   leaveChannel: (channelId: string) => void;

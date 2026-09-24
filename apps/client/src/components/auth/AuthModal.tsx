@@ -14,6 +14,7 @@ export const AuthModal: React.FC = () => {
   // Form State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [locRole, setLocRole] = useState<LocRole>(LocRole.TRANSLATOR);
@@ -22,6 +23,12 @@ export const AuthModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+
+    if (isRegister && password !== confirmPassword) {
+      setError(t("auth.passwordMismatch"));
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -49,11 +56,12 @@ export const AuthModal: React.FC = () => {
   const handleQuickLogin = (quickEmail: string) => {
     setEmail(quickEmail);
     setPassword("Password123!");
+    setConfirmPassword("");
   };
 
   return (
-    <div className="flex min-h-screen w-screen items-center justify-center bg-surface-canvas p-4 text-slate-200">
-      <div className="animate-in zoom-in-95 w-full max-w-md rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-7 shadow-2xl shadow-black/80 backdrop-blur-xl duration-150">
+    <div className="modal-backdrop-animate flex min-h-screen w-screen items-center justify-center bg-surface-canvas p-4 text-slate-200">
+      <div className="modal-card-animate w-full max-w-md rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-7 shadow-2xl shadow-black/80 backdrop-blur-xl">
         {/* Header */}
         <div className="flex items-center space-x-3 border-b border-white/[0.08] pb-5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
@@ -61,7 +69,7 @@ export const AuthModal: React.FC = () => {
           </div>
           <div>
             <h1 className="font-mono text-sm font-bold tracking-wider text-accent-gold">
-              {t("auth.terminalAuth")}
+              {t("auth.title")}
             </h1>
             <p className="font-mono text-[11px] text-slate-400">{t("auth.tagline")}</p>
           </div>
@@ -79,6 +87,7 @@ export const AuthModal: React.FC = () => {
             onClick={() => {
               setIsRegister(false);
               setError(null);
+              setConfirmPassword("");
             }}
           >
             {t("auth.signIn")}
@@ -93,6 +102,7 @@ export const AuthModal: React.FC = () => {
             onClick={() => {
               setIsRegister(true);
               setError(null);
+              setConfirmPassword("");
             }}
           >
             {t("auth.register")}
@@ -143,7 +153,7 @@ export const AuthModal: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-                    {t("auth.locRole")}
+                    {t("auth.role")}
                   </label>
                   <div className="relative">
                     <select
@@ -165,7 +175,7 @@ export const AuthModal: React.FC = () => {
                 </div>
                 <div>
                   <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-                    {t("auth.primaryLocale")}
+                    {t("auth.primaryLanguage")}
                   </label>
                   <div className="relative">
                     <Globe className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -184,7 +194,7 @@ export const AuthModal: React.FC = () => {
 
           <div>
             <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-              {t("auth.workstationEmail")}
+              {t("auth.email")}
             </label>
             <div className="relative">
               <Mail className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -201,7 +211,7 @@ export const AuthModal: React.FC = () => {
 
           <div>
             <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
-              {t("auth.securityPassword")}
+              {t("auth.password")}
             </label>
             <div className="relative">
               <Lock className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -215,6 +225,25 @@ export const AuthModal: React.FC = () => {
               />
             </div>
           </div>
+
+          {isRegister && (
+            <div>
+              <label className="mb-1.5 block font-mono text-[11px] font-medium tracking-wider text-slate-400 uppercase">
+                {t("auth.confirmPassword")}
+              </label>
+              <div className="relative">
+                <Lock className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-500" />
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="focus:bg-surface-elevated w-full rounded-lg border border-white/[0.08] bg-surface-card/90 py-2 pr-3 pl-8 text-white placeholder-slate-500 transition-all focus:border-accent-gold/60 focus:ring-1 focus:ring-accent-gold/20 focus:outline-none"
+                />
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
@@ -233,7 +262,7 @@ export const AuthModal: React.FC = () => {
         {!isRegister && (
           <div className="mt-6 border-t border-white/[0.08] pt-4">
             <span className="block font-mono text-[10px] tracking-wider text-slate-400 uppercase">
-              {t("auth.quickSelect")}
+              {t("auth.demoAccounts")}
             </span>
             <div className="mt-2.5 grid grid-cols-3 gap-2 font-mono text-[11px]">
               <button

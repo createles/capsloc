@@ -1,26 +1,10 @@
-import { Controller, Post, UseGuards, UseInterceptors, UploadedFile, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Patch, Param, UseGuards, UseInterceptors, UploadedFile, Body, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { randomUUID } from 'crypto';
+import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { UploadsService } from './uploads.service.js';
 import { UploadAttachmentDto } from './dto/upload-attachment.dto.js';
-
-// SPECIFICATION - Multer Disk Storage Engine:
-// 1. destination: join(process.cwd(), 'uploads')
-// 2. filename: combine Date.now(), randomUUID(), and extname(file.originalname).toLowerCase()
-// **mark unused arguments with _ (underscore) to appease TypeScript linter
-const multerDiskStorage = diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, join(process.cwd(), 'uploads'));
-  },
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${randomUUID()}`;
-    const fileExtension = extname(file.originalname).toLowerCase();
-    cb(null, `${uniqueSuffix}${fileExtension}`);
-  },
-});
+import { UpdateAttachmentDto } from './dto/update-attachment.dto.js';
 
 // SPECIFICATION - File Filter Security Check:
 // Whitelist allowed MIME types and .log extensions
@@ -43,12 +27,17 @@ export class UploadsController {
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: multerDiskStorage,
+      storage: memoryStorage(),
       limits: { fileSize: 10 * 1024 * 1024 },
       fileFilter: multerFileFilter,
     }),
   )
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Body() dto: UploadAttachmentDto) {
     return this.uploadsService.saveAttachment(file, dto);
+  }
+
+  @Patch(':id')
+  async updateAttachment(@Param('id') id: string, @Body() dto: UpdateAttachmentDto) {
+    return this.uploadsService.updateAttachment(id, dto);
   }
 }

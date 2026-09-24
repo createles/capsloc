@@ -8,11 +8,7 @@ import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  // Establish uploads directory exists on disk
-  const uploadsDir = join(process.cwd(), 'uploads');
-  if (!existsSync(uploadsDir)) {
-    mkdirSync(uploadsDir, { recursive: true });
-  }
+  const isLocalDriver = process.env.STORAGE_DRIVER === 'local' || (!process.env.STORAGE_DRIVER && !process.env.CLOUDINARY_CLOUD_NAME);
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -37,15 +33,17 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Serve static assets from /uploads
-  app.useStaticAssets(uploadsDir, {
-    /**
-     * Intercepts requests to URLs beginning with '/uploads/'
-     * then strips prefix and maps the rest of the path to the physical
-     * disk location (e.g. GET /uploads/1235-uuid.png -> ./uploads/1235-uuid.png)
-     */
-    prefix: '/uploads/',
-  });
+  // Serve static assets from /uploads if using local storage strategy
+  if (isLocalDriver) {
+    const uploadsDir = join(process.cwd(), 'uploads');
+    if (!existsSync(uploadsDir)) {
+      mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    app.useStaticAssets(uploadsDir, {
+      prefix: '/uploads/',
+    });
+  }
 
   await app.listen(process.env.PORT ?? 3000);
 }

@@ -19,6 +19,16 @@ export interface LocStringMessageRefDTO {
   };
 }
 
+export interface LocStringAuditDTO {
+  id: string;
+  locStringId: string;
+  userId: string;
+  oldStatus: StringStatus;
+  newStatus: StringStatus;
+  createdAt: string;
+  user?: UserProfileDTO;
+}
+
 export interface LocStringDTO {
   id: string;
   stringKey: string; // e.g. "LOC-04829"
@@ -32,6 +42,7 @@ export interface LocStringDTO {
   createdAt: string;
   updatedAt: string;
   references?: LocStringMessageRefDTO[];
+  audits?: LocStringAuditDTO[];
 }
 
 export interface GlossaryTermDTO {
@@ -73,4 +84,10 @@ export interface UpdateLocStringStatusDTO {
 export interface GlossarySearchQueryDTO {
   q: string;
   category?: "Character" | "Weapon" | "Item" | "Location" | "Monster";
+}
+
+// Query parameters for contextual project glossary suggestions
+export interface GlossarySuggestionsQueryDTO {
+  projectTag?: string;
+  limit?: number;
 }

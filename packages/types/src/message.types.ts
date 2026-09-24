@@ -13,6 +13,10 @@ export interface AttachmentDTO {
   createdAt: string;
 }
 
+export interface UpdateAttachmentDTO {
+  localeTag?: string | null;
+}
+
 export interface MessageDTO {
   id: string;
   channelId: string;

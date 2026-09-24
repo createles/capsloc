@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Hash, Loader2, Smile, Check, X, Plus, Search, ChevronDown } from "lucide-react";
+import { Hash, Smile, Check, X, Plus, Search, ChevronDown } from "lucide-react";
 import { ChannelType, UserStatus, type ChannelDTO, type UserProfileDTO } from "@capsloc/types";
 import { api } from "../../services/api";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
 import { useTranslation } from "../../i18n";
 import { LocRoleBadge } from "../ui/LocRoleBadge";
+import { Skeleton } from "../ui/Skeleton";
 import { UserProfileModal } from "../profile/UserProfileModal";
 import { CreateChannelModal } from "../channels/CreateChannelModal";
 import { DirectMessageModal } from "../channels/DirectMessageModal";
@@ -107,9 +108,26 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
       );
     };
 
+    const handleChannelUpdated = (updatedChannel: ChannelDTO) => {
+      setChannels((prevChannels) =>
+        prevChannels.map((c) => (c.id === updatedChannel.id ? { ...c, ...updatedChannel } : c)),
+      );
+    };
+
+    const handleChannelCreated = (newChannel: ChannelDTO) => {
+      setChannels((prev) => {
+        if (prev.some((c) => c.id === newChannel.id)) return prev;
+        return [...prev, newChannel];
+      });
+    };
+
     socket.on("user_updated", handleUserUpdated);
+    socket.on("channel_updated", handleChannelUpdated);
+    socket.on("channel_created", handleChannelCreated);
     return () => {
       socket.off("user_updated", handleUserUpdated);
+      socket.off("channel_updated", handleChannelUpdated);
+      socket.off("channel_created", handleChannelCreated);
     };
   }, [socket]);
 
@@ -273,9 +291,23 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
 
           {isProjectsOpen &&
             (isLoading ? (
-              <div className="flex items-center space-x-2 px-2 py-2 font-mono text-xs text-gray-500">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                <span>{t("sidebar.loadingChannels")}</span>
+              <div className="space-y-1 py-1">
+                <div className="flex items-center space-x-2 px-2 py-1.5">
+                  <Skeleton className="h-3.5 w-3.5 rounded bg-surface-card/60" />
+                  <Skeleton className="h-3.5 w-36 rounded bg-surface-card/80" />
+                </div>
+                <div className="flex items-center space-x-2 px-2 py-1.5">
+                  <Skeleton className="h-3.5 w-3.5 rounded bg-surface-card/60" />
+                  <Skeleton className="h-3.5 w-28 rounded bg-surface-card/60" />
+                </div>
+                <div className="flex items-center space-x-2 px-2 py-1.5">
+                  <Skeleton className="h-3.5 w-3.5 rounded bg-surface-card/60" />
+                  <Skeleton className="h-3.5 w-32 rounded bg-surface-card/40" />
+                </div>
+                <div className="flex items-center space-x-2 px-2 py-1.5">
+                  <Skeleton className="h-3.5 w-3.5 rounded bg-surface-card/60" />
+                  <Skeleton className="h-3.5 w-24 rounded bg-surface-card/40" />
+                </div>
               </div>
             ) : filteredProjects.length === 0 ? (
               <div className="px-2 py-2 font-sans text-xs text-slate-500 italic">
@@ -371,7 +403,22 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           </div>
 
           {isDmsOpen &&
-            (filteredDms.length === 0 ? (
+            (isLoading ? (
+              <div className="space-y-1 py-1">
+                <div className="flex items-center space-x-2 px-2 py-1.5">
+                  <Skeleton className="h-4 w-4 rounded-full bg-surface-card/60" />
+                  <Skeleton className="h-3.5 w-28 rounded bg-surface-card/80" />
+                </div>
+                <div className="flex items-center space-x-2 px-2 py-1.5">
+                  <Skeleton className="h-4 w-4 rounded-full bg-surface-card/60" />
+                  <Skeleton className="h-3.5 w-24 rounded bg-surface-card/60" />
+                </div>
+                <div className="flex items-center space-x-2 px-2 py-1.5">
+                  <Skeleton className="h-4 w-4 rounded-full bg-surface-card/60" />
+                  <Skeleton className="h-3.5 w-30 rounded bg-surface-card/40" />
+                </div>
+              </div>
+            ) : filteredDms.length === 0 ? (
               <div className="px-2 py-2 font-sans text-xs text-slate-500 italic">
                 {searchQuery ? t("sidebar.noDmsMatch") : t("sidebar.noDms")}
               </div>

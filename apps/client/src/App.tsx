@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Loader2 } from "lucide-react";
-import { type ChannelDTO, type UserProfileDTO } from "@capsloc/types";
+import { type ChannelDTO, type UserProfileDTO, LocRole } from "@capsloc/types";
 import { api } from "./services/api";
 import { AuthProvider } from "./context/AuthProvider";
 import { useAuth } from "./hooks/useAuth";
 import { SocketProvider } from "./context/SocketProvider";
 import { useSocket } from "./hooks/useSocket";
-import { I18nProvider, useTranslation } from "./i18n";
+import { I18nProvider } from "./i18n";
 import { AuthModal } from "./components/auth/AuthModal";
 import { Header } from "./components/layout/Header";
+import { AppShellSkeleton } from "./components/layout/AppShellSkeleton";
 import { ChannelSidebar } from "./components/layout/ChannelSidebar";
 import { ChatPane } from "./components/layout/ChatPane";
 import { LocInspectorDrawer } from "./components/inspector/LocInspectorDrawer";
 import { InviteMemberModal } from "./components/channels/InviteMemberModal";
 import { ChannelMembersModal } from "./components/channels/ChannelMembersModal";
 import { EditChannelStatusModal } from "./components/channels/EditChannelStatusModal";
+import { ChannelDetailsModal } from "./components/channels/ChannelDetailsModal";
 import { MentionToast } from "./components/common/MentionToast";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { ConnectionBanner } from "./components/common/ConnectionBanner";
@@ -31,13 +32,12 @@ const getInitialInspectorOpen = (): boolean => {
 
 const LocTerminal: React.FC = () => {
   const { user, logout, isLoading, isAuthenticated } = useAuth();
-  const { t } = useTranslation();
   const {
     socket,
     isConnected,
     onlineUsers,
-    activeMentionToast,
-    dismissMentionToast,
+    activeNotificationToast,
+    dismissNotificationToast,
     setActiveChannelId,
   } = useSocket();
   const [activeChannel, setActiveChannel] = useState<ChannelDTO | null>(null);
@@ -78,6 +78,7 @@ const LocTerminal: React.FC = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isEditStatusModalOpen, setIsEditStatusModalOpen] = useState(false);
+  const [isChannelDetailsModalOpen, setIsChannelDetailsModalOpen] = useState(false);
 
   // Pinned sprint status banner state
   const [dismissedBannerChannelIds, setDismissedBannerChannelIds] = useState<
@@ -203,13 +204,13 @@ const LocTerminal: React.FC = () => {
     setHighlightedTagKey(null);
   };
 
+  const handleClearStringKey = () => {
+    setSelectedStringKey(null);
+    setHighlightedTagKey(null);
+  };
+
   if (isLoading) {
-    return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-surface-canvas font-sans text-xs text-slate-400">
-        <Loader2 className="mb-3 h-6 w-6 animate-spin text-accent-gold" />
-        <span>{t("app.connecting")}</span>
-      </div>
-    );
+    return <AppShellSkeleton />;
   }
 
   if (!isAuthenticated || !user) {
@@ -248,6 +249,7 @@ const LocTerminal: React.FC = () => {
           onOpenMembers={() => setIsMembersModalOpen(true)}
           onOpenInvite={() => setIsInviteModalOpen(true)}
           onOpenEditStatus={() => setIsEditStatusModalOpen(true)}
+          onOpenChannelDetails={() => setIsChannelDetailsModalOpen(true)}
           isBannerVisible={isBannerVisible}
           onDismissBanner={handleDismissBanner}
           onRestoreBanner={handleRestoreBanner}
@@ -257,6 +259,9 @@ const LocTerminal: React.FC = () => {
         {isInspectorOpen && (
           <LocInspectorDrawer
             stringKey={selectedStringKey}
+            onClearStringKey={handleClearStringKey}
+            projectTag={activeChannel?.projectTag}
+            channelName={activeChannel?.name}
             onClose={handleCloseInspector}
             mentionsCountInCurrentChat={mentionsCount}
             isTagHighlightActive={!!highlightedTagKey && highlightedTagKey === selectedStringKey}
@@ -266,6 +271,22 @@ const LocTerminal: React.FC = () => {
       </div>
 
       {/* 3. Global Overlays & Modals */}
+      {isChannelDetailsModalOpen && activeChannel && (
+        <ChannelDetailsModal
+          channel={activeChannel}
+          isChannelAdmin={
+            user?.locRole === LocRole.LOC_PM ||
+            activeChannel.createdById === user?.id ||
+            activeChannel.members?.some(
+              (m) => m.userId === user?.id && m.role?.toLowerCase() === "admin",
+            ) ||
+            false
+          }
+          onClose={() => setIsChannelDetailsModalOpen(false)}
+          onUpdated={(updated) => setActiveChannel(updated)}
+        />
+      )}
+
       {isEditStatusModalOpen && activeChannel && (
         <EditChannelStatusModal
           channel={activeChannel}
@@ -290,9 +311,10 @@ const LocTerminal: React.FC = () => {
         />
       )}
 
+      {/* Real-time Toast Notification (Mentions & Direct Messages) */}
       <MentionToast
-        toast={activeMentionToast}
-        onDismiss={dismissMentionToast}
+        toast={activeNotificationToast}
+        onDismiss={dismissNotificationToast}
         onJumpToChannel={handleJumpToChannel}
       />
     </div>

@@ -128,7 +128,7 @@ export const UserProfileHoverCard: React.FC<UserProfileHoverCardProps> = ({
               top: `${coords.top}px`,
               left: `${coords.left}px`,
             }}
-            className="animate-in fade-in zoom-in-95 z-[99999] w-72 space-y-3.5 rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-4 text-left font-sans shadow-2xl shadow-black/80 backdrop-blur-xl duration-150 select-none"
+            className="popover-scale-in z-[99999] w-72 space-y-3.5 rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-4 text-left font-sans shadow-2xl shadow-black/80 backdrop-blur-xl select-none"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={(e) => e.stopPropagation()}
