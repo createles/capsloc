@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { LocRole, StringStatus } from '@capsloc/types';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { QueryLocStringsDto } from './dto/query-loc-strings.dto.js';
 import { UpdateLocStringStatusDto } from './dto/update-status.dto.js';
@@ -10,7 +11,7 @@ export class LocStringsService {
 
   /**
    * Finds a single localization string by unique key (e.g. "LOC-MH-001" or "#LOC-MH-001").
-   * Includes recent message references for screen & discussion context
+   * Includes recent message references for screen & discussion context and status audit logs.
    *
    * @param stringKey - Unique string key (with or without # prefix)
    * @throws NotFoundException if the string does not exist in the database
@@ -19,7 +20,7 @@ export class LocStringsService {
     // 1. Sanitize key by stripping leading '#' or '$'
     const cleanKey = stringKey.replace(/^[#$]/, '');
 
-    // 2. Query Prisma with nested references and sanitized sender profile
+    // 2. Query Prisma with nested references, audits, and sanitized sender profile
     const locString = await this.prisma.locString.findUnique({
       where: { stringKey: cleanKey },
       include: {
@@ -43,6 +44,13 @@ export class LocStringsService {
                 sender: { select: safeUserSelect },
               },
             },
+          },
+        },
+        audits: {
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: { select: safeUserSelect },
           },
         },
       },
@@ -99,19 +107,79 @@ export class LocStringsService {
 
   /**
    * Updates string review status (e.g. IN_REVIEW -> LQA_FLAGGED).
+   * Enforces RBAC: Only LOC_PM and SOLUTIONS_DEV can grant APPROVED status.
+   * Atomically records a LocStringAudit entry within a database transaction.
    *
    * @param stringKey - Unique string key
    * @param dto - UpdateLocStringStatusDto containing target status enum
+   * @param user - Authenticated user entity from JwtAuthGuard
    */
-  async updateStatus(stringKey: string, dto: UpdateLocStringStatusDto) {
+  async updateStatus(stringKey: string, dto: UpdateLocStringStatusDto, user: any) {
     const cleanKey = stringKey.replace(/^[#$]/, ''); // Strip leading '#' or '$'
 
-    // Verify existence first (throws 404 if not found)
-    await this.findByKey(cleanKey);
+    // RBAC: Only Leads/PMs can approve
+    if (dto.status === StringStatus.APPROVED) {
+      const isLeadOrPm = user?.locRole === LocRole.LOC_PM || user?.locRole === LocRole.SOLUTIONS_DEV;
+      if (!isLeadOrPm) {
+        throw new ForbiddenException('Only Localization Project Managers and Solutions Developers can grant APPROVED status');
+      }
+    }
 
-    return this.prisma.locString.update({
-      where: { stringKey: cleanKey },
-      data: { status: dto.status },
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.locString.findUnique({
+        where: { stringKey: cleanKey },
+      });
+
+      if (!current) {
+        throw new NotFoundException(`Localization string '${stringKey}' not found`);
+      }
+
+      if (current.status !== dto.status) {
+        await tx.locStringAudit.create({
+          data: {
+            locStringId: current.id,
+            userId: user.id,
+            oldStatus: current.status,
+            newStatus: dto.status,
+          },
+        });
+      }
+
+      return tx.locString.update({
+        where: { stringKey: cleanKey },
+        data: { status: dto.status },
+        include: {
+          references: {
+            take: 20,
+            orderBy: { message: { createdAt: 'desc' } },
+            include: {
+              message: {
+                select: {
+                  id: true,
+                  channelId: true,
+                  channel: {
+                    select: {
+                      id: true,
+                      name: true,
+                      type: true,
+                    },
+                  },
+                  content: true,
+                  createdAt: true,
+                  sender: { select: safeUserSelect },
+                },
+              },
+            },
+          },
+          audits: {
+            take: 10,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              user: { select: safeUserSelect },
+            },
+          },
+        },
+      });
     });
   }
 }

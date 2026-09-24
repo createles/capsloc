@@ -1,5 +1,6 @@
 import { Controller, Get, Patch, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { LocStringsService } from './loc-strings.service.js';
 import { QueryLocStringsDto } from './dto/query-loc-strings.dto.js';
 import { UpdateLocStringStatusDto } from './dto/update-status.dto.js';
@@ -32,7 +33,7 @@ export class LocStringsController {
    * Mutates the review status of a localization string.
    */
   @Patch(':key/status')
-  async updateStatus(@Param('key') key: string, @Body() dto: UpdateLocStringStatusDto) {
-    return this.locStringsService.updateStatus(key, dto);
+  async updateStatus(@Param('key') key: string, @Body() dto: UpdateLocStringStatusDto, @CurrentUser() user: any) {
+    return this.locStringsService.updateStatus(key, dto, user);
   }
 }

@@ -141,6 +141,16 @@ async function main(): Promise<void> {
       contextNotes: '[SPEAKER]: Gemma (Master Smithy)\n[VOICE]: Energetic, warm, tomboyish inflection.\n[SUBTITLE]: Displays above forge interaction menu.',
       status: 'IN_REVIEW' as const,
     },
+    {
+      stringKey: 'LOC-MH-003',
+      projectTag: 'MH-WILDS',
+      sourceText: '「大型モンスターの討伐または捕獲に失敗しました。キャンプに戻り、装備とアイテムを再編成して再挑戦してください。」',
+      targetLocale: 'de-DE',
+      targetText: '"Die Jagd ist fehlgeschlagen! Das Großmonster konnte weder erfolgreich erlegt noch gefangen genommen werden. Bitte kehren Sie unverzüglich in das Basislager zurück, um Ihre Ausrüstung sowie Jagdobjekte neu zu organisieren und die Quest erneut zu starten."',
+      charLimit: 190,
+      contextNotes: '[CATEGORY]: Quest Completion HUD Dialogue Box\n[UI CONSTRAINT]: Quest failure notification banner is hard-capped to 190 characters to avoid clipping into the mini-map frame.\n[LQA BUG]: German compound nouns ("Großmonster", "unverzüglich") expand 34% beyond UI boundary ceiling (255 / 190 chars).\n[RECOMMENDATION]: Shorten sentence structure to fit within the 190-character dialogue box.',
+      status: 'LQA_FLAGGED' as const,
+    },
 
     // 2. Resident Evil - Remake
     {
@@ -244,6 +254,49 @@ async function main(): Promise<void> {
         status: str.status,
       },
       create: str,
+    });
+  }
+
+  // Seed showcase audit entry and discussion message for LOC-MH-003 (German UI Overflow sample)
+  const mh003 = await prisma.locString.findUnique({ where: { stringKey: 'LOC-MH-003' } });
+  if (mh003) {
+    await prisma.locStringAudit.upsert({
+      where: { id: '00000000-0000-0000-0000-000000000101' },
+      update: {},
+      create: {
+        id: '00000000-0000-0000-0000-000000000101',
+        locStringId: mh003.id,
+        userId: jill.id,
+        oldStatus: 'IN_REVIEW',
+        newStatus: 'LQA_FLAGGED',
+        createdAt: new Date(Date.now() - 3600000 * 2), // 2 hours ago
+      },
+    });
+
+    const overflowMsg = await prisma.message.upsert({
+      where: { id: '00000000-0000-0000-0000-000000000201' },
+      update: {},
+      create: {
+        id: '00000000-0000-0000-0000-000000000201',
+        channelId: mhChannel.id,
+        senderId: jill.id,
+        content: 'Text overflow detected in #LOC-MH-003! The German quest failure dialogue banner exceeds the 190-character HUD ceiling by 65 characters (+34% overflow). Truncating on 1080p and Steam Deck builds. Flagged for review.',
+        createdAt: new Date(Date.now() - 3600000 * 2),
+      },
+    });
+
+    await prisma.locStringRef.upsert({
+      where: {
+        messageId_locStringId: {
+          messageId: overflowMsg.id,
+          locStringId: mh003.id,
+        },
+      },
+      update: {},
+      create: {
+        messageId: overflowMsg.id,
+        locStringId: mh003.id,
+      },
     });
   }
 

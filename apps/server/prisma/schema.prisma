@@ -69,9 +69,10 @@ model User {
   updatedAt          DateTime @updatedAt
 
   // Named relations to define multiple relations to same model
-  sentMessages       Message[]       @relation("UserSentMessages")
+  sentMessages       Message[]        @relation("UserSentMessages")
   channelMemberships ChannelMember[]
-  createdChannels    Channel[]       @relation("ChannelCreator")
+  createdChannels    Channel[]        @relation("ChannelCreator")
+  stringAudits       LocStringAudit[]
 
   @@map("users")
 }
@@ -160,6 +161,7 @@ model LocString {
   updatedAt    DateTime     @updatedAt
 
   references LocStringRef[]
+  audits     LocStringAudit[]
 
   @@map("loc_strings")
 }
@@ -174,6 +176,21 @@ model LocStringRef {
 
   @@unique([messageId, locStringId])
   @@map("loc_string_refs")
+}
+
+model LocStringAudit {
+  id          String       @id @default(uuid())
+  locStringId String
+  userId      String
+  oldStatus   StringStatus
+  newStatus   StringStatus
+  createdAt   DateTime     @default(now())
+
+  locString LocString @relation(fields: [locStringId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([locStringId, createdAt(sort: Desc)])
+  @@map("loc_string_audits")
 }
 
 model GlossaryTerm {
