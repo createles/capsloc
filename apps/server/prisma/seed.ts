@@ -535,11 +535,11 @@ async function main(): Promise<void> {
     {
       stringKey: 'LOC-PRAG-001',
       projectTag: 'PRAGMATA',
-      sourceText: '【端末通信：同期率98.4%】\n「ヒュー、聞こえますか？上空の大気シールドに亀裂を確認しました。\n量子ハッキングコードの送信準備が完了しています。私の手を握ってください……行きますよ！」',
+      sourceText: '【同期率98.4%】\n「ヒュー、聞こえますか？シールドのハッキングが終わりました！\nもう一度銃を使って！」',
       targetLocale: 'en-US',
-      targetText: '"[UPLINK BROADCAST: Sync Ratio 98.4%]\nHugh, can you hear me? Structural rupture detected across the upper atmospheric shield.\nQuantum bypass sequence is armed and primed. Hold my hand... here we go!"',
+      targetText: '"[UPLINK BROADCAST: Sync Ratio 98.4%]\nHugh, can you hear me? I\'ve hacked into it\'s shields.\nTry using your gun again!"',
       charLimit: 260,
-      contextNotes: '[CINEMATIC]: Lunar atmospheric rupture set-piece sequence.\n[VOICE]: Diana (synthetic/human hybrid tone, calm urgency).',
+      contextNotes: '[CINEMATIC]: Android is closely approaching Hugh, Diana provides assistance.\n[VOICE]: Diana (synthetic/human hybrid tone, shouting with urgency).',
       status: 'IN_REVIEW' as const,
     },
     {
