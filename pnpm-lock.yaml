@@ -123,6 +123,9 @@ importers:
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
+      dotenv:
+        specifier: ^17.3.1
+        version: 17.4.2
       multer:
         specifier: ^2.2.0
         version: 2.2.0
@@ -190,9 +193,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.1.2
         version: 4.1.11(vitest@4.1.11)
-      dotenv:
-        specifier: ^17.3.1
-        version: 17.4.2
       oxlint:
         specifier: ^1.81.0
         version: 1.81.0

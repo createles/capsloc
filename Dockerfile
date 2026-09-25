@@ -62,6 +62,7 @@ COPY --chown=node:node --from=builder /app/apps/server/dist ./apps/server/dist
 COPY --chown=node:node --from=builder /app/apps/server/node_modules ./apps/server/node_modules
 COPY --chown=node:node --from=builder /app/apps/server/package.json ./apps/server/package.json
 COPY --chown=node:node --from=builder /app/apps/server/prisma ./apps/server/prisma
+COPY --chown=node:node --from=builder /app/apps/server/prisma.config.ts ./apps/server/prisma.config.ts
 COPY --chown=node:node --from=builder /app/apps/server/src/generated ./apps/server/src/generated
 COPY --chown=node:node --from=builder /app/apps/server/docker-start.sh ./apps/server/docker-start.sh
 COPY --chown=node:node --from=builder /app/apps/client/dist /app/apps/client/dist

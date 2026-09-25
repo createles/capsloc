@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+export PATH="./node_modules/.bin:$PATH"
+
 echo "🚀 [CapsLoc] Running database migrations..."
 ./node_modules/.bin/prisma migrate deploy
 
