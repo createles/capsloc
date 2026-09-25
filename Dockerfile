@@ -4,6 +4,7 @@
 FROM node:22-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV CI=true
 RUN corepack enable && corepack prepare pnpm@11.24.0 --activate
 
 # ==============================================================================
@@ -31,16 +32,21 @@ RUN pnpm --filter @capsloc/types run build
 RUN pnpm --filter @capsloc/server run build
 RUN pnpm --filter @capsloc/client run build
 
-# Generate Prisma 7 Client bindings in the server
-WORKDIR /app/apps/server
-RUN pnpm exec prisma generate
-
 # Prune devDependencies to keep runtime container ultra-lean
 WORKDIR /app
 RUN pnpm prune --prod
 
 # ==============================================================================
-# STAGE 3: Production Server Runner (NestJS API & WebSocket Gateway)
+# STAGE 3: Production Client Runner (Nginx SPA & Reverse Proxy for Docker Compose)
+# ==============================================================================
+FROM nginx:alpine AS client-runner
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/apps/client/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+# ==============================================================================
+# STAGE 4: Production Unified Server Runner (NestJS API, Sockets & SPA)
 # ==============================================================================
 FROM node:22-alpine AS server-runner
 WORKDIR /app
@@ -49,7 +55,7 @@ ENV NODE_ENV=production
 # Run as non-privileged system user for container security hardening
 USER node
 
-# Copy compiled artifacts, schema, and pruned production dependencies
+# Copy compiled artifacts, schema, client SPA dist, and pruned production dependencies
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/packages/types ./packages/types
 COPY --chown=node:node --from=builder /app/apps/server/dist ./apps/server/dist
@@ -57,16 +63,8 @@ COPY --chown=node:node --from=builder /app/apps/server/node_modules ./apps/serve
 COPY --chown=node:node --from=builder /app/apps/server/package.json ./apps/server/package.json
 COPY --chown=node:node --from=builder /app/apps/server/prisma ./apps/server/prisma
 COPY --chown=node:node --from=builder /app/apps/server/src/generated ./apps/server/src/generated
+COPY --chown=node:node --from=builder /app/apps/client/dist /app/apps/client/dist
 
 WORKDIR /app/apps/server
 EXPOSE 3000
 CMD ["node", "dist/main.js"]
-
-# ==============================================================================
-# STAGE 4: Production Client Runner (Nginx SPA & Reverse Proxy)
-# ==============================================================================
-FROM nginx:alpine AS client-runner
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/apps/client/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
