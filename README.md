@@ -26,7 +26,7 @@
 
 </div>
 
-## ⚡ When It's a Lot, CapsLoc: The Localization Context Gap
+## ⚡ When It's a Lot, use CapsLoc: The Localization Context Gap
 
 In AAA game development, game localization requires fast-moving multi-disciplinary cooperation between the linguistic, literary, technical, and audio teams in order for a Game Project to deliver a consistent identity across the various target locales & global contexts. In the middle of those workflows are:
 
