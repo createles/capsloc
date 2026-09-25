@@ -3,6 +3,7 @@ import { Terminal, Lock, Mail, User, Globe, AlertCircle, Loader2, ChevronDown } 
 import { LocRole } from "@capsloc/types";
 import { useAuth } from "../../hooks/useAuth";
 import { useTranslation } from "../../i18n";
+import { LanguageToggle } from "../ui/LanguageToggle";
 
 export const AuthModal: React.FC = () => {
   const { login, register } = useAuth();
@@ -63,16 +64,19 @@ export const AuthModal: React.FC = () => {
     <div className="modal-backdrop-animate flex min-h-screen w-screen items-center justify-center bg-surface-canvas p-4 text-slate-200">
       <div className="modal-card-animate w-full max-w-md rounded-2xl border border-white/[0.08] bg-surface-panel/95 p-7 shadow-2xl shadow-black/80 backdrop-blur-xl">
         {/* Header */}
-        <div className="flex items-center space-x-3 border-b border-white/[0.08] pb-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
-            <Terminal className="h-5 w-5 text-accent-gold" />
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-5">
+          <div className="flex items-center space-x-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent-gold/40 bg-brand-navy shadow-inner">
+              <Terminal className="h-5 w-5 text-accent-gold" />
+            </div>
+            <div>
+              <h1 className="font-mono text-sm font-bold tracking-wider text-accent-gold">
+                {t("auth.title")}
+              </h1>
+              <p className="font-mono text-[11px] text-slate-400">{t("auth.tagline")}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-mono text-sm font-bold tracking-wider text-accent-gold">
-              {t("auth.title")}
-            </h1>
-            <p className="font-mono text-[11px] text-slate-400">{t("auth.tagline")}</p>
-          </div>
+          <LanguageToggle />
         </div>
 
         {/* Tab Selector */}

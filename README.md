@@ -15,7 +15,7 @@
 
 **A high-performance internal communication hub built for Game Localization teams and LQA workflows.**
 
-[Live Demo](#quickstart) • [Architecture Breakdown](./docs/architecture.md)
+[Live Demo](https://capsloc.up.railway.app/) • [Architecture Breakdown](./docs/architecture.md)
 
 <br />
 <br />

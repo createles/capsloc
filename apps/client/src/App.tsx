@@ -210,7 +210,10 @@ const LocTerminal: React.FC = () => {
   };
 
   if (isLoading) {
-    return <AppShellSkeleton />;
+    if (typeof window !== "undefined" && localStorage.getItem("capsloc_has_session") === "true") {
+      return <AppShellSkeleton />;
+    }
+    return <AuthModal />;
   }
 
   if (!isAuthenticated || !user) {

@@ -19,10 +19,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 2. Hydrate user profile from backend
         const { data: profile } = await api.get<UserProfileDTO>("/auth/me");
         setUser(profile);
+        localStorage.setItem("capsloc_has_session", "true");
       } catch {
         // No active session or cookie expired; stay in logged-out state
         setAccessToken(null);
         setUser(null);
+        localStorage.removeItem("capsloc_has_session");
       } finally {
         setIsLoading(false);
       }
@@ -35,6 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { data } = await api.post<AuthResponseDTO>("/auth/login", credentials); // gives us our sanitized user data and the accessToken
     setAccessToken(data.accessToken);
     setUser(data.user);
+    localStorage.setItem("capsloc_has_session", "true");
   };
 
   const register = async (credentials: RegisterCredentials): Promise<void> => {
@@ -52,6 +55,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       setAccessToken(null);
       setUser(null);
+      localStorage.removeItem("capsloc_has_session");
     }
   };
 

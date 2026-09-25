@@ -15,7 +15,7 @@
 
 **ゲームローカライゼーションチームとLQAワークフローのために設計された、高パフォーマンス社内コミュニケーションハブ。**
 
-[ライブデモ](#クイックスタート) • [アーキテクチャ詳細](./docs/architecture.md)
+[ライブデモ](https://capsloc.up.railway.app/) • [アーキテクチャ詳細](./docs/architecture.md)
 
 <br />
 <br />
