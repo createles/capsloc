@@ -48,9 +48,12 @@ CMD ["nginx", "-g", "daemon off;"]
 # ==============================================================================
 # STAGE 4: Production Unified Server Runner (NestJS API, Sockets & SPA)
 # ==============================================================================
-FROM node:22-alpine AS server-runner
+FROM base AS server-runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Copy root workspace manifests
+COPY --chown=node:node --from=builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
 
 # Run as non-privileged system user for container security hardening
 USER node
