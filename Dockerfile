@@ -2,10 +2,10 @@
 # STAGE 1: Base Alpine image with Node.js 22 & pnpm v11
 # ==============================================================================
 FROM node:22-alpine AS base
-ENV PNPM_HOME="/pnpm"
+ENV PNPM_HOME="/home/node/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV CI=true
-RUN corepack enable && corepack prepare pnpm@11.24.0 --activate
+RUN npm install -g pnpm@11.24.0
 
 # ==============================================================================
 # STAGE 2: Monorepo Build & Dependency Pruning
