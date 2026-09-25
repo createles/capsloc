@@ -55,9 +55,6 @@ ENV NODE_ENV=production
 # Copy root workspace manifests
 COPY --chown=node:node --from=builder /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
 
-# Run as non-privileged system user for container security hardening
-USER node
-
 # Copy compiled artifacts, schema, client SPA dist, and pruned production dependencies
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/packages/types ./packages/types
@@ -66,8 +63,15 @@ COPY --chown=node:node --from=builder /app/apps/server/node_modules ./apps/serve
 COPY --chown=node:node --from=builder /app/apps/server/package.json ./apps/server/package.json
 COPY --chown=node:node --from=builder /app/apps/server/prisma ./apps/server/prisma
 COPY --chown=node:node --from=builder /app/apps/server/src/generated ./apps/server/src/generated
+COPY --chown=node:node --from=builder /app/apps/server/docker-start.sh ./apps/server/docker-start.sh
 COPY --chown=node:node --from=builder /app/apps/client/dist /app/apps/client/dist
+
+# Ensure the non-privileged node user owns /app and all contents
+RUN chown -R node:node /app && chmod +x /app/apps/server/docker-start.sh
+
+# Run as non-privileged system user for container security hardening
+USER node
 
 WORKDIR /app/apps/server
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+CMD ["./docker-start.sh"]
