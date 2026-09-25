@@ -12,8 +12,10 @@ export const getAccessToken = (): string | null => {
   return inMemoryAccessToken;
 };
 
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || "";
+
 export const api = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE ? `${API_BASE}/api` : "/api",
   withCredentials: true, // Guarantees HttpOnly refresh cookie is sent
   headers: {
     "Content-Type": "application/json",
@@ -51,7 +53,7 @@ api.interceptors.response.use(
       try {
         // Silent refresh call - HttpOnly cookie is attached automatically
         const response = await axios.post<AuthTokensDTO>(
-          "/api/auth/refresh",
+          `${API_BASE}/api/auth/refresh`,
           {},
           { withCredentials: true },
         );

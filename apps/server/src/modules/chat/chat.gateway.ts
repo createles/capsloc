@@ -66,7 +66,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const token = rawToken.replace(/^Bearer\s+/i, '');
 
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || 'capsloc_super_secret_access_key_dev_12345',
+        secret: process.env.JWT_ACCESS_SECRET || 'capsloc_super_secret_access_key_dev_12345',
       });
 
       client.data.user = {

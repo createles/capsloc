@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module.js';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
@@ -42,6 +43,31 @@ async function bootstrap() {
 
     app.useStaticAssets(uploadsDir, {
       prefix: '/uploads/',
+    });
+  }
+
+  // Serve compiled React SPA in production if client build exists
+  const candidateClientDirs = [
+    join(process.cwd(), '../client/dist'),
+    join(process.cwd(), 'apps/client/dist'),
+    join(process.cwd(), 'client/dist'),
+  ];
+  const clientDist = candidateClientDirs.find((dir) => existsSync(dir));
+
+  if (clientDist) {
+    app.useStaticAssets(clientDist);
+
+    // HTML5 pushState fallback for client-side routing
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (
+        req.method === 'GET' &&
+        !req.path.startsWith('/api') &&
+        !req.path.startsWith('/uploads') &&
+        !req.path.startsWith('/socket.io')
+      ) {
+        return res.sendFile(join(clientDist, 'index.html'));
+      }
+      next();
     });
   }
 

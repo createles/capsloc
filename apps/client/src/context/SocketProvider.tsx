@@ -40,8 +40,9 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const token = getAccessToken();
     if (!token) return;
 
-    // Vite proxy automatically routes ws /socket.io to http://localhost:3000
-    const socketInstance: TypedSocket = io({
+    // Use VITE_API_URL if configured, otherwise connect to current window origin
+    const socketUrl = (import.meta.env.VITE_API_URL as string | undefined) || undefined;
+    const socketInstance: TypedSocket = io(socketUrl, {
       auth: { token },
       transports: ["websocket", "polling"],
       autoConnect: true,
