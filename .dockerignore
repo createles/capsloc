@@ -25,7 +25,8 @@
 **/*.spec.*
 **/*.test.*
 
-# Uploads & Temporary Runtime Storage
+# Uploads & Temporary Runtime Storage (preserve seeded showroom demo assets)
 uploads/
-apps/server/uploads/
+apps/server/uploads/*
+!apps/server/uploads/demo/
 *.tsbuildinfo

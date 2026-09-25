@@ -22,7 +22,7 @@ export interface AuthenticatedSocket extends Socket<ClientToServerEvents, Server
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // Permissive for local dev; restrict to frontend domain in production
+    origin: process.env.CLIENT_URL || true,
     credentials: true,
   },
   namespace: '/',

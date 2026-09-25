@@ -34,9 +34,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Serve static assets from /uploads if using local storage strategy
-  if (isLocalDriver) {
-    const uploadsDir = join(process.cwd(), 'uploads');
+  // Serve static assets from /uploads (for local storage driver and seeded showroom demo assets)
+  const uploadsDir = join(process.cwd(), 'uploads');
+  if (existsSync(uploadsDir) || isLocalDriver) {
     if (!existsSync(uploadsDir)) {
       mkdirSync(uploadsDir, { recursive: true });
     }

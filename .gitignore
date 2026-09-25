@@ -10,7 +10,8 @@ yarn-debug.log*
 pnpm-debug.log*
 .DS_Store
 /uploads/
-/apps/server/uploads/
+/apps/server/uploads/*
+!/apps/server/uploads/demo/
 coverage
 
 # TypeScript incremental build cache
