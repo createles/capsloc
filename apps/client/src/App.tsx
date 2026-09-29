@@ -21,6 +21,7 @@ import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { ConnectionBanner } from "./components/common/ConnectionBanner";
 
 const INSPECTOR_STORAGE_KEY = "capsloc:inspector_open";
+const SHOW_GITHUB = import.meta.env.VITE_SHOW_GITHUB_LINKS === "true";
 
 const getInitialInspectorOpen = (): boolean => {
   try {
@@ -213,17 +214,17 @@ const LocTerminal: React.FC = () => {
     if (typeof window !== "undefined" && localStorage.getItem("capsloc_has_session") === "true") {
       return <AppShellSkeleton />;
     }
-    return <AuthModal />;
+    return <AuthModal showGithub={SHOW_GITHUB} />;
   }
 
   if (!isAuthenticated || !user) {
-    return <AuthModal />;
+    return <AuthModal showGithub={SHOW_GITHUB} />;
   }
 
   return (
     <div className="flex h-screen w-screen flex-col bg-surface-canvas text-slate-200">
       {/* 1. Top Header */}
-      <Header isConnected={isConnected} onLogout={logout} />
+      <Header isConnected={isConnected} onLogout={logout} showGithub={SHOW_GITHUB} />
 
       {/* Connection Loss Alert Banner */}
       <ConnectionBanner />

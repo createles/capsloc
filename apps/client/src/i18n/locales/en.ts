@@ -5,6 +5,7 @@ export const en = {
   "header.connected": "Connected",
   "header.reconnecting": "Reconnecting...",
   "header.signOut": "Sign Out",
+  "header.viewGithub": "View on GitHub",
   "app.connecting": "Connecting to CapsLoc...",
 
   // 2. Channel Sidebar
@@ -170,6 +171,7 @@ export const en = {
   "auth.btnRegister": "Create Account",
   "auth.btnSignIn": "Sign In",
   "auth.demoAccounts": "Demo Accounts",
+  "auth.viewGithub": "View on GitHub",
 
   // 7.2 User Profile Modal
   "profile.editProfile": "Edit Profile",

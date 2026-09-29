@@ -7,6 +7,7 @@ export const ja: typeof en = {
   "header.connected": "接続済み",
   "header.reconnecting": "再接続中...",
   "header.signOut": "サインアウト",
+  "header.viewGithub": "GitHubで表示",
   "app.connecting": "CapsLoc に接続中...",
 
   // 2. Channel Sidebar
@@ -173,6 +174,7 @@ export const ja: typeof en = {
   "auth.btnRegister": "アカウントを作成",
   "auth.btnSignIn": "ログイン",
   "auth.demoAccounts": "デモアカウントで試す",
+  "auth.viewGithub": "GitHubで表示",
 
   // 7.2 User Profile Modal
   "profile.editProfile": "プロフィール編集",
