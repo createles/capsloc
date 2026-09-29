@@ -13,6 +13,10 @@ RUN npm install -g pnpm@11.24.0
 FROM base AS builder
 WORKDIR /app
 
+# Ingest build-time variables forwarded by Railway / CI
+ARG VITE_SHOW_GITHUB_LINKS
+ENV VITE_SHOW_GITHUB_LINKS=$VITE_SHOW_GITHUB_LINKS
+
 # Copy root configurations & workspace manifests
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY packages/types/package.json ./packages/types/
